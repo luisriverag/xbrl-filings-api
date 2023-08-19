@@ -1,0 +1,6 @@
+__pycache__/
+.pytest_cache/
+.vscode/
+dist/
+src/*.egg-info
+/author-notes.md
