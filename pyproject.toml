@@ -50,13 +50,20 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/lsalmela/xbrl-filings-api"
 Documentation = "https://github.com/lsalmela/xbrl-filings-api#readme"
-Source = "https://github.com/lsalmela/xbrlfilingsapi"
+Source = "https://github.com/lsalmela/xbrl-filings-api"
 Issues = "https://github.com/lsalmela/xbrl-filings-api/issues"
 
 [tool.hatch.version]
 path = "src/xbrl_filings_api/__about__.py"
 
 [tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/docs",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/xbrl_filings_api"]
 
 [tool.hatch.envs.default]
 dependencies = [
