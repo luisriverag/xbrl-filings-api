@@ -3,4 +3,4 @@ __pycache__/
 .vscode/
 dist/
 src/*.egg-info
-/author-notes.md
+author-notes/

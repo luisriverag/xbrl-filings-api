@@ -31,7 +31,6 @@ classifiers = [
     "Programming Language :: SQL",
     "Operating System :: OS Independent",
     "Framework :: AsyncIO",
-    "Framework :: Flake8",
     "Framework :: Hatch",
     "Framework :: Pytest",
     "Intended Audience :: Financial and Insurance Industry",
