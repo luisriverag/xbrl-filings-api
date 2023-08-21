@@ -96,6 +96,7 @@ class APIPage(APIObject):
             for res_frag in inc:
                 res_type = str(res_frag.get('type')).lower()
                 res_id = res_frag.get('id')
-                resources.append(
-                    IncludedResource(res_type, res_id, res_frag))
+                if isinstance(res_id, str):
+                    resources.append(
+                        IncludedResource(res_type, res_id, res_frag))
         return resources

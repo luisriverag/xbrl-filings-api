@@ -64,7 +64,7 @@ class APIError(FilingsAPIError, APIObject):
         #     'source.parameter')
         # self.meta: str | None = self._json.get('meta.abc')
 
-        self.status: str | None = status
+        self.status: int = status
         """HTTP status code of the reponse."""
 
         self.status_text: str | None = status_text

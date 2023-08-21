@@ -52,7 +52,7 @@ def get_data_attributes(
             exclude_dlpaths = (
                 _get_unused_download_paths(resource_type, filings))
             attrs = [attr for attr in attrs if attr not in exclude_dlpaths]
-        if GET_ENTITY not in flags:
+        if flags and GET_ENTITY not in flags:
             attrs.remove('entity_api_id')
     return order_columns(attrs)
 

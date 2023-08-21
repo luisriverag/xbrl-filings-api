@@ -148,3 +148,11 @@ class ApiReferenceWarning(FilingsAPIWarning):
 
 class ApiIdCoherenceWarning(FilingsAPIWarning):
     """Multiple query pages return resources with the same ``id``."""
+
+
+class APIStringParseWarning(FilingsAPIWarning):
+    """Parsing of API JSON string based on type `ParseType` failed."""
+
+
+class DerivedValueError(FilingsAPIWarning):
+    """Could not generate a derived value."""

@@ -9,6 +9,7 @@ Define `APIResource` class.
 
 from datetime import datetime
 from types import EllipsisType
+from typing import Any
 
 from ..enums import ScopeFlag
 from ..api_request import APIRequest
@@ -29,11 +30,11 @@ class APIResource(APIObject):
     request_url : str
     """
 
-    _FILING_FLAG: ScopeFlag = None
+    _FILING_FLAG: ScopeFlag
 
     def __init__(
             self,
-            json_frag: dict | EllipsisType,
+            json_frag: dict[str, Any] | EllipsisType,
             api_request: APIRequest | None
             ) -> None:
         """
@@ -49,12 +50,17 @@ class APIResource(APIObject):
         if is_prototype:
             json_frag = {}
             api_request = APIRequest('', datetime.now())
-        
+        json_frag: dict[str, Any]
+        api_request: APIRequest
+
         super().__init__(
             json_frag=json_frag,
             api_request=api_request,
             do_not_track=is_prototype
             )
         
-        self.api_id: str | None = self._json.get('id')
+        self.api_id: str | None = None
+        api_id = self._json.get('id')
+        if isinstance(api_id, str):
+            self.api_id: str | None = api_id
         """``id`` from JSON:API."""

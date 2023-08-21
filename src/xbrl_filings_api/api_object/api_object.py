@@ -48,7 +48,7 @@ class APIObject:
         self.request_time = api_request.time
         self.request_url = api_request.url
 
-    def __str__(self):
+    def __str__(self) -> str:
         attrs = [
             att for att in dir(self)
             if not (att.startswith('_') or getattr(self.__class__, att, False))

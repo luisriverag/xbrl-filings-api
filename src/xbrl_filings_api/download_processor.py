@@ -7,7 +7,7 @@ Define download functions.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Awaitable, AsyncIterator
+from collections.abc import Awaitable, AsyncIterator, Coroutine
 from pathlib import PurePath, Path
 from typing import Any, Optional, Never
 import asyncio
@@ -36,7 +36,7 @@ def download(
 
     See documentation of `download_async`.
     """
-    asyncio.run(download_async(
+    return asyncio.run(download_async(
         url, to_dir, stem_pattern, filename, sha256))
 
 
@@ -46,7 +46,7 @@ async def download_async(
         stem_pattern: Optional[str] = None,
         filename: Optional[str] = None,
         sha256: Optional[str] = None
-        ) -> Awaitable[str]:
+        ) -> str:
     """
     Download a file and optionally check if it is corrupt.
 
@@ -127,12 +127,13 @@ async def download_async(
     with open(temp_path, 'wb') as fd:
         for chunk in res.iter_content(chunk_size=None):
             fd.write(chunk)
-            if sha256:
+            if hash:
                 hash.update(chunk)
             byte_counter += len(chunk)
             await asyncio.sleep(0.0)
     
-    if sha256:
+    if hash:
+        sha256: str
         if hash.digest() != bytes.fromhex(sha256):
             corrupt_path = save_path.with_suffix(f'{save_path.suffix}.corrupt')
             corrupt_path.unlink(missing_ok=True)
@@ -170,7 +171,7 @@ def download_parallel(
 
 async def download_parallel_async(
         items: list[FullDownloadItem], max_concurrent: int
-        ) -> Awaitable[list[tuple[Any, str | Exception]]]:
+        ) -> list[tuple[Any, str | Exception]]:
     """
     Download multiple files in parallel.
     
@@ -218,11 +219,12 @@ async def download_parallel_async_iter(
         First part is `obj` attribute from `items` item, the second is
         file format and the last is a save path or exception.
     """
-    dlque = asyncio.Queue()
+    dlque: asyncio.Queue[FullDownloadItem] = asyncio.Queue()
     for item in items:
         dlque.put_nowait(item)
     
-    resultque = asyncio.Queue()
+    resultque: asyncio.Queue[tuple[Any, str, Exception | str]] = (
+        asyncio.Queue())
     tasks: list[asyncio.Task] = []
     for worker_num in range(1, min(max_concurrent, len(items)) + 1):
         task = asyncio.create_task(
@@ -241,7 +243,7 @@ async def download_parallel_async_iter(
 
 
 async def _download_parallel_worker(
-        dlque: asyncio.Queue, resultque: asyncio.Queue) -> Awaitable[Never]:
+        dlque: asyncio.Queue, resultque: asyncio.Queue) -> Never:
     """Coroutine worker for `download_parallel_async_iter`."""
     while True:
         item: FullDownloadItem = await dlque.get()

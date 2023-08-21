@@ -41,7 +41,7 @@ def assign_single(
         attr_base: str,
         result: str | Exception
         ) -> Exception | None:
-    exc = None
+    exc: Exception | None = None
     save_path = None
     if isinstance(result, CorruptDownloadError):
         save_path = result.path

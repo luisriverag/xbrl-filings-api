@@ -11,9 +11,11 @@ from pathlib import PurePath
 from types import EllipsisType
 import re
 import urllib.parse
+import warnings
 
-from ..enums import GET_VALIDATION_MESSAGES
 from ..api_request import APIRequest
+from ..enums import GET_VALIDATION_MESSAGES
+from ..exceptions import DerivedValueError
 from .api_resource import APIResource
 
 
@@ -49,8 +51,8 @@ class ValidationMessage(APIResource):
     calc_line_item : str or None
     calc_short_role : str or None
     calc_unreported_items : str or None
-    duplicate_greater : float
-    duplicate_lesser : float
+    duplicate_greater : float or None
+    duplicate_lesser : float or None
     request_time : datetime
     request_url : str
     """
@@ -198,10 +200,10 @@ class ValidationMessage(APIResource):
         """
 
         if self.code == 'xbrl.5.2.5.2:calcInconsistency':
-            self.calc_computed_sum = self._derive_calc(
-                self._COMPUTED_SUM_RE, True)
-            self.calc_reported_sum = self._derive_calc(
-                self._REPORTED_SUM_RE, True)
+            self.calc_computed_sum = self._derive_calc_float(
+                self._COMPUTED_SUM_RE, 'calc_computed_sum')
+            self.calc_reported_sum = self._derive_calc_float(
+                self._REPORTED_SUM_RE, 'calc_reported_sum')
             self.calc_context_id = self._derive_calc(
                 self._CONTEXT_ID_RE)
             self.calc_line_item = self._derive_calc(
@@ -222,10 +224,10 @@ class ValidationMessage(APIResource):
                     self._COMMA_RE.split(unreported_items))
         
         if self.code == 'message:tech_duplicated_facts1':
-            duplicate_1 = self._derive_calc(
-                self._DUPLICATE_1_RE, True)
-            duplicate_2 = self._derive_calc(
-                self._DUPLICATE_2_RE, True)
+            duplicate_1 = self._derive_calc_float(
+                self._DUPLICATE_1_RE, 'duplicate_*')
+            duplicate_2 = self._derive_calc_float(
+                self._DUPLICATE_2_RE, 'duplicate_*')
             if (isinstance(duplicate_1, float)
                     and isinstance(duplicate_2, float)):
                 self.duplicate_greater = max(duplicate_1, duplicate_2)
@@ -234,20 +236,22 @@ class ValidationMessage(APIResource):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(code={self.code!r})'
     
-    def _derive_calc(
-            self, re_obj: re.Pattern, is_float: bool = False
-            ) -> str | int | None:
+    def _derive_calc(self, re_obj: re.Pattern) -> str | None:
         mt = re_obj.search(self.text)
         if mt:
-            if is_float:
-                return self._parse_float(mt[1])
             return mt[1]
         return None
     
-    def _parse_float(self, float_str: str) -> int | None:
-        parsed = None
-        try:
-            parsed = float(float_str.replace(',', ''))
-        except ValueError:
-            pass
-        return parsed
+    def _derive_calc_float(self, re_obj: re.Pattern, attr_name: str) -> float | None:
+        calc_str = self._derive_calc(re_obj)
+        calc_float = None
+        if calc_str is not None:
+            try:
+                calc_float = float(calc_str.replace(',', ''))
+            except ValueError:
+                msg = (
+                    f'String {calc_str!r} of attribute {attr_name!r} could '
+                    'not be parsed into float.'
+                    )
+                warnings.warn(msg, DerivedValueError)
+        return calc_float

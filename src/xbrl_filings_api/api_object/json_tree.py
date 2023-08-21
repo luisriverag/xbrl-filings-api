@@ -9,11 +9,13 @@ Define `JSONTree`, `RetrieveCounter` and `KeyPathRetrieveCounts` class.
 
 from dataclasses import dataclass
 from datetime import datetime, date, UTC
-from typing import Optional
+from typing import Optional, Any
 from urllib.parse import urljoin
 import time
+import warnings
 
 from ..enums import ParseType
+from ..exceptions import APIStringParseWarning
 import xbrl_filings_api.options as options
 
 
@@ -78,7 +80,7 @@ class JSONTree:
             Do not track read and unaccessed keys.
         """
         self.class_name = class_name
-        self.tree: dict | None = json_frag
+        self.tree: dict[str, Any] | None = json_frag
         self.do_not_track = do_not_track
 
     def get(
@@ -105,30 +107,22 @@ class JSONTree:
                 'Cannot call get() when JSONTree has been closed')
         key_value = None
         comps = key_path.split('.')
-        subdict = self.tree
+        subdict: dict[str, Any] = self.tree
         last_part = len(comps) - 1
         for i, comp in enumerate(comps):
             key_value = subdict.get(comp)
-            if i < last_part:
-                subdict = key_value
-                if subdict is None:
+            if key_value is None:
+                break
+            elif isinstance(key_value, dict):
+                if i < last_part:
+                    subdict = key_value
+                else:
+                    # Value of key_path is dict
                     break
+            # Get actual existing non-dict value of key_path
             else:
-                if key_value is not None:
-                    if parse_type == ParseType.DATETIME:
-                        key_value = datetime.fromisoformat(key_value)
-                        if options.utc_time:
-                            key_value = key_value.astimezone(UTC)
-                        else:
-                            key_value = (
-                                key_value.astimezone()
-                                + self._local_utc_offset
-                                )
-                    if parse_type == ParseType.DATE:
-                        parts = [int(part) for part in key_value.split('-')]
-                        key_value = date(*parts)
-                    elif parse_type == ParseType.URL:
-                        key_value = urljoin(options.entry_point_url, key_value)
+                if isinstance(key_value, str):
+                    key_value = self._parse_value(key_value, parse_type, key_path)
                 break
         
         if not self.do_not_track:
@@ -182,11 +176,63 @@ class JSONTree:
                 upaths[self.class_name] = set()
             upaths[self.class_name].add('.'.join(comps))
     
+    def _parse_value(
+            self, key_value: str, parse_type: ParseType | None, key_path: str
+            ) -> datetime | date | str | None:
+        """Parse string value of `key_path` based on `parse_type`."""
+        if parse_type == ParseType.DATETIME:
+            parsed_dt = None
+            try:
+                parsed_dt = datetime.fromisoformat(key_value)
+            except ValueError:
+                msg = (
+                    f'Could not parse ISO datetime string {key_value!r} for '
+                    f'object {self.class_name} JSON fragment path {key_path!r}.'
+                    )
+                warnings.warn(msg, APIStringParseWarning)
+            if parsed_dt is None:
+                return None
+            if options.utc_time:
+                return parsed_dt.astimezone(UTC)
+            else:
+                return (
+                    parsed_dt.astimezone()
+                    + self._local_utc_offset
+                    )
+        
+        if parse_type == ParseType.DATE:
+            parsed_date = None
+            try:
+                parts = [int(part) for part in key_value.split('-')]
+                parsed_date = date(*parts)
+            except ValueError:
+                msg = (
+                    f'Could not parse ISO date string {key_value!r} for '
+                    f'object {self.class_name} JSON fragment path {key_path!r}.'
+                    )
+                warnings.warn(msg, APIStringParseWarning)
+            return parsed_date
+        
+        if parse_type == ParseType.URL:
+            parsed_url = None
+            try:
+                parsed_url = urljoin(options.entry_point_url, key_value)
+            except ValueError:
+                msg = (
+                    f'Could not determine absolute URL string from '
+                    f'{key_value!r} for object {self.class_name} JSON '
+                    f'fragment path {key_path!r}.'
+                    )
+                warnings.warn(msg, APIStringParseWarning)
+            return parsed_url
+        
+        return key_value
+    
     @classmethod
     def get_unaccessed_key_paths(cls) -> set[tuple[str, str]]:
         """Get the set of unaccessed key paths in unserialized JSON
         fragments of API responses."""
-        unaccessed = set()
+        unaccessed: set[tuple[str, str]] = set()
         for class_name, key_path_set in cls._unaccessed_paths.items():
             unaccessed.update(
                 ((class_name, key_path) for key_path in key_path_set))
@@ -197,7 +243,7 @@ class JSONTree:
         """Get the set of successful retrieval counts for key paths in
         unserialized JSON fragments of API responses.
         """
-        availability = set()
+        availability: set[KeyPathRetrieveCounts] = set()
         for class_name, key_path_dict in cls._object_path_counter.items():
             availability.update((
                 KeyPathRetrieveCounts(
