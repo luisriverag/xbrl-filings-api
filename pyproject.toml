@@ -53,7 +53,7 @@ Source = "https://github.com/lsalmela/xbrl-filings-api"
 Issues = "https://github.com/lsalmela/xbrl-filings-api/issues"
 
 [tool.hatch.version]
-path = "src/xbrl_filings_api/__about__.py"
+path = "xbrl_filings_api/__about__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -62,7 +62,7 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/xbrl_filings_api"]
+packages = ["xbrl_filings_api"]
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -93,7 +93,7 @@ dependencies = [
   "ruff>=0.0.285",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:src/xbrl_filings_api tests}"
+typing = "mypy --install-types --non-interactive {args:xbrl_filings_api tests}"
 style = [
   "ruff {args:.}",
   "black --check --diff {args:.}",
@@ -173,11 +173,11 @@ source_pkgs = ["xbrl_filings_api", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/xbrl_filings_api/__about__.py",
+  "xbrl_filings_api/__about__.py",
 ]
 
 [tool.coverage.paths]
-xbrl_filings_api = ["src/xbrl_filings_api", "*/xbrl-filings-api/src/xbrl_filings_api"]
+xbrl_filings_api = ["xbrl_filings_api", "*/xbrl-filings-api/xbrl_filings_api"]
 tests = ["tests", "*/xbrl-filings-api/tests"]
 
 [tool.coverage.report]
