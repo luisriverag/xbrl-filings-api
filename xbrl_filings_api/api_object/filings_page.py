@@ -66,7 +66,7 @@ class FilingsPage(APIPage):
         """List of `Filing` objects on this page."""
 
         self.entity_list: list[Entity] | None = (
-            self._get_inc_resource(
+            self._get_inc_entity(
                 api_request=api_request,
                 received_api_ids=received_api_ids,
                 type_obj=Entity,
@@ -80,7 +80,7 @@ class FilingsPage(APIPage):
         """
         
         self.validation_message_list: list[ValidationMessage] | None = (
-            self._get_inc_resource(
+            self._get_inc_validation_message(
                 api_request=api_request,
                 received_api_ids=received_api_ids,
                 type_obj=ValidationMessage,
@@ -184,6 +184,26 @@ class FilingsPage(APIPage):
         for res_i in found_ix:
             del self._included_resources[res_i]
         return resource_list
+    
+    def _get_inc_entity(self, **kwargs) -> list[Entity] | None:
+        reslist = self._get_inc_resource(**kwargs)
+        if reslist is None:
+            return None
+        ents = [
+            res for res in reslist
+            if isinstance(res, Entity)
+            ]
+        return ents
+    
+    def _get_inc_validation_message(self, **kwargs) -> list[ValidationMessage] | None:
+        reslist = self._get_inc_resource(**kwargs)
+        if reslist is None:
+            return None
+        vmsgs = [
+            res for res in reslist
+            if isinstance(res, ValidationMessage)
+            ]
+        return vmsgs
     
     def _determine_unexpected_inc_resources(self) -> None:
         self._json.unexpected_resource_types.update(

@@ -7,7 +7,7 @@ Define classes `ResourceCollection`.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from typing import Any, Optional
 
 from ..api_object.api_resource import APIResource
@@ -38,7 +38,7 @@ class ResourceCollection:
     """
 
     def __init__(
-            self, parent: object, attr_name: str, type_obj: type[APIResource]
+            self, parent: Any, attr_name: str, type_obj: type[APIResource]
             ) -> None:
         # FilingSet object
         self.parent = parent
@@ -47,7 +47,7 @@ class ResourceCollection:
         self._type_obj = type_obj
         self._columns: list[str] | None = None
     
-    def __iter__(self) -> APIResource:
+    def __iter__(self) -> Iterator[APIResource]:
         filing: Filing
         yielded_ids = set()
         for filing in self.parent:
@@ -60,7 +60,6 @@ class ResourceCollection:
                             yielded_ids.add(resource.api_id)
                             yield resource
                 else:
-                    attr_val: APIResource
                     if attr_val.api_id not in yielded_ids:
                         yielded_ids.add(attr_val.api_id)
                         yield attr_val
@@ -101,6 +100,7 @@ class ResourceCollection:
             Column names are the same as the attributes for resource of
             this type.
         """
+        data: dict[str, list[ResourceLiteralType]]
         if attr_names:
             data = {col: [] for col in attr_names}
         else:

@@ -65,7 +65,7 @@ class Filing(APIResource):
     package_sha256 : str or None
     """
     
-    TYPE = 'filing'
+    TYPE: str = 'filing'
     COUNTRY = 'attributes.country'
     FILING_INDEX = 'attributes.fxo_id'
     LAST_END_DATE = 'attributes.period_end'
@@ -487,7 +487,7 @@ class Filing(APIResource):
             return None
         if not self.entity_api_id:
             msg = f'No entity defined for {self!r}, api_id='
-            warnings.warn(msg+self.api_id, ApiReferenceWarning, stacklevel=2)
+            warnings.warn(f'{msg}{self.api_id}', ApiReferenceWarning, stacklevel=2)
             return None
         
         entity = None
@@ -564,13 +564,15 @@ class Filing(APIResource):
         mt = re.search(r'(^|\D)(\d{4}-\d{1,2}-\d{1,2})($|\D)', stem)
         if mt:
             year, month, day = mt[2].split('-')
-            return f'{year}-{month:0>2}-{day:0>2}'
+            return date(int(year), int(month), int(day))
         return self.last_end_date
     
     def _get_package_url_stem(self) -> str | None:
         url_path = urllib.parse.urlparse(self.package_url).path
         if not url_path.strip():
             return None
+        if isinstance(url_path, bytes):
+            url_path = url_path.decode('utf-8')
         file_stem = PurePath(url_path).stem
         if not file_stem.strip():
             return None

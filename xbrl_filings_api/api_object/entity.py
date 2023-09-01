@@ -29,7 +29,7 @@ class Entity(APIResource):
     request_url : str
     """
     
-    TYPE = 'entity'
+    TYPE: str = 'entity'
     NAME = 'attributes.name'
     IDENTIFIER = 'attributes.identifier'
     API_ENTITY_FILINGS_URL = 'relationships.filings.links.related'

@@ -33,7 +33,7 @@ class APIResource(APIObject):
     request_url : str
     """
 
-    TYPE = None
+    TYPE: str | None = None
     _FILING_FLAG: ScopeFlag
 
     def __init__(
