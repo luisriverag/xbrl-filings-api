@@ -23,7 +23,7 @@ from ..lang_code_transform import LANG_CODE_TRANSFORM
 from .api_resource import APIResource
 from .entity import Entity
 from .validation_message import ValidationMessage
-import xbrl_filings_api.download_item_construct as download_item_construct
+import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.save_paths as save_paths
 
@@ -404,7 +404,7 @@ class Filing(APIResource):
             Requested file type for this filing is not available.
         """
         downloader.validate_stem_pattern(stem_pattern)
-        items = download_item_construct.construct(
+        items = download_specs_construct.construct(
             formats, self, to_dir, stem_pattern, filename, check_corruption,
             self.VALID_DOWNLOAD_FORMATS
             )
@@ -462,7 +462,7 @@ class Filing(APIResource):
         """
         downloader.validate_stem_pattern(stem_pattern)
         
-        items = download_item_construct.construct(
+        items = download_specs_construct.construct(
             formats, self, to_dir, stem_pattern, None,
             check_corruption, Filing.VALID_DOWNLOAD_FORMATS
             )

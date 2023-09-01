@@ -24,7 +24,7 @@ from ..enums import (
 from ..exceptions import DownloadErrorGroup
 from .resource_collection import ResourceCollection
 import xbrl_filings_api.database_processor as database_processor
-import xbrl_filings_api.download_item_construct as download_item_construct
+import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.save_paths as save_paths
 
@@ -125,7 +125,7 @@ class FilingSet(set):
         items = []
         for filing in self:
             items.extend(
-                download_item_construct.construct(
+                download_specs_construct.construct(
                     formats, filing, to_dir, stem_pattern, None,
                     check_corruption, Filing.VALID_DOWNLOAD_FORMATS
                     ))
@@ -186,7 +186,7 @@ class FilingSet(set):
         items = []
         for filing in self:
             items.extend(
-                download_item_construct.construct(
+                download_specs_construct.construct(
                     formats, filing, to_dir, stem_pattern, None,
                     check_corruption, Filing.VALID_DOWNLOAD_FORMATS
                     ))
