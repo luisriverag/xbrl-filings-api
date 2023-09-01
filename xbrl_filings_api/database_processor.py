@@ -24,7 +24,7 @@ from .exceptions import (
     DatabaseSchemaUnmatch
     )
 from .time_formats import time_formats
-import xbrl_filings_api.data_export.data_utils as data_utils
+import xbrl_filings_api.order_columns as order_columns
 import xbrl_filings_api.options as options
 
 CurrentSchemaType = dict[str, list[str]]
@@ -48,8 +48,8 @@ def sets_to_sqlite(
     sqlite3.DatabaseError
     """
     _validate_path(update, ppath)
-    filing_data_attrs = data_utils.get_data_attributes(
-        Filing, flags, data_objs['Filing'])
+    filing_data_attrs = Filing.get_data_attributes(
+        flags, data_objs['Filing'])
     con, table_schema = _create_database_or_extend_schema(
         flags, ppath, update, filing_data_attrs)
     _insert_data(table_schema, data_objs, con)
@@ -73,7 +73,7 @@ def pages_to_sqlite(
     sqlite3.DatabaseError
     """
     _validate_path(update, ppath)
-    filing_data_attrs = data_utils.get_data_attributes(Filing, flags)
+    filing_data_attrs = Filing.get_data_attributes(flags)
     con, table_schema = _create_database_or_extend_schema(
         flags, ppath, update, filing_data_attrs)
 
@@ -134,11 +134,11 @@ def _create_database_or_extend_schema(
     if GET_ONLY_FILINGS not in flags:
         if GET_ENTITY in flags:
             resource_types.append(Entity)
-            data_attrs['Entity'] = data_utils.get_data_attributes(Entity)
+            data_attrs['Entity'] = Entity.get_data_attributes()
         if GET_VALIDATION_MESSAGES in flags:
             resource_types.append(ValidationMessage)
             data_attrs['ValidationMessage'] = (
-                data_utils.get_data_attributes(ValidationMessage))
+                ValidationMessage.get_data_attributes())
     
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -227,7 +227,7 @@ def _create_database_or_extend_schema(
 
 def _get_col_defs(cols: list[str]) -> list[tuple[int, str, str]]:
     """Get list of (order, col_name, type_const)."""
-    cols = data_utils.order_columns(cols)
+    cols = order_columns.order_columns(cols)
     col_defs = []
     for col in cols:
         type_const = 'TEXT'

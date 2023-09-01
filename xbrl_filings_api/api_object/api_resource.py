@@ -7,13 +7,16 @@ Define `APIResource` class.
 #
 # SPDX-License-Identifier: MIT
 
+from collections.abc import Iterable
 from datetime import datetime
 from types import EllipsisType
 from typing import Any
 
-from ..enums import ScopeFlag
 from ..api_request import APIRequest
+from ..constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
+from ..enums import ScopeFlag, GET_ONLY_FILINGS, GET_ENTITY
 from .api_object import APIObject
+import xbrl_filings_api.order_columns as order_columns
 
 
 class APIResource(APIObject):
@@ -64,3 +67,92 @@ class APIResource(APIObject):
         if isinstance(api_id, str):
             self.api_id: str | None = api_id
         """``id`` from JSON:API."""
+
+    @classmethod
+    def get_data_attributes(
+            cls, flags: ScopeFlag | None = None,
+            filings: Iterable['APIResource'] | None = None
+            ) -> list[str]:
+        """
+        Get data attributes for an API resource subclass.
+
+        Excludes internal and class attributes and the ones containing
+        objects.
+
+        For `Filing` objects this also means excluding attributes ending
+        ``_download_path`` if all filings have this column filled with
+        `None`. Additionally, if `GET_ENTITY` is not set filings will
+        exclude `entity_api_id`.
+
+        Parameters
+        ----------
+        flags : ScopeFlag, optional
+            Only relevant for `Filing` resource type.
+        filings : iterable of Filing, optional
+            Only relevant for `Filing` resource type.
+        """
+        if cls is APIResource:
+            raise NotImplementedError()
+        resource_proto = cls(...)
+        attrs = [
+            attr for attr in dir(resource_proto)
+            if not (
+                attr.startswith('_')
+                or getattr(cls, attr, False)
+                or attr in ATTRS_ALWAYS_EXCLUDE_FROM_DATA)
+            ]
+        if cls.TYPE == 'filing':
+            if filings:
+                exclude_dlpaths = (
+                    cls._get_unused_download_paths(filings))
+                attrs = [attr for attr in attrs if attr not in exclude_dlpaths]
+            if flags and GET_ENTITY not in flags:
+                attrs.remove('entity_api_id')
+        return order_columns.order_columns(attrs)
+
+    @classmethod
+    def _get_unused_download_paths(cls, filings: Iterable[Any]) -> set[str]:
+        """
+        Get unused `Filing` object attributes ending in ``_download_path``.
+
+        Parameters
+        ----------
+        filings : iterable of Filing
+        """
+        fproto = cls(...)
+        dlattrs = [
+            att for att in dir(fproto)
+            if not att.startswith('_') and att.endswith('_download_path')
+            ]
+        
+        unused = set()
+        for att in dlattrs:
+            for fil in filings:
+                if getattr(fil, att) is not None:
+                    break
+            else:
+                unused.add(att)
+        return unused
+
+    @classmethod
+    def get_columns(
+            cls, has_entities: bool = False,
+            filings: Iterable[Any] | None = None
+            ) -> list[str]:
+        """
+        List of available columns for this `APIResource` subclass.
+
+        Parameters
+        ----------
+        has_entities : bool, default False
+            Only relevant for `Filing` objects.
+        filings: iterable of Filing, optional
+            Only relevant for `Filing` objects.
+        """
+        if cls is APIResource:
+            raise NotImplementedError()
+        flags = GET_ONLY_FILINGS
+        if has_entities:
+            flags = GET_ENTITY
+        cols = cls.get_data_attributes(flags, filings)
+        return order_columns.order_columns(cols)

@@ -13,7 +13,6 @@ from typing import Any, Optional
 from ..api_object.api_resource import APIResource
 from ..api_object.filing import Filing
 from ..constants import ResourceLiteralType
-import xbrl_filings_api.data_export.data_utils as data_utils
 
 
 class ResourceCollection:
@@ -116,7 +115,7 @@ class ResourceCollection:
         """List of available columns for resources of this type."""
         if self._columns:
             return self._columns
-        self._columns = data_utils.get_columns(self._type_obj)
+        self._columns = self._type_obj.get_columns()
         return self._columns
 
     @property

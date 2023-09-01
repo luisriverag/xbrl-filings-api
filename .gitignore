@@ -1,7 +1,8 @@
 __pycache__/
-.pytest_cache/
 .mypy_cache/
+.pytest_cache/
+.ruff_cache/
 .vscode/
-dist/
 *.egg-info
 author-notes/
+dist/

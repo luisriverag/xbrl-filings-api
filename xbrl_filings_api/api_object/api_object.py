@@ -12,7 +12,7 @@ from datetime import datetime
 from ..api_request import APIRequest
 from ..time_formats import time_formats
 from .json_tree import JSONTree
-import xbrl_filings_api.data_export.data_utils as data_utils
+import xbrl_filings_api.order_columns as order_columns
 import xbrl_filings_api.options as options
 
 
@@ -53,7 +53,7 @@ class APIObject:
             att for att in dir(self)
             if not (att.startswith('_') or getattr(self.__class__, att, False))
             ]
-        attrs = data_utils.order_columns(attrs)
+        attrs = order_columns.order_columns(attrs)
         attvals: list[str] = []
         for att in attrs:
             val_str = None

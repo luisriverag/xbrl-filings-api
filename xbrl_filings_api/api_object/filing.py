@@ -16,13 +16,14 @@ import urllib.parse
 import warnings
 
 from ..api_request import APIRequest
-from ..download_item import DownloadItem, construct_download_items
+from ..download_item import DownloadItem
 from ..enums import ParseType
 from ..exceptions import ApiReferenceWarning, DownloadErrorGroup
 from ..lang_code_transform import LANG_CODE_TRANSFORM
 from .api_resource import APIResource
 from .entity import Entity
 from .validation_message import ValidationMessage
+import xbrl_filings_api.download_item_construct as download_item_construct
 import xbrl_filings_api.download_processor as download_processor
 import xbrl_filings_api.save_paths as save_paths
 
@@ -403,7 +404,7 @@ class Filing(APIResource):
             Requested file type for this filing is not available.
         """
         download_processor.validate_stem_pattern(stem_pattern)
-        items = construct_download_items(
+        items = download_item_construct.construct(
             formats, self, to_dir, stem_pattern, filename, check_corruption,
             self.VALID_DOWNLOAD_FORMATS
             )
@@ -461,7 +462,7 @@ class Filing(APIResource):
         """
         download_processor.validate_stem_pattern(stem_pattern)
         
-        items = construct_download_items(
+        items = download_item_construct.construct(
             formats, self, to_dir, stem_pattern, None,
             check_corruption, Filing.VALID_DOWNLOAD_FORMATS
             )

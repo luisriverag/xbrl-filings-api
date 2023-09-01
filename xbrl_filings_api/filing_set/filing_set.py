@@ -18,13 +18,13 @@ from ..api_object.entity import Entity
 from ..api_object.filing import Filing
 from ..api_object.validation_message import ValidationMessage
 from ..constants import ResourceLiteralType
-from ..download_item import DownloadItem, construct_download_items
+from ..download_item import DownloadItem
 from ..enums import (
     ScopeFlag, GET_ENTITY, GET_VALIDATION_MESSAGES)
 from ..exceptions import DownloadErrorGroup
 from .resource_collection import ResourceCollection
-import xbrl_filings_api.data_export.data_utils as data_utils
 import xbrl_filings_api.database_processor as database_processor
+import xbrl_filings_api.download_item_construct as download_item_construct
 import xbrl_filings_api.download_processor as download_processor
 import xbrl_filings_api.save_paths as save_paths
 
@@ -125,7 +125,7 @@ class FilingSet(set):
         items = []
         for filing in self:
             items.extend(
-                construct_download_items(
+                download_item_construct.construct(
                     formats, filing, to_dir, stem_pattern, None,
                     check_corruption, Filing.VALID_DOWNLOAD_FORMATS
                     ))
@@ -186,7 +186,7 @@ class FilingSet(set):
         items = []
         for filing in self:
             items.extend(
-                construct_download_items(
+                download_item_construct.construct(
                     formats, filing, to_dir, stem_pattern, None,
                     check_corruption, Filing.VALID_DOWNLOAD_FORMATS
                     ))
@@ -302,6 +302,5 @@ class FilingSet(set):
         """List of available columns for filings of this set."""
         if self._columns:
             return self._columns
-        self._columns = data_utils.get_columns(
-            Filing, self.entities.exist, self)
+        self._columns = Filing.get_columns(self.entities.exist, self)
         return self._columns
