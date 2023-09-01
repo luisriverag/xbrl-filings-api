@@ -4,7 +4,7 @@
 
 from .api_object.json_tree import JSONTree
 from .api_object.json_tree import KeyPathRetrieveCounts
-import xbrl_filings_api.download_processor as download_processor
+import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.request_processor as request_processor
 
 
@@ -57,7 +57,7 @@ def unexpected_resource_types() -> list[tuple[str, str]]:
 
 def download_count() -> int:
     """Count of executed file downloads after importing the package."""
-    return download_processor.item_counter
+    return downloader.stats.item_counter
 
 
 def api_request_count() -> int:
@@ -74,10 +74,10 @@ def total_request_count() -> int:
 
 
 def download_bytes() -> int:
-    """Number of bytes downloaded excluding api requests after importing
+    """Number of bytes downloaded excluding API requests after importing
     the package.
     """
-    return download_processor.byte_counter
+    return downloader.stats.byte_counter
 
 
 def download_size_str() -> str:

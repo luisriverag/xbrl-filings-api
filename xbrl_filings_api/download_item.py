@@ -4,22 +4,18 @@
 
 from dataclasses import dataclass
 from pathlib import PurePath
-from typing import Any, Optional
-
-
-@dataclass(frozen=True)
-class FullDownloadItem:
-    url: str
-    to_dir: str | PurePath
-    obj: Any
-    attr_base: Optional[str] = None
-    stem_pattern: Optional[str] = None
-    filename: Optional[str] = None
-    sha256: Optional[str] = None
+from typing import Optional
 
 
 @dataclass
 class DownloadItem:
+    """
+    Download item class for `xbrl_filings_api`.
+    
+    Will be internally parsed into a `DownloadSpecs` object based on
+    caller method arguments.
+    """
+
     filename: Optional[str] = None
     to_dir: Optional[str | PurePath] = None
     stem_pattern: Optional[str] = None

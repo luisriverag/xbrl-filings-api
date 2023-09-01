@@ -9,7 +9,8 @@ from pathlib import PurePath
 import warnings
 
 from .api_object.api_resource import APIResource
-from .download_item import DownloadItem, FullDownloadItem
+from .download_item import DownloadItem
+from .downloader import DownloadSpecs
 from .exceptions import FileNotAvailableWarning
 
 
@@ -21,8 +22,8 @@ def construct(
         filename: str | None,
         check_corruption: bool,
         valid_formats: Container
-        ) -> list[FullDownloadItem]:
-    """Constructs a list of `FullDownloadItem` objects."""
+        ) -> list[DownloadSpecs]:
+    """Constructs a list of `DownloadSpecs` objects."""
     if isinstance(formats, str):
         formats = [formats]
     items = []
@@ -60,7 +61,7 @@ def _get_full_download_item(
         filename: str | None,
         check_corruption: bool,
         valid_formats: Container
-        ) -> FullDownloadItem | None:
+        ) -> DownloadSpecs | None:
     if format not in valid_formats:
         msg = f'Format {format!r} is not among {valid_formats!r}'
         raise ValueError(msg)
@@ -87,7 +88,7 @@ def _get_full_download_item(
     if not to_dir:
         to_dir = '.'
 
-    return FullDownloadItem(
+    return DownloadSpecs(
         url=url,
         to_dir=to_dir,
         obj=resource,

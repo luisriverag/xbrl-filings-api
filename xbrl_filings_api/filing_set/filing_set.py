@@ -25,7 +25,7 @@ from ..exceptions import DownloadErrorGroup
 from .resource_collection import ResourceCollection
 import xbrl_filings_api.database_processor as database_processor
 import xbrl_filings_api.download_item_construct as download_item_construct
-import xbrl_filings_api.download_processor as download_processor
+import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.save_paths as save_paths
 
 
@@ -120,7 +120,7 @@ class FilingSet(set):
         FileNotAvailableWarning
             Requested file type for this filing is not available.
         """
-        download_processor.validate_stem_pattern(stem_pattern)
+        downloader.validate_stem_pattern(stem_pattern)
         
         items = []
         for filing in self:
@@ -129,7 +129,7 @@ class FilingSet(set):
                     formats, filing, to_dir, stem_pattern, None,
                     check_corruption, Filing.VALID_DOWNLOAD_FORMATS
                     ))
-        dlset = download_processor.download_parallel(
+        dlset = downloader.download_parallel(
             items, max_concurrent)
         excs = save_paths.assign_all(dlset)
         if excs:
@@ -181,7 +181,7 @@ class FilingSet(set):
         FileNotAvailableWarning
             Requested file type for this filing is not available.
         """
-        download_processor.validate_stem_pattern(stem_pattern)
+        downloader.validate_stem_pattern(stem_pattern)
         
         items = []
         for filing in self:
@@ -190,7 +190,7 @@ class FilingSet(set):
                     formats, filing, to_dir, stem_pattern, None,
                     check_corruption, Filing.VALID_DOWNLOAD_FORMATS
                     ))
-        dliter = download_processor.download_parallel_async_iter(
+        dliter = downloader.download_parallel_async_iter(
             items, max_concurrent)
         async for filing, format, result in dliter:
             exc = save_paths.assign_single(filing, format, result)

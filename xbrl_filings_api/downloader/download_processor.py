@@ -7,7 +7,7 @@ Define download functions.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Awaitable, AsyncIterator, Coroutine
+from collections.abc import AsyncIterator
 from pathlib import PurePath, Path
 from typing import Any, Optional, Never
 import asyncio
@@ -16,12 +16,12 @@ import urllib.parse
 
 import requests
 
-from .download_item import FullDownloadItem
-from .exceptions import CorruptDownloadError
+from ..exceptions import CorruptDownloadError
+from .download_specs import DownloadSpecs
+from .stat_counters import StatCounters
 
 
-item_counter = 0
-byte_counter = 0
+stats = StatCounters()
 
 
 def download(
@@ -94,7 +94,7 @@ async def download_async(
     requests.ConnectionError
         Connection fails.
     """
-    global item_counter, byte_counter
+    global stats
 
     validate_stem_pattern(stem_pattern)
     if not isinstance(to_dir, Path):
@@ -111,7 +111,7 @@ async def download_async(
             filename = f'file{num:04}'
 
     res = requests.get(url, stream=True)
-    item_counter += 1
+    stats.item_counter += 1
     res.raise_for_status()
 
     hash = None
@@ -129,7 +129,7 @@ async def download_async(
             fd.write(chunk)
             if hash:
                 hash.update(chunk)
-            byte_counter += len(chunk)
+            stats.byte_counter += len(chunk)
             await asyncio.sleep(0.0)
     
     if hash:
@@ -149,7 +149,7 @@ async def download_async(
 
 
 def download_parallel(
-        items: list[FullDownloadItem], max_concurrent: int
+        items: list[DownloadSpecs], max_concurrent: int
         ) -> list[tuple[Any, str | Exception]]:
     """
     Download multiple files in parallel.
@@ -158,7 +158,7 @@ def download_parallel(
 
     Parameters
     ----------
-    items : list of FullDownloadItem
+    items : list of DownloadSpecs
     max_concurrent : int
 
     Returns
@@ -170,7 +170,7 @@ def download_parallel(
 
 
 async def download_parallel_async(
-        items: list[FullDownloadItem], max_concurrent: int
+        items: list[DownloadSpecs], max_concurrent: int
         ) -> list[tuple[Any, str | Exception]]:
     """
     Download multiple files in parallel.
@@ -179,7 +179,7 @@ async def download_parallel_async(
 
     Parameters
     ----------
-    items : list of FullDownloadItem
+    items : list of DownloadSpecs
     max_concurrent : int
 
     Returns
@@ -195,7 +195,7 @@ async def download_parallel_async(
 
 
 async def download_parallel_async_iter(
-        items: list[FullDownloadItem], max_concurrent: int
+        items: list[DownloadSpecs], max_concurrent: int
         ) -> AsyncIterator[tuple[Any, str | Exception]]:
     """
     Download multiple files in parallel and return an asynchronous
@@ -206,8 +206,8 @@ async def download_parallel_async_iter(
     
     Parameters
     ----------
-    items : list of FullDownloadItem
-        Instances of `FullDownloadItem` accept the same parameters as
+    items : list of DownloadSpecs
+        Instances of `DownloadSpecs` accept the same parameters as
         method `download_async` with additional parameters `obj` and
         `attr_base`.
     max_concurrent : int
@@ -219,7 +219,7 @@ async def download_parallel_async_iter(
         First part is `obj` attribute from `items` item, the second is
         file format and the last is a save path or exception.
     """
-    dlque: asyncio.Queue[FullDownloadItem] = asyncio.Queue()
+    dlque: asyncio.Queue[DownloadSpecs] = asyncio.Queue()
     for item in items:
         dlque.put_nowait(item)
     
@@ -246,7 +246,7 @@ async def _download_parallel_worker(
         dlque: asyncio.Queue, resultque: asyncio.Queue) -> Never:
     """Coroutine worker for `download_parallel_async_iter`."""
     while True:
-        item: FullDownloadItem = await dlque.get()
+        item: DownloadSpecs = await dlque.get()
         try:
             path = await download_async(
                 item.url, item.to_dir, item.stem_pattern, item.filename,
@@ -260,6 +260,19 @@ async def _download_parallel_worker(
 
 
 def validate_stem_pattern(stem_pattern: str | None):
+    """
+    Validates `stem_pattern` parameter of module functions.
+
+    Parameters
+    ----------
+    stem_pattern : str or None
+        Stem pattern parameter.
+    
+    Raises
+    ------
+    ValueError
+        When stem pattern is invalid.
+    """
     if stem_pattern and '/name/' not in stem_pattern:
         msg = (
             "Placeholder '/name/' missing in 'stem_pattern' value "
