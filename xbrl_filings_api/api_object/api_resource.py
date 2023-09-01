@@ -33,12 +33,13 @@ class APIResource(APIObject):
     request_url : str
     """
 
+    TYPE = None
     _FILING_FLAG: ScopeFlag
 
     def __init__(
             self,
             json_frag: dict[str, Any] | EllipsisType,
-            api_request: APIRequest | None
+            api_request: APIRequest | None = None
             ) -> None:
         """
         Initialize an API resource.
@@ -49,12 +50,13 @@ class APIResource(APIObject):
             JSON fragment in an API response. An ellipsis (...) may be
             given to create a prototype.
         """
-        is_prototype = (json_frag == Ellipsis)
-        if is_prototype:
+        is_prototype = False
+        if isinstance(json_frag, EllipsisType):
+            is_prototype = True
             json_frag = {}
             api_request = APIRequest('', datetime.now())
-        json_frag: dict[str, Any]
-        api_request: APIRequest
+        if api_request is None:
+            raise ValueError()
 
         super().__init__(
             json_frag=json_frag,
@@ -65,7 +67,7 @@ class APIResource(APIObject):
         self.api_id: str | None = None
         api_id = self._json.get('id')
         if isinstance(api_id, str):
-            self.api_id: str | None = api_id
+            self.api_id = api_id
         """``id`` from JSON:API."""
 
     @classmethod

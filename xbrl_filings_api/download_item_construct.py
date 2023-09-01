@@ -8,7 +8,7 @@ from collections.abc import Iterable, Mapping, Container
 from pathlib import PurePath
 import warnings
 
-from .api_object.api_resource import APIResource
+from .api_object.filing import Filing
 from .download_item import DownloadItem
 from .downloader import DownloadSpecs
 from .exceptions import FileNotAvailableWarning
@@ -16,7 +16,7 @@ from .exceptions import FileNotAvailableWarning
 
 def construct(
         formats: str | Iterable[str] | Mapping[str, DownloadItem],
-        resource: APIResource,
+        filing: Filing,
         to_dir: str | PurePath | None,
         stem_pattern: str | None,
         filename: str | None,
@@ -31,8 +31,8 @@ def construct(
     if isinstance(formats, Mapping):
         for format_key in formats:
             download_item = formats[format_key]
-            full_item = _get_full_download_item(
-                format_key, download_item, resource, to_dir, stem_pattern,
+            full_item = _get_filing_download_specs(
+                format_key, download_item, filing, to_dir, stem_pattern,
                 filename, check_corruption, valid_formats
                 )
             if full_item:
@@ -40,8 +40,8 @@ def construct(
     
     elif isinstance(formats, Iterable):
         for format in formats:
-            full_item = _get_full_download_item(
-                format, None, resource, to_dir, stem_pattern, filename,
+            full_item = _get_filing_download_specs(
+                format, None, filing, to_dir, stem_pattern, filename,
                 check_corruption, valid_formats
                 )
             if full_item:
@@ -52,10 +52,10 @@ def construct(
     return items
 
 
-def _get_full_download_item(
+def _get_filing_download_specs(
         format: str,
         download_item: DownloadItem | None,
-        resource: APIResource,
+        filing: Filing,
         to_dir: str | PurePath | None,
         stem_pattern: str | None,
         filename: str | None,
@@ -66,17 +66,17 @@ def _get_full_download_item(
         msg = f'Format {format!r} is not among {valid_formats!r}'
         raise ValueError(msg)
 
-    url = getattr(resource, f'{format}_url')
+    url = getattr(filing, f'{format}_url')
     if not url:
         format_text = (
             format.capitalize() if format == 'package' else format.upper())
-        msg = f'{format_text} not available for {resource!r}'
+        msg = f'{format_text} not available for {filing!r}'
         warnings.warn(msg, FileNotAvailableWarning)
         return None
     
     sha256 = None
     if check_corruption and format == 'package':
-        sha256 = resource.package_sha256
+        sha256 = filing.package_sha256
 
     if download_item:
         if download_item.to_dir:
@@ -91,7 +91,7 @@ def _get_full_download_item(
     return DownloadSpecs(
         url=url,
         to_dir=to_dir,
-        obj=resource,
+        obj=filing,
         attr_base=format,
         stem_pattern=stem_pattern,
         filename=filename,

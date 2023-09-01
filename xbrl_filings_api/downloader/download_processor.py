@@ -127,13 +127,12 @@ async def download_async(
     with open(temp_path, 'wb') as fd:
         for chunk in res.iter_content(chunk_size=None):
             fd.write(chunk)
-            if hash:
+            if sha256 and hash:
                 hash.update(chunk)
             stats.byte_counter += len(chunk)
             await asyncio.sleep(0.0)
     
-    if hash:
-        sha256: str
+    if sha256 and hash:
         if hash.digest() != bytes.fromhex(sha256):
             corrupt_path = save_path.with_suffix(f'{save_path.suffix}.corrupt')
             corrupt_path.unlink(missing_ok=True)
@@ -150,7 +149,7 @@ async def download_async(
 
 def download_parallel(
         items: list[DownloadSpecs], max_concurrent: int
-        ) -> list[tuple[Any, str | Exception]]:
+        ) -> list[tuple[Any, str, str | Exception]]:
     """
     Download multiple files in parallel.
     
@@ -171,7 +170,7 @@ def download_parallel(
 
 async def download_parallel_async(
         items: list[DownloadSpecs], max_concurrent: int
-        ) -> list[tuple[Any, str | Exception]]:
+        ) -> list[tuple[Any, str, str | Exception]]:
     """
     Download multiple files in parallel.
     
@@ -184,7 +183,7 @@ async def download_parallel_async(
 
     Returns
     -------
-    coroutine of list of tuple of (any, {str, Exception})
+    coroutine of list of tuple of (any, str, {str, Exception})
         List of `download_parallel_async_iter` yield values.
     """
     results = []
@@ -196,7 +195,7 @@ async def download_parallel_async(
 
 async def download_parallel_async_iter(
         items: list[DownloadSpecs], max_concurrent: int
-        ) -> AsyncIterator[tuple[Any, str | Exception]]:
+        ) -> AsyncIterator[tuple[Any, str, str | Exception]]:
     """
     Download multiple files in parallel and return an asynchronous
     iterator.
@@ -215,9 +214,12 @@ async def download_parallel_async_iter(
     
     Yields
     ------
-    tuple of (any, str, {str, exception})
-        First part is `obj` attribute from `items` item, the second is
-        file format and the last is a save path or exception.
+    any
+        Attribute `obj` from `items` item.
+    str
+        File format.
+    {str, exception}
+        Path where the file was saved or an exception.
     """
     dlque: asyncio.Queue[DownloadSpecs] = asyncio.Queue()
     for item in items:

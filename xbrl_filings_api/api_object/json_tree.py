@@ -85,7 +85,7 @@ class JSONTree:
 
     def get(
             self, key_path: str, parse_type: Optional[ParseType] = None
-            ) -> object | None:
+            ) -> Any:
         """
         Read a dictionary key from a deeply nested dictionary.
 
