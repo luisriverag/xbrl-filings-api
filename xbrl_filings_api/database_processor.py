@@ -78,14 +78,14 @@ def pages_to_sqlite(
         flags, ppath, update, filing_data_attrs)
 
     for page in page_gen:
-        entities = []
-        messages = []
+        entities: list[Entity] = []
+        messages: list[ValidationMessage] = []
         for filing in page.filing_list:
             if filing.entity:
                 entities.append(filing.entity)
             if filing.validation_messages:
                 messages.extend(filing.validation_messages)
-        data_objs = {
+        data_objs: dict[str, Iterable[APIResource]] = {
             'Filing': page.filing_list,
             'Entity': entities,
             'ValidationMessage': messages
@@ -145,8 +145,8 @@ def _create_database_or_extend_schema(
     connection = sqlite3.connect(db_path)
     cur = connection.cursor()
     table_names = {cls.__name__ for cls in resource_types}
-    existing_tables: set[str] = {}
-    existing_views: set[str] = {}
+    existing_tables: set[str] = set()
+    existing_views: set[str] = set()
 
     if update:
         schema_match = False
@@ -225,8 +225,8 @@ def _create_database_or_extend_schema(
     return connection, table_schema
 
 
-def _get_col_defs(cols: list[str]) -> list[tuple[int, str, str]]:
-    """Get list of (order, col_name, type_const)."""
+def _get_col_defs(cols: list[str]) -> list[tuple[str, str]]:
+    """Get list of (col_name, type_const)."""
     cols = order_columns.order_columns(cols)
     col_defs = []
     for col in cols:
@@ -243,7 +243,7 @@ def _get_col_defs(cols: list[str]) -> list[tuple[int, str, str]]:
 
 def _insert_data(
         table_schema: CurrentSchemaType,
-        data_objs: dict[Iterable[APIResource]],
+        data_objs: dict[str, Iterable[APIResource]],
         con: sqlite3.Connection):
     cur = con.cursor()
     for table_name in table_schema:
@@ -262,7 +262,7 @@ def _insert_data(
         con.commit()
 
 
-def _exec(cur: sqlite3.Cursor, sql: str, data: list[list[str]] = None) -> None:
+def _exec(cur: sqlite3.Cursor, sql: str, data: list[list[str]] | None = None) -> None:
     data_len = f' <count: {len(data)}>' if data else ''
     print(sql + ';' + data_len)
 

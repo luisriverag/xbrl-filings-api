@@ -9,7 +9,7 @@ This is an extended set type with certain added attributes.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Iterable, Mapping, AsyncIterator
+from collections.abc import Iterable, Mapping, AsyncIterator, Collection
 from pathlib import Path, PurePath
 from typing import Optional
 
@@ -200,7 +200,7 @@ class FilingSet(set):
             self,
             path: str | Path,
             update: bool = False,
-            flags: Optional[ScopeFlag] = GET_ENTITY | GET_VALIDATION_MESSAGES
+            flags: ScopeFlag = GET_ENTITY | GET_VALIDATION_MESSAGES
             ) -> None:
         """
         Save set to an SQLite3 database.
@@ -281,7 +281,9 @@ class FilingSet(set):
                 data[col_name].append(getattr(filing, col_name))
         return data
     
-    def _get_data_sets(self, flags: ScopeFlag) -> dict[str, set[APIResource]]:
+    def _get_data_sets(
+            self, flags: ScopeFlag | None
+            ) -> tuple[dict[str, Iterable[APIResource]], ScopeFlag]:
         """Get sets of data objects and turn flags for empty sets off."""
         data_objs = {'Filing': self}
         subresources = [

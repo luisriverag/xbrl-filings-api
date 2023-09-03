@@ -6,9 +6,9 @@ Module for constructing download items from Filing and FilingSet objects.
 
 from collections.abc import Iterable, Mapping, Container
 from pathlib import PurePath
+from typing import Any
 import warnings
 
-from .api_object.filing import Filing
 from .download_item import DownloadItem
 from .downloader import DownloadSpecs
 from .exceptions import FileNotAvailableWarning
@@ -16,7 +16,7 @@ from .exceptions import FileNotAvailableWarning
 
 def construct(
         formats: str | Iterable[str] | Mapping[str, DownloadItem],
-        filing: Filing,
+        filing: Any,
         to_dir: str | PurePath | None,
         stem_pattern: str | None,
         filename: str | None,
@@ -55,7 +55,7 @@ def construct(
 def _get_filing_download_specs(
         format: str,
         download_item: DownloadItem | None,
-        filing: Filing,
+        filing: Any,
         to_dir: str | PurePath | None,
         stem_pattern: str | None,
         filename: str | None,

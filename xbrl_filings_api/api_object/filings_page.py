@@ -8,6 +8,7 @@ Define `FilingsPage` class.
 # SPDX-License-Identifier: MIT
 
 from itertools import chain
+from typing import Any
 import warnings
 
 from ..api_request import APIRequest
@@ -105,11 +106,12 @@ class FilingsPage(APIPage):
             self, received_api_ids: dict[str, set],
             res_colls: dict[str, ResourceCollection], flags: ScopeFlag
             ) -> list[Filing]:
-        """Get filings from from `data` key.
+        """Get filings from from `data` key list.
 
         Warns
         -----
         ApiReferenceWarning
+            When same filing `api_id` is returned again.
         """
         filing_list = []
         if not received_api_ids.get('Filing'):
@@ -121,38 +123,58 @@ class FilingsPage(APIPage):
                 res_type = str(res_frag.get('type')).lower()
 
                 if res_type == Filing.TYPE:
-                    res_id = str(res_frag.get('id'))
-                    if res_id in received_set:
-                        msg = (
-                            f'Same filing returned again, api_id={res_id!r}.'
-                            )
-                        warnings.warn(msg, ApiIdCoherenceWarning)
-                    else:
-                        received_set.add(res_id)
-                        entity_iter = None
-                        message_iter = None
-                        if GET_ONLY_FILINGS not in flags:
-                            if GET_ENTITY in flags:
-                                entity_iter = chain(
-                                    self.entity_list,
-                                    res_colls['Entity']
-                                    )
-                            if GET_VALIDATION_MESSAGES in flags:
-                                message_iter = chain(
-                                    self.validation_message_list,
-                                    res_colls['ValidationMessage']
-                                    )
-                        filing = Filing(
-                            res_frag,
-                            APIRequest(self.request_url, self.request_time),
-                            entity_iter,
-                            message_iter
-                            )
+                    filing = self._parse_filing_fragment(
+                        res_frag, received_set, res_colls, flags)
+                    if filing:
                         filing_list.append(filing)
                 else:
                     self._json.unexpected_resource_types.add(
                         (res_type, 'data'))
         return filing_list
+    
+    def _parse_filing_fragment(
+            self, res_frag: dict[str, Any], received_set: set[str],
+            res_colls: dict[str, ResourceCollection], flags: ScopeFlag
+            ) -> Filing | None:
+        """Get filings from from a single `data` key fragment.
+
+        Warns
+        -----
+        ApiReferenceWarning
+        """
+        res_id = str(res_frag.get('id'))
+        if res_id in received_set:
+            msg = f'Same filing returned again, api_id={res_id!r}.'
+            warnings.warn(msg, ApiIdCoherenceWarning)
+            return None
+        else:
+            received_set.add(res_id)
+            entity_iter = None
+            message_iter = None
+            if GET_ONLY_FILINGS not in flags:
+                if GET_ENTITY in flags:
+                    ents = self.entity_list if self.entity_list else ()
+                    entity_iter = (
+                        ent for ent
+                        in chain(ents, res_colls['Entity'])
+                        if isinstance(ent, Entity)
+                        )
+                if GET_VALIDATION_MESSAGES in flags:
+                    vmsgs = (
+                        self.validation_message_list
+                        if self.validation_message_list else ()
+                        )
+                    message_iter = (
+                        vmsg for vmsg
+                        in chain(vmsgs, res_colls['ValidationMessage'])
+                        if isinstance(vmsg, ValidationMessage)
+                        )
+            return Filing(
+                res_frag,
+                APIRequest(self.request_url, self.request_time),
+                entity_iter,
+                message_iter
+                )
 
     def _get_inc_resource(
             self,
@@ -161,7 +183,7 @@ class FilingsPage(APIPage):
             type_obj: type[APIResource],
             flag_member: ScopeFlag,
             flags: ScopeFlag
-            ) -> list[Entity | ValidationMessage] | None:
+            ) -> list[APIResource] | None:
         if (GET_ONLY_FILINGS in flags or flag_member not in flags):
             return None
         

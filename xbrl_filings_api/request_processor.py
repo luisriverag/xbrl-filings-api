@@ -9,6 +9,7 @@ Module for processing API requests.
 
 from collections.abc import Mapping, Sequence, Iterable, Generator
 from datetime import date, datetime, timedelta, UTC
+from typing import Literal
 import itertools
 import urllib.parse
 
@@ -67,7 +68,7 @@ def generate_pages(
     ApiIdCoherenceWarning
     ApiReferenceWarning
     """
-    params = {}
+    params: dict[str, str] = {}
     received_api_ids: dict[str, set] = dict()
 
     page_size = options.max_page_size
@@ -77,7 +78,7 @@ def generate_pages(
     elif max_size > NO_LIMIT:
         if max_size < page_size:
             page_size = max_size
-    params['page[size]'] = page_size
+    params['page[size]'] = str(page_size)
 
     include_flags = []
     if GET_ONLY_FILINGS not in flags:
@@ -98,11 +99,11 @@ def generate_pages(
     request_time = _get_request_time()
     
     received_size = 0
-    for params in request_param_list:
-        next_url = options.entry_point_url
+    for req_params in request_param_list:
+        next_url: str | None = options.entry_point_url
         while next_url:
             page_json, api_request = _retrieve_page_json(
-                next_url, params, request_time)
+                next_url, req_params, request_time)
             
             page = FilingsPage(
                 page_json, api_request, flags, received_api_ids, res_colls)
@@ -118,7 +119,7 @@ def generate_pages(
 
             if not next_url or received_size >= max_size:
                 break
-            params = None
+            req_params = None
         if received_size >= max_size:
             break
 
@@ -132,20 +133,19 @@ def _get_request_param_list(
 
     date_filters = {
         fld: filters[fld] for fld in filters if fld.endswith('_date')}
-    for fld in date_filters:
-        del filters[fld]
+    working_filters = {
+        fld: filters[fld] for fld in filters if fld not in date_filters}
     
     multifilters = {
-        fld: filters[fld] for fld in filters
-        if isinstance(filters[fld], Iterable)
-        and not isinstance(filters[fld], str)
+        fld: working_filters[fld] for fld in working_filters
+        if isinstance(working_filters[fld], Iterable)
+        and not isinstance(working_filters[fld], str)
         }
     for fld in multifilters:
-        del filters[fld]
+        del working_filters[fld]
 
     if date_filters:
-        year_filter_months = options.year_filter_months
-        if year_filter_months[1] <= year_filter_months[0]:
+        if options.year_filter_months[1] <= options.year_filter_months[0]:
             msg = (
                 'The option year_filter_months stop (2nd item) is before '
                 'or equal to start (1st item)'
@@ -155,12 +155,13 @@ def _get_request_param_list(
         for field_name, filter_iterb in date_filters.items():
             if isinstance(filter_iterb, str):
                 filter_iterb = [filter_iterb]
-            resolved = []
+            resolved: list[str] = []
             for date_filter in filter_iterb:
                 nums = [int(num) for num in date_filter.split('-')]
+
                 if len(nums) == 1:
                     year = nums[0]
-                    start_part, stop_part = year_filter_months
+                    start_part, stop_part = options.year_filter_months
                     req_year, req_month = year+start_part[0], start_part[1]
                     stop_year, stop_month = year+stop_part[0], stop_part[1]
 
@@ -172,7 +173,7 @@ def _get_request_param_list(
                         req_month += 1
                         if req_month > 12:
                             req_year, req_month = req_year+1, 1
-                    resolved.append(mf_values)
+                    resolved.extend(mf_values)
 
                 if len(nums) == 2:
                     year, month = nums
@@ -181,11 +182,12 @@ def _get_request_param_list(
                 else:
                     resolved.append(date_filter)
             if len(resolved) == 1:
-                filters[field_name] = resolved[0]
+                working_filters[field_name] = resolved[0]
             else:
                 multifilters[field_name] = resolved
     
-    params |= _filters_to_query_params(filters)
+    # working_filters values are all non-iterables
+    params |= _filters_to_query_params(working_filters) # type: ignore
 
     if not multifilters:
         return [params]
@@ -195,7 +197,7 @@ def _get_request_param_list(
             dict(zip(multifilters.keys(), values))
             for values in itertools.product(*multifilters.values())
             ]
-        rp_list = []
+        rp_list: list[dict[str, str] | None] = []
         for filters_add in filters_add_list:
             req_params = params.copy()
             req_params |= _filters_to_query_params(filters_add)
@@ -284,7 +286,7 @@ def _retrieve_page_json(
             )
         excs = [
             APIError(
-                err_frag, url, api_request, res.status_code, res.reason)
+                err_frag, api_request, res.status_code, res.reason)
             for err_frag in json_frag['errors']
             ]
         raise APIErrorGroup(msg, excs)
@@ -301,7 +303,8 @@ def get_api_attribute_map() -> dict[str, str]:
         for prop in dir(proto):
             if getattr(cls, prop, False):
                 continue
-            api_attr = getattr(cls, prop.upper(), False)
+            api_attr: str | Literal[False] = (
+                getattr(cls, prop.upper(), False)) # type: ignore
             if api_attr and api_attr.startswith('attributes.'):
                 attr_lib = prop
                 attr_api = api_attr[11:]
