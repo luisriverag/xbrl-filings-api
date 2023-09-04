@@ -10,7 +10,7 @@ Define `APIResource` class.
 from collections.abc import Iterable
 from datetime import datetime
 from types import EllipsisType
-from typing import Any
+from typing import Any, Optional
 
 from ..api_request import APIRequest
 from ..constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
@@ -72,7 +72,7 @@ class APIResource(APIObject):
 
     @classmethod
     def get_data_attributes(
-            cls, flags: ScopeFlag | None = None,
+            cls, flags: Optional[ScopeFlag] = None,
             filings: Iterable['APIResource'] | None = None
             ) -> list[str]:
         """

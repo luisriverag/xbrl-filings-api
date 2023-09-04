@@ -272,6 +272,7 @@ class FilingSet(set):
             Column names are the same as the attributes for resource of
             this type.
         """
+        data: dict[str, list[ResourceLiteralType]]
         if attr_names:
             data = {col: [] for col in attr_names}
         else:
@@ -282,10 +283,10 @@ class FilingSet(set):
         return data
     
     def _get_data_sets(
-            self, flags: ScopeFlag | None
+            self, flags: ScopeFlag
             ) -> tuple[dict[str, Iterable[APIResource]], ScopeFlag]:
         """Get sets of data objects and turn flags for empty sets off."""
-        data_objs = {'Filing': self}
+        data_objs: dict[str, Iterable[APIResource]] = {'Filing': self}
         subresources = [
             (Entity, self.entities),
             (ValidationMessage, self.validation_messages)

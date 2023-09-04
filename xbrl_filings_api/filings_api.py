@@ -81,7 +81,7 @@ download_size_str : str
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Mapping, Sequence, Iterable, Generator
+from collections.abc import Mapping, Sequence, Iterable, Iterator
 from pathlib import Path
 from typing import Optional
 
@@ -97,10 +97,10 @@ import xbrl_filings_api.request_processor as request_processor
 def get_filings(
         filters: Optional[Mapping[str, str | Iterable[str]]] = None,
         sort: Optional[str | Sequence[str]] = None,
-        max_size: Optional[int] = 100,
-        flags: Optional[ScopeFlag] = GET_ONLY_FILINGS,
+        max_size: int = 100,
+        flags: ScopeFlag = GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
-        ) -> FilingSet[Filing]:
+        ) -> FilingSet:
     """
     Retrieve filings from the API.
 
@@ -142,11 +142,13 @@ def get_filings(
     """
     if isinstance(sort, str):
         sort = [sort]
+
     filings = FilingSet({})
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
         }
+    
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
     for page in page_gen:
@@ -159,8 +161,8 @@ def to_sqlite(
         update: bool = False,
         filters: Optional[Mapping[str, str | Iterable[str]]] = None,
         sort: Optional[str | Sequence[str]] = None,
-        max_size: Optional[int] = 100,
-        flags: Optional[ScopeFlag] = GET_ONLY_FILINGS,
+        max_size: int = 100,
+        flags: ScopeFlag = GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> None:
     """
@@ -250,8 +252,14 @@ def to_sqlite(
     if isinstance(sort, str):
         sort = [sort]
     
+    filings = FilingSet({})
+    res_colls: dict[str, ResourceCollection] = {
+        'Entity': filings.entities,
+        'ValidationMessage': filings.validation_messages
+        }
+    
     page_gen = request_processor.generate_pages(
-        filters, sort, max_size, flags, add_api_params)
+        filters, sort, max_size, flags, add_api_params, res_colls)
     database_processor.pages_to_sqlite(
         flags, ppath, update, page_gen)
 
@@ -259,10 +267,10 @@ def to_sqlite(
 def filing_page_iter(
         filters: Optional[Mapping[str, str | Iterable[str]]] = None,
         sort: Optional[str | Sequence[str]] = None,
-        max_size: Optional[int] = 100,
-        flags: Optional[ScopeFlag] = GET_ONLY_FILINGS,
+        max_size: int = 100,
+        flags: ScopeFlag = GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
-        ) -> Generator[FilingsPage, None, None]:
+        ) -> Iterator[FilingsPage]:
     """
     Iterate API query results page by page.
 
@@ -304,13 +312,14 @@ def filing_page_iter(
     """
     if isinstance(sort, str):
         sort = [sort]
+
     filings = FilingSet({})
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
         }
+    
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
     for page in page_gen:
-        filings.update(page.filing_list)
-    return filings
+        yield page
