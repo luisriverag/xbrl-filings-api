@@ -73,7 +73,7 @@ class APIResource(APIObject):
     @classmethod
     def get_data_attributes(
             cls, flags: Optional[ScopeFlag] = None,
-            filings: Iterable['APIResource'] | None = None
+            filings: Optional[Iterable['APIResource']] = None
             ) -> list[str]:
         """
         Get data attributes for an API resource subclass.

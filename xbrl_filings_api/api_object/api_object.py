@@ -7,6 +7,7 @@ Define `APIObject` class.
 #
 # SPDX-License-Identifier: MIT
 
+from collections.abc import Sized
 from datetime import datetime
 
 from ..api_request import APIRequest
@@ -58,9 +59,9 @@ class APIObject:
         for att in attrs:
             val_str = None
             val = getattr(self, att)
-            if hasattr(val, '__len__') and not isinstance(val, str):
+            if isinstance(val, Sized) and not isinstance(val, str):
                 val_str = f'{val.__class__.__qualname__}(len={len(val)})'
-            if isinstance(val, datetime):
+            elif isinstance(val, datetime):
                 try:
                     fstr = time_formats[options.time_accuracy]
                 except KeyError:

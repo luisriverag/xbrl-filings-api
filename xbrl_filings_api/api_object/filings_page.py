@@ -7,6 +7,7 @@ Define `FilingsPage` class.
 #
 # SPDX-License-Identifier: MIT
 
+from collections.abc import Iterable
 from itertools import chain
 from typing import Any
 import warnings
@@ -66,28 +67,29 @@ class FilingsPage(APIPage):
         self.filing_list: list[Filing]
         """List of `Filing` objects on this page."""
 
-        self.entity_list: list[Entity] | None = (
-            self._get_inc_entity(
-                api_request=api_request,
-                received_api_ids=received_api_ids,
-                type_obj=Entity,
-                flag_member=GET_ENTITY,
-                flags=flags
-                ))
+        ents = self._get_inc_resource(
+            api_request=api_request,
+            received_api_ids=received_api_ids,
+            type_obj=Entity,
+            flag_member=GET_ENTITY,
+            flags=flags
+            )
+        self.entity_list: list[Entity] | None = ents # type: ignore
         """
         Set of `Entity` objects on this page.
         
         Is `None` if `flags` parameter did not include `GET_ENTITY`.
         """
         
+        vmsgs = self._get_inc_resource(
+            api_request=api_request,
+            received_api_ids=received_api_ids,
+            type_obj=ValidationMessage,
+            flag_member=GET_VALIDATION_MESSAGES,
+            flags=flags
+            )
         self.validation_message_list: list[ValidationMessage] | None = (
-            self._get_inc_validation_message(
-                api_request=api_request,
-                received_api_ids=received_api_ids,
-                type_obj=ValidationMessage,
-                flag_member=GET_VALIDATION_MESSAGES,
-                flags=flags
-                ))
+            vmsgs) # type: ignore
         """
         Set of `ValidationMessage` objects on this page.
 
@@ -154,26 +156,21 @@ class FilingsPage(APIPage):
             if GET_ONLY_FILINGS not in flags:
                 if GET_ENTITY in flags:
                     ents = self.entity_list if self.entity_list else ()
-                    entity_iter = (
-                        ent for ent
-                        in chain(ents, res_colls['Entity'])
-                        if isinstance(ent, Entity)
-                        )
+                    entity_iter = chain(ents, res_colls['Entity'])
                 if GET_VALIDATION_MESSAGES in flags:
                     vmsgs = (
                         self.validation_message_list
                         if self.validation_message_list else ()
                         )
-                    message_iter = (
-                        vmsg for vmsg
-                        in chain(vmsgs, res_colls['ValidationMessage'])
-                        if isinstance(vmsg, ValidationMessage)
-                        )
+                    message_iter = chain(vmsgs, res_colls['ValidationMessage'])
+            iters: tuple[
+                Iterable[Entity] | None,
+                Iterable[ValidationMessage] | None
+                ] = entity_iter, message_iter # type: ignore
             return Filing(
                 res_frag,
                 APIRequest(self.request_url, self.request_time),
-                entity_iter,
-                message_iter
+                *iters
                 )
 
     def _get_inc_resource(
@@ -206,26 +203,6 @@ class FilingsPage(APIPage):
         for res_i in found_ix:
             del self._included_resources[res_i]
         return resource_list
-    
-    def _get_inc_entity(self, **kwargs) -> list[Entity] | None:
-        reslist = self._get_inc_resource(**kwargs)
-        if reslist is None:
-            return None
-        ents = [
-            res for res in reslist
-            if isinstance(res, Entity)
-            ]
-        return ents
-    
-    def _get_inc_validation_message(self, **kwargs) -> list[ValidationMessage] | None:
-        reslist = self._get_inc_resource(**kwargs)
-        if reslist is None:
-            return None
-        vmsgs = [
-            res for res in reslist
-            if isinstance(res, ValidationMessage)
-            ]
-        return vmsgs
     
     def _determine_unexpected_inc_resources(self) -> None:
         self._json.unexpected_resource_types.update(
