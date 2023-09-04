@@ -1,0 +1,67 @@
+target-version = "py39"
+line-length = 79
+select = [
+    "A",
+    "ARG",
+    "B", # flake8 bugbear
+    "C",
+    # "D", pydocstyle
+    "DTZ",
+    "E", # pycodestyle
+    "EM",
+    "F", # pyflakes
+    "FBT",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "T",
+    "TID",
+    "UP", # pyupgrade
+    "W",
+    "YTT",
+]
+ignore = [
+    # Allow non-abstract empty methods in abstract base classes
+    "B027",
+    # Allow boolean positional values in function calls, like `dict.get(... True)`
+    "FBT003",
+    # Ignore checks for possible passwords
+    "S105", "S106", "S107",
+    # Ignore complexity
+    "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+    # Using numpy docstring convention
+    "D107",
+    "D203",
+    "D212",
+    "D213",
+    "D402",
+    "D413",
+    "D415",
+    "D416",
+    "D417",
+]
+unfixable = [
+    # Don't touch unused imports
+    "F401",
+]
+
+[isort]
+known-first-party = ["xbrl_filings_api"]
+
+[flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[pydocstyle]
+convention = "numpy"
+
+[per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
