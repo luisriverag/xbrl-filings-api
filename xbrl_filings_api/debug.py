@@ -2,17 +2,19 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .api_object.json_tree import JSONTree
-from .api_object.json_tree import KeyPathRetrieveCounts
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.request_processor as request_processor
+from xbrl_filings_api.api_object.json_tree import (
+    JSONTree,
+    KeyPathRetrieveCounts,
+)
 
 
 def unaccessed_key_paths() -> list[tuple[str, str]]:
     """
     Get the list of unaccessed key paths in unserialized JSON
     fragments of API responses.
-    
+
     For debugging API changes.
 
     Returns
@@ -27,7 +29,7 @@ def key_path_availability_counts() -> list[KeyPathRetrieveCounts]:
     """
     Get the list of successful retrieval counts for key paths in
     unserialized JSON fragments of API responses.
-    
+
     For debugging API changes.
 
     The `KeyPathRetrieveCounts` objects contain the attributes

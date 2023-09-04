@@ -7,16 +7,16 @@ Define `JSONTree`, `RetrieveCounter` and `KeyPathRetrieveCounts` class.
 #
 # SPDX-License-Identifier: MIT
 
-from dataclasses import dataclass
-from datetime import datetime, date, UTC
-from typing import Optional, Any
-from urllib.parse import urljoin
 import time
 import warnings
+from dataclasses import dataclass
+from datetime import UTC, date, datetime
+from typing import Any, Optional
+from urllib.parse import urljoin
 
-from ..enums import ParseType
-from ..exceptions import APIStringParseWarning
 import xbrl_filings_api.options as options
+from xbrl_filings_api.enums import ParseType
+from xbrl_filings_api.exceptions import APIStringParseWarning
 
 
 @dataclass
@@ -68,7 +68,7 @@ class JSONTree:
             ) -> None:
         """
         Initialize a JSONTree instance.
-        
+
         Parameters
         ----------
         class_name : str
@@ -124,17 +124,17 @@ class JSONTree:
                 if isinstance(key_value, str):
                     key_value = self._parse_value(key_value, parse_type, key_path)
                 break
-        
+
         if not self.do_not_track:
             opcounter = self._object_path_counter
             if not opcounter.get(self.class_name):
                 opcounter[self.class_name] = dict()
-            
+
             if not opcounter[self.class_name].get(key_path):
                 init_count = 0 if key_value is None else 1
                 opcounter[self.class_name][key_path] = (
                     RetrieveCounter(success_count=init_count, total_count=1))
-            
+
             else:
                 counter = opcounter[self.class_name][key_path]
                 if key_value is not None:
@@ -153,7 +153,7 @@ class JSONTree:
         for key in self.tree:
             self._find_unaccessed(self.tree, [key])
         self.tree = None
-    
+
     def _find_unaccessed(
             self, json_frag: dict, comps: list[str]) -> None:
         """Traverse the whole JSON tree/fragment by recursion, skip
@@ -162,7 +162,7 @@ class JSONTree:
         opcounter = self._object_path_counter
         if opcounter.get(self.class_name) is None:
             raise Exception('close() cannot be called before get()')
-        
+
         last_comp = comps[len(comps) - 1]
         key_value = json_frag.get(last_comp)
         if isinstance(key_value, dict):
@@ -175,7 +175,7 @@ class JSONTree:
             if not upaths.get(self.class_name):
                 upaths[self.class_name] = set()
             upaths[self.class_name].add('.'.join(comps))
-    
+
     def _parse_value(
             self, key_value: str, parse_type: ParseType | None, key_path: str
             ) -> datetime | date | str | None:
@@ -199,7 +199,7 @@ class JSONTree:
                     parsed_dt.astimezone()
                     + self._local_utc_offset
                     )
-        
+
         if parse_type == ParseType.DATE:
             parsed_date = None
             try:
@@ -212,7 +212,7 @@ class JSONTree:
                     )
                 warnings.warn(msg, APIStringParseWarning)
             return parsed_date
-        
+
         if parse_type == ParseType.URL:
             parsed_url = None
             try:
@@ -225,9 +225,9 @@ class JSONTree:
                     )
                 warnings.warn(msg, APIStringParseWarning)
             return parsed_url
-        
+
         return key_value
-    
+
     @classmethod
     def get_unaccessed_key_paths(cls) -> set[tuple[str, str]]:
         """Get the set of unaccessed key paths in unserialized JSON

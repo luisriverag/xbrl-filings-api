@@ -7,25 +7,30 @@ Module for processing SQLite3 databases.
 #
 # SPDX-License-Identifier: MIT
 
+import sqlite3
+from collections.abc import Generator, Iterable
 from datetime import datetime
 from pathlib import Path
-from collections.abc import Generator, Iterable
-import sqlite3
 
-from .api_object.api_resource import APIResource
-from .api_object.entity import Entity
-from .api_object.filing import Filing
-from .api_object.filings_page import FilingsPage
-from .api_object.validation_message import ValidationMessage
-from .enums import (
-    ScopeFlag, GET_ONLY_FILINGS, GET_ENTITY, GET_VALIDATION_MESSAGES)
-from .exceptions import (
-    DatabaseFileExistsError, DatabasePathIsReservedError,
-    DatabaseSchemaUnmatch
-    )
-from .time_formats import time_formats
-import xbrl_filings_api.order_columns as order_columns
 import xbrl_filings_api.options as options
+import xbrl_filings_api.order_columns as order_columns
+from xbrl_filings_api.api_object.api_resource import APIResource
+from xbrl_filings_api.api_object.entity import Entity
+from xbrl_filings_api.api_object.filing import Filing
+from xbrl_filings_api.api_object.filings_page import FilingsPage
+from xbrl_filings_api.api_object.validation_message import ValidationMessage
+from xbrl_filings_api.enums import (
+    GET_ENTITY,
+    GET_ONLY_FILINGS,
+    GET_VALIDATION_MESSAGES,
+    ScopeFlag,
+)
+from xbrl_filings_api.exceptions import (
+    DatabaseFileExistsError,
+    DatabasePathIsReservedError,
+    DatabaseSchemaUnmatch,
+)
+from xbrl_filings_api.time_formats import time_formats
 
 CurrentSchemaType = dict[str, list[str]]
 """`{'TableName': ['col1', 'col2', ...]}`"""
@@ -118,7 +123,7 @@ def _create_database_or_extend_schema(
     """
     Creates an SQLite3 database or extends the tables and columns of
     an existing database.
-    
+
     Returns
     -------
     tuple of sqlite3.Connection, CurrentSchemaType
@@ -139,7 +144,7 @@ def _create_database_or_extend_schema(
             resource_types.append(ValidationMessage)
             data_attrs['ValidationMessage'] = (
                 ValidationMessage.get_data_attributes())
-    
+
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     connection = sqlite3.connect(db_path)
@@ -170,7 +175,7 @@ def _create_database_or_extend_schema(
     for type_obj in resource_types:
         table_name = type_obj.__name__
         cols = data_attrs[table_name]
-        
+
         col_defs = _get_col_defs(cols)
         table_schema[table_name] = [cd[0] for cd in col_defs]
 
@@ -208,7 +213,7 @@ def _create_database_or_extend_schema(
             + "\n) WITHOUT ROWID"
             )
         connection.commit()
-    
+
     if options.views:
         for view_name, (required_tables, view_sql) in options.views.items():
             if view_name in existing_views:

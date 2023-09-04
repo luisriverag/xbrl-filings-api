@@ -34,9 +34,8 @@ views : dict of str: tuple of (iterable of str, str), default DEFAULT_VIEWS
 #
 # SPDX-License-Identifier: MIT
 
-from .constants import YearFilterMonthsType
-from .sqlite_views import DEFAULT_VIEWS
-
+from xbrl_filings_api.constants import YearFilterMonthsType
+from xbrl_filings_api.sqlite_views import DEFAULT_VIEWS
 
 entry_point_url: str = 'https://filings.xbrl.org/api/filings'
 """JSON-API entry point URL."""

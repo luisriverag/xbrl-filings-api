@@ -10,17 +10,17 @@ Define `APIObject` class.
 from collections.abc import Sized
 from datetime import datetime
 
-from ..api_request import APIRequest
-from ..time_formats import time_formats
-from .json_tree import JSONTree
-import xbrl_filings_api.order_columns as order_columns
 import xbrl_filings_api.options as options
+import xbrl_filings_api.order_columns as order_columns
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.json_tree import JSONTree
+from xbrl_filings_api.time_formats import time_formats
 
 
 class APIObject:
     """
     Base class for JSON:API objects.
-    
+
     Attributes
     ----------
     request_time : datetime

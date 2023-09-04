@@ -6,8 +6,13 @@ Parallel downloading provides an asynchronous iterator.
 """
 
 
-from .download_processor import (
-    download, download_async, download_parallel, download_parallel_async,
-    download_parallel_async_iter, validate_stem_pattern, stats
-    )
-from .download_specs import DownloadSpecs
+from xbrl_filings_api.download_processor import (
+    download,
+    download_async,
+    download_parallel,
+    download_parallel_async,
+    download_parallel_async_iter,
+    stats,
+    validate_stem_pattern,
+)
+from xbrl_filings_api.download_specs import DownloadSpecs

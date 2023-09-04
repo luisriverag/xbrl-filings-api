@@ -10,9 +10,9 @@ Define classes `ResourceCollection`.
 from collections.abc import Iterable, Iterator
 from typing import Any, Optional
 
-from ..api_object.api_resource import APIResource
-from ..api_object.filing import Filing
-from ..constants import ResourceLiteralType
+from xbrl_filings_api.api_object.api_resource import APIResource
+from xbrl_filings_api.api_object.filing import Filing
+from xbrl_filings_api.constants import ResourceLiteralType
 
 
 class ResourceCollection:
@@ -42,11 +42,11 @@ class ResourceCollection:
             ) -> None:
         # FilingSet object
         self.parent = parent
-        
+
         self._attr_name = attr_name
         self._type_obj = type_obj
         self._columns: list[str] | None = None
-    
+
     def __iter__(self) -> Iterator[APIResource]:
         filing: Filing
         yielded_ids = set()
@@ -63,19 +63,19 @@ class ResourceCollection:
                     if attr_val.api_id not in yielded_ids:
                         yielded_ids.add(attr_val.api_id)
                         yield attr_val
-    
+
     def __len__(self) -> int:
         count = 0
         for _ in self:
             count += 1
         return count
-    
+
     def __contains__(self, other: Any) -> bool:
         for resource in self:
             if resource is other:
                 return True
         return False
-    
+
     def get_pandas_data(
             self, attr_names: Optional[Iterable[str]] = None
             ) -> dict[str, list[ResourceLiteralType]]:
@@ -109,7 +109,7 @@ class ResourceCollection:
             for col_name in data:
                 data[col_name].append(getattr(resource, col_name))
         return data
-    
+
     @property
     def columns(self) -> list[str]:
         """List of available columns for resources of this type."""
@@ -122,7 +122,7 @@ class ResourceCollection:
     def exist(self) -> bool:
         """
         True if any resources of this type exist.
-        
+
         This property is faster than ``len(obj) != 0``.
         """
         filing: Filing

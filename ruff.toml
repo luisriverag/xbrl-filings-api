@@ -53,6 +53,11 @@ unfixable = [
     "F401",
 ]
 
+[flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "single"
+
 [isort]
 known-first-party = ["xbrl_filings_api"]
 

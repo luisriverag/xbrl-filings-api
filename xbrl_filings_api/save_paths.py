@@ -11,7 +11,7 @@ Used to assign download path attributes of Filing objects to save paths.
 
 from collections.abc import Iterable
 
-from .exceptions import CorruptDownloadError
+from xbrl_filings_api.exceptions import CorruptDownloadError
 
 
 def assign_all(

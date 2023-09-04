@@ -11,7 +11,7 @@ from typing import Optional
 class DownloadItem:
     """
     Download item class for `xbrl_filings_api`.
-    
+
     Will be internally parsed into a `DownloadSpecs` object based on
     caller method arguments.
     """

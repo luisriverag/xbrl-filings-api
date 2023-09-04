@@ -7,25 +7,30 @@ Module for processing API requests.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Mapping, Sequence, Iterable, Generator
-from datetime import date, datetime, timedelta, UTC
-from typing import Literal
 import itertools
 import urllib.parse
+from collections.abc import Generator, Iterable, Mapping, Sequence
+from datetime import UTC, date, datetime, timedelta
+from typing import Literal
 
 import requests
 
-from .api_object.api_error import APIErrorGroup, APIError
-from .api_object.entity import Entity
-from .api_object.filing import Filing
-from .api_object.filings_page import FilingsPage
-from .api_object.validation_message import ValidationMessage
-from .api_request import APIRequest
-from .enums import (
-    ScopeFlag, GET_ONLY_FILINGS, GET_ENTITY, GET_VALIDATION_MESSAGES, NO_LIMIT)
-from .exceptions import HTTPStatusError
-from .filing_set.resource_collection import ResourceCollection
 import xbrl_filings_api.options as options
+from xbrl_filings_api.api_object.api_error import APIError, APIErrorGroup
+from xbrl_filings_api.api_object.entity import Entity
+from xbrl_filings_api.api_object.filing import Filing
+from xbrl_filings_api.api_object.filings_page import FilingsPage
+from xbrl_filings_api.api_object.validation_message import ValidationMessage
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.enums import (
+    GET_ENTITY,
+    GET_ONLY_FILINGS,
+    GET_VALIDATION_MESSAGES,
+    NO_LIMIT,
+    ScopeFlag,
+)
+from xbrl_filings_api.exceptions import HTTPStatusError
+from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
 
 page_counter = 0
 api_attribute_map: dict[str, str]
@@ -55,7 +60,7 @@ def generate_pages(
     ------
     FilingsPage
         New page object from API.
-    
+
     Raises
     ------
     APIErrorGroup of APIError
@@ -88,29 +93,29 @@ def generate_pages(
             include_flags.append('validation_messages')
     if len(include_flags) > 0:
         params['include'] = ','.join(include_flags)
-    
+
     if sort:
         params['sort'] = _get_sort_query_param(sort)
     if add_api_params:
         params.update(add_api_params)
-    
+
     request_param_list = _get_request_param_list(filters, params)
 
     request_time = _get_request_time()
-    
+
     received_size = 0
     for req_params in request_param_list:
         next_url: str | None = options.entry_point_url
         while next_url:
             page_json, api_request = _retrieve_page_json(
                 next_url, req_params, request_time)
-            
+
             page = FilingsPage(
                 page_json, api_request, flags, received_api_ids, res_colls)
             if len(page.filing_list) == 0:
                 break
             next_url = page.api_next_page_url
-                
+
             received_size += len(page.filing_list)
             if received_size > max_size:
                 page.filing_list = page.filing_list[:max_size - received_size]
@@ -135,7 +140,7 @@ def _get_request_param_list(
         fld: filters[fld] for fld in filters if fld.endswith('_date')}
     working_filters = {
         fld: filters[fld] for fld in filters if fld not in date_filters}
-    
+
     multifilters = {
         fld: working_filters[fld] for fld in working_filters
         if isinstance(working_filters[fld], Iterable)
@@ -185,7 +190,7 @@ def _get_request_param_list(
                 working_filters[field_name] = resolved[0]
             else:
                 multifilters[field_name] = resolved
-    
+
     # working_filters values are all non-iterables
     params |= _filters_to_query_params(working_filters) # type: ignore
 
@@ -254,7 +259,7 @@ def _retrieve_page_json(
         ) -> tuple[dict, APIRequest]:
     """
     Execute an API request and return the deserialized JSON object.
-    
+
     Raises
     ------
     APIErrorGroup of APIError
@@ -262,7 +267,7 @@ def _retrieve_page_json(
     requests.ConnectionError
     """
     global page_counter
-    
+
     furl = url
     if params and len(params) > 0:
         furl += '?' + '&'.join([f'{key}={val}' for key, val in params.items()])

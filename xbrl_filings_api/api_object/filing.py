@@ -7,35 +7,35 @@ Define `Filing` class.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Iterable, Mapping, AsyncIterator
-from datetime import datetime, date
-from pathlib import PurePath
-from types import EllipsisType
 import re
 import urllib.parse
 import warnings
+from collections.abc import AsyncIterator, Iterable, Mapping
+from datetime import date, datetime
+from pathlib import PurePath
+from types import EllipsisType
 
-from ..api_request import APIRequest
-from ..download_item import DownloadItem
-from ..enums import ParseType
-from ..exceptions import ApiReferenceWarning, DownloadErrorGroup
-from ..lang_code_transform import LANG_CODE_TRANSFORM
-from .api_resource import APIResource
-from .entity import Entity
-from .validation_message import ValidationMessage
 import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.save_paths as save_paths
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.download_item import DownloadItem
+from xbrl_filings_api.entity import Entity
+from xbrl_filings_api.enums import ParseType
+from xbrl_filings_api.exceptions import ApiReferenceWarning, DownloadErrorGroup
+from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
+from xbrl_filings_api.validation_message import ValidationMessage
 
 
 class Filing(APIResource):
     """
     Represents a single XBRL filing i.e. a report package.
-    
+
     Different language versions of the same report are separate filings.
     The language versions of the same report share the same
     `filing_index` except for the last integer.
-    
+
     Attributes
     ----------
     api_id : str or None
@@ -64,7 +64,7 @@ class Filing(APIResource):
     xhtml_download_path : str or None
     package_sha256 : str or None
     """
-    
+
     TYPE: str = 'filing'
     COUNTRY = 'attributes.country'
     FILING_INDEX = 'attributes.fxo_id'
@@ -104,23 +104,23 @@ class Filing(APIResource):
         self.country: str | None = self._json.get(self.COUNTRY)
         """
         The country where the filing was reported.
-        
+
         In case of ESEF this is the country where the filer has issued
         securities on EU regulated markets. The securities are usually
         shares but could be other securities as well such as bonds.
         """
-        
+
         self.filing_index: str | None = self._json.get(self.FILING_INDEX)
         """
         The filing index.
-        
+
         The index is structured as:
           1. LEI identifier
           2. Reporting date
           3. Filing system
           4. Country
           5. Integer specifying the language version (arbitrary)
-        
+
         The parts are separated by a hyphen. Please note that the
         ISO-style reporting date is also delimited by hyphens.
 
@@ -137,13 +137,13 @@ class Filing(APIResource):
         Three-letter language identifiers are transformed into
         two-letter identifiers for official EU languages.
         """
-        
+
         self.last_end_date: date | None = self._json.get(
             self.LAST_END_DATE, ParseType.DATE)
         """
         The end date of the last period in the marked-up report
         contents.
-        
+
         This is not always the end date of the primary reporting period
         of the report. The derived field `reporting_date` is more
         reliable for this use case.
@@ -184,7 +184,7 @@ class Filing(APIResource):
         """
         Timezone-aware datetime when the filing was added to
         filings.xbrl.org index.
-        
+
         Has an arbitrary delay after the issuer actually filed the
         report at the OAM. This library expects the dates to be returned
         in UTC, even though they do not have a timezone specifier and no
@@ -214,15 +214,15 @@ class Filing(APIResource):
         self.entity: Entity | None = None
         """
         The entity object of this filing.
-         
+
         Is available when if GET_ENTITY is set in method
         `flags` parameter.
         """
-        
+
         self.validation_messages: set[ValidationMessage] | None = None
         """
         The set of validation message objects of this filing.
-        
+
         Is available when `flags` parameter contains
         `GET_VALIDATION_MESSAGES`. Not all filings have validation
         messages. Unfortunately too many do have.
@@ -234,7 +234,7 @@ class Filing(APIResource):
             self.JSON_URL, ParseType.URL)
         """
         Download URL for a derived xBRL-JSON document.
-        
+
         The document is programmatically reserialized version of the
         Inline XBRL report. The conversion was carried by Arelle XBRL
         processor. The file is not a 'pure' data file but follows the
@@ -252,7 +252,7 @@ class Filing(APIResource):
         """
         Download URL for the official ESEF report package as filed to
         the OAM by the issuer.
-        
+
         The report package is a ZIP archive which follows a predefined
         format. It consists of an inline XBRL report (iXBRL) and the
         extension taxonomy. The graphical iXBRL report can be found from
@@ -282,7 +282,7 @@ class Filing(APIResource):
         representation. The document has been extracted from the
         'reports' folder of the official report package. The report is
         an XHTML document with embedded inline XBRL markup.
-        
+
         As this file is not compressed, it is likely to have a larger
         download size than the actual report package file.
 
@@ -305,7 +305,7 @@ class Filing(APIResource):
         self.package_sha256: str | None = self._json.get(self.PACKAGE_SHA256)
         """
         The SHA-256 hash of the report package file.
-        
+
         Used for checking that the download of `package_url` was
         successful and the report is genuine.
 
@@ -320,7 +320,7 @@ class Filing(APIResource):
 
         self.language = self._derive_language()
         self.reporting_date = self._derive_reporting_date()
-    
+
     def __repr__(self) -> str:
         start = f'{self.__class__.__name__}('
         if self.entity:
@@ -331,7 +331,7 @@ class Filing(APIResource):
                 )
         else:
             return start + f'filing_index={self.filing_index!r})'
-    
+
     def download(
             self,
             formats: str | Iterable[str] | Mapping[str, DownloadItem],
@@ -358,7 +358,7 @@ class Filing(APIResource):
 
         If download is interrupted, the files will be left with ending
         ``.unfinished``.
-        
+
         If no name could be derived from `url`, the file will be named
         ``file0001``, ``file0002``, etc. In this case a new file is
         always created.
@@ -386,7 +386,7 @@ class Filing(APIResource):
             Maximum number of simultaneous downloads allowed.
         filename : str, optional
             Full filename for the saved file.
-        
+
         Raises
         ------
         DownloadErrorGroup of
@@ -397,7 +397,7 @@ class Filing(APIResource):
                 HTTP status error occurs.
             requests.ConnectionError
                 Connection fails.
-        
+
         Warns
         -----
         FileNotAvailableWarning
@@ -454,14 +454,14 @@ class Filing(APIResource):
         Exception or None
             Possible exception such as `CorruptDownloadError`,
             `requests.HTTPError` or `requests.ConnectionError`.
-        
+
         Warns
         -----
         FileNotAvailableWarning
             Requested file type for this filing is not available.
         """
         downloader.validate_stem_pattern(stem_pattern)
-        
+
         items = download_specs_construct.construct(
             formats, self, to_dir, stem_pattern, None,
             check_corruption, Filing.VALID_DOWNLOAD_FORMATS
@@ -471,7 +471,7 @@ class Filing(APIResource):
         async for filing, format, result in dliter:
             exc = save_paths.assign_single(filing, format, result)
             yield filing, format, exc
-    
+
     def _search_entity(
             self, json_frag: dict | EllipsisType,
             entity_iter: Iterable[Entity] | None
@@ -489,7 +489,7 @@ class Filing(APIResource):
             msg = f'No entity defined for {self!r}, api_id='
             warnings.warn(f'{msg}{self.api_id}', ApiReferenceWarning, stacklevel=2)
             return None
-        
+
         entity = None
         for ent in entity_iter:
             if ent.api_id == self.entity_api_id:
@@ -517,7 +517,7 @@ class Filing(APIResource):
         """
         if json_frag == Ellipsis or message_iter is None:
             return None
-        
+
         found_msgs = set()
         msgs_relfrags: list | None = self._json.get(self.VALIDATION_MESSAGES)
         if msgs_relfrags:
@@ -535,12 +535,12 @@ class Filing(APIResource):
                         )
                     warnings.warn(msg, ApiReferenceWarning, stacklevel=2)
         return found_msgs
-    
+
     def _derive_language(self) -> str | None:
         stem = self._get_package_url_stem()
         if not stem:
             return None
-        
+
         stem = stem.replace('_', '-')
         last_part = stem.split('-')[-1]
         part_len = len(last_part)
@@ -548,25 +548,25 @@ class Filing(APIResource):
                 or part_len > 3
                 or not last_part.isalpha()):
             return None
-        
+
         last_part = last_part.lower()
         if part_len == 2:
             return last_part
         else:
             return LANG_CODE_TRANSFORM.get(last_part)
-    
+
     def _derive_reporting_date(self) -> date | None:
         stem = self._get_package_url_stem()
         if not stem:
             return self.last_end_date
-        
+
         stem = stem.replace('_', '-')
         mt = re.search(r'(^|\D)(\d{4}-\d{1,2}-\d{1,2})($|\D)', stem)
         if mt:
             year, month, day = mt[2].split('-')
             return date(int(year), int(month), int(day))
         return self.last_end_date
-    
+
     def _get_package_url_stem(self) -> str | None:
         url_path = urllib.parse.urlparse(self.package_url).path
         if not url_path.strip():

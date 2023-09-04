@@ -9,8 +9,7 @@ When run as a script, print the name of the package and its version.
 
 import sys
 
-from .__about__ import __version__
-
+from xbrl_filings_api.__about__ import __version__
 
 module_name = vars(sys.modules[__name__])['__package__']
 

@@ -7,16 +7,16 @@ Define `ValidationMessage` class.
 #
 # SPDX-License-Identifier: MIT
 
-from pathlib import PurePath
-from types import EllipsisType
 import re
 import urllib.parse
 import warnings
+from pathlib import PurePath
+from types import EllipsisType
 
-from ..api_request import APIRequest
-from ..enums import GET_VALIDATION_MESSAGES
-from ..exceptions import DerivedValueError
-from .api_resource import APIResource
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.enums import GET_VALIDATION_MESSAGES
+from xbrl_filings_api.exceptions import DerivedValueError
 
 
 class ValidationMessage(APIResource):
@@ -25,7 +25,7 @@ class ValidationMessage(APIResource):
 
     The source of validation has not been published by filings.xbrl.org
     but it seems likely that they originate from Arelle software.
-    
+
     Validation messages are issues in XBRL standard conformance, and the
     formula rules defined in the XBRL taxonomy.
 
@@ -36,7 +36,7 @@ class ValidationMessage(APIResource):
 
     Calculation inconsistency is the term used for issues in accounting
     coherence.
-    
+
     Attributes
     ----------
     api_id : str or None
@@ -63,7 +63,7 @@ class ValidationMessage(APIResource):
     CODE = 'attributes.code'
 
     _FILING_FLAG = GET_VALIDATION_MESSAGES
-    
+
     _LINE_ITEM_RE = re.compile(r'\bfrom (\S+)')
     _SHORT_ROLE_RE = re.compile(r'\blink role (\S+)')
     _REPORTED_SUM_RE = re.compile(r'\breported sum (\S+)')
@@ -84,7 +84,7 @@ class ValidationMessage(APIResource):
         self.severity: str | None = self._json.get(self.SEVERITY)
         """
         Severity of the validation message.
-        
+
         Can be ``ERROR``, ``WARNING`` or ``INCONSISTENCY``.
         Might include ``ERROR-SEMANTIC`` and ``WARNING-SEMANTIC`` but
         most likely not.
@@ -102,7 +102,7 @@ class ValidationMessage(APIResource):
         self.code: str | None = self._json.get(self.CODE)
         """
         The code describing the source of the broken rule.
-        
+
         For example, code ``xbrl.5.2.5.2:calcInconsistency`` refers to
         XBRL 2.1 base specification heading 5.2.5.2 with title "The
         <calculationArc> element".
@@ -114,13 +114,13 @@ class ValidationMessage(APIResource):
         # Filing object
         self.filing: object | None = None
         """`Filing` object of this validation message."""
-        
+
         self._json.close()
 
         self.calc_computed_sum: float | None = None
         """
         Derived computed sum of the calculation inconsistency.
-        
+
         Based on attribute `text` for validation messages whose `code`
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
@@ -128,7 +128,7 @@ class ValidationMessage(APIResource):
         self.calc_reported_sum: float | None = None
         """
         Derived reported sum of the calculation inconsistency.
-        
+
         Based on attribute `text` for validation messages whose `code`
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
@@ -136,7 +136,7 @@ class ValidationMessage(APIResource):
         self.calc_context_id: str | None = None
         """
         Derived XBRL context ID of the calculation inconsistency.
-        
+
         Based on attribute `text` for validation messages whose `code`
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
@@ -148,7 +148,7 @@ class ValidationMessage(APIResource):
         This field contains the qualified name of the line item (XBRL
         concept) with the taxonomy prefix and the local name parts. It
         could be for example "ifrs-full:Assets".
-        
+
         Based on attribute `text` for validation messages whose `code`
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
@@ -161,7 +161,7 @@ class ValidationMessage(APIResource):
         For example a link role URI
         "http://www.example.com/esef/taxonomy/2022-12-31/FinancialPositionConsolidated"
         is truncated to "FinancialPositionConsolidated".
-        
+
         Based on attribute `text` for validation messages whose `code`
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
@@ -178,7 +178,7 @@ class ValidationMessage(APIResource):
 
         When the data is output to a database, this field is a string
         with parts joined by a newline character ('\\n').
-        
+
         Based on attribute `text` for validation messages whose `code`
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
@@ -186,7 +186,7 @@ class ValidationMessage(APIResource):
         self.duplicate_greater: float | None = None
         """
         Derived greater item of the duplicate pair.
-        
+
         Based on attribute `text` for validation messages whose `code`
         is ``message:tech_duplicated_facts1``.
         """
@@ -194,7 +194,7 @@ class ValidationMessage(APIResource):
         self.duplicate_lesser: float | None = None
         """
         Derived lesser item of the duplicate pair.
-        
+
         Based on attribute `text` for validation messages whose `code`
         is ``message:tech_duplicated_facts1``.
         """
@@ -212,7 +212,7 @@ class ValidationMessage(APIResource):
                 self._SHORT_ROLE_RE)
             unreported_items = self._derive_calc(
                 self._UNREPORTED_ITEMS_RE)
-            
+
             uri_path = urllib.parse.urlparse(self.calc_short_role).path
             if isinstance(uri_path, bytes):
                 uri_path = uri_path.decode('utf-8')
@@ -220,11 +220,11 @@ class ValidationMessage(APIResource):
                 last_part = PurePath(uri_path).name
                 if last_part.strip():
                     self.calc_short_role = last_part
-            
+
             if unreported_items and unreported_items.lower() != 'none':
                 self.calc_unreported_items = (
                     self._COMMA_RE.split(unreported_items))
-        
+
         if self.code == 'message:tech_duplicated_facts1':
             duplicate_1 = self._derive_calc_float(
                 self._DUPLICATE_1_RE, 'duplicate_*')
@@ -237,13 +237,13 @@ class ValidationMessage(APIResource):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(code={self.code!r})'
-    
+
     def _derive_calc(self, re_obj: re.Pattern) -> str | None:
         mt = re_obj.search(self.text)
         if mt:
             return mt[1]
         return None
-    
+
     def _derive_calc_float(self, re_obj: re.Pattern, attr_name: str) -> float | None:
         calc_str = self._derive_calc(re_obj)
         calc_float = None

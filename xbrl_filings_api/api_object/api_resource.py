@@ -12,20 +12,20 @@ from datetime import datetime
 from types import EllipsisType
 from typing import Any, Optional
 
-from ..api_request import APIRequest
-from ..constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
-from ..enums import ScopeFlag, GET_ONLY_FILINGS, GET_ENTITY
-from .api_object import APIObject
 import xbrl_filings_api.order_columns as order_columns
+from xbrl_filings_api.api_object import APIObject
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
+from xbrl_filings_api.enums import GET_ENTITY, GET_ONLY_FILINGS, ScopeFlag
 
 
 class APIResource(APIObject):
     """
     A JSON:API resource.
-    
+
     Subclasses of this class may be read into a database. An instance
     resembles a database record.
-    
+
     Attributes
     ----------
     api_id : str or None
@@ -63,7 +63,7 @@ class APIResource(APIObject):
             api_request=api_request,
             do_not_track=is_prototype
             )
-        
+
         self.api_id: str | None = None
         api_id = self._json.get('id')
         if isinstance(api_id, str):
@@ -126,7 +126,7 @@ class APIResource(APIObject):
             att for att in dir(fproto)
             if not att.startswith('_') and att.endswith('_download_path')
             ]
-        
+
         unused = set()
         for att in dlattrs:
             for fil in filings:

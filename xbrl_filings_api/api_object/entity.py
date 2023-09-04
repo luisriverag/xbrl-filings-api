@@ -9,15 +9,15 @@ Define `Entity` class.
 
 from types import EllipsisType
 
-from ..enums import ParseType, GET_ENTITY
-from ..api_request import APIRequest
-from .api_resource import APIResource
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.enums import GET_ENTITY, ParseType
 
 
 class Entity(APIResource):
     """
     Entity of ``filings.xbrl.org`` API.
-    
+
     Attributes
     ----------
     api_id : str or None
@@ -28,7 +28,7 @@ class Entity(APIResource):
     request_time : datetime
     request_url : str
     """
-    
+
     TYPE: str = 'entity'
     NAME = 'attributes.name'
     IDENTIFIER = 'attributes.identifier'
@@ -46,7 +46,7 @@ class Entity(APIResource):
         self.identifier: str | None = self._json.get(self.IDENTIFIER)
         """
         The identifier for entity.
-        
+
         For ESEF filers, this is the LEI code.
         """
 
@@ -64,7 +64,7 @@ class Entity(APIResource):
         """A link to the JSON:API page with full list of filings by this
         entity.
         """
-        
+
         self._json.close()
 
     def __repr__(self) -> str:

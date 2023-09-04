@@ -23,22 +23,33 @@ ValidationMessage
 #
 # SPDX-License-Identifier: MIT
 
-from .api_object.api_error import APIErrorGroup, APIError
-from .api_object.entity import Entity
-from .api_object.filing import Filing
-from .api_object.validation_message import ValidationMessage
-from .download_item import DownloadItem
-from .enums import (
-    ScopeFlag, GET_ONLY_FILINGS, GET_ENTITY, GET_VALIDATION_MESSAGES, NO_LIMIT)
-from .exceptions import (
-    FilingsAPIError, FilingsAPIErrorGroup, FilingsAPIWarning, HTTPStatusError,
-    CorruptDownloadError, DatabaseFileExistsError, DatabasePathIsReservedError,
-    DatabaseSchemaUnmatch, ApiReferenceWarning
-    )
-from .filing_set.filing_set import FilingSet
-from .filing_set.resource_collection import ResourceCollection
-from .filings_api import get_filings, to_sqlite
-from .request_processor import api_attribute_map
-from .sqlite_views import DEFAULT_VIEWS
+from xbrl_filings_api.api_object.api_error import APIError, APIErrorGroup
+from xbrl_filings_api.api_object.entity import Entity
+from xbrl_filings_api.api_object.filing import Filing
+from xbrl_filings_api.api_object.validation_message import ValidationMessage
+from xbrl_filings_api.download_item import DownloadItem
+from xbrl_filings_api.enums import (
+    GET_ENTITY,
+    GET_ONLY_FILINGS,
+    GET_VALIDATION_MESSAGES,
+    NO_LIMIT,
+    ScopeFlag,
+)
+from xbrl_filings_api.exceptions import (
+    ApiReferenceWarning,
+    CorruptDownloadError,
+    DatabaseFileExistsError,
+    DatabasePathIsReservedError,
+    DatabaseSchemaUnmatch,
+    FilingsAPIError,
+    FilingsAPIErrorGroup,
+    FilingsAPIWarning,
+    HTTPStatusError,
+)
+from xbrl_filings_api.filing_set.filing_set import FilingSet
+from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
+from xbrl_filings_api.filings_api import get_filings, to_sqlite
+from xbrl_filings_api.request_processor import api_attribute_map
+from xbrl_filings_api.sqlite_views import DEFAULT_VIEWS
 
 data_attrs = [attr for attr in api_attribute_map]

@@ -9,9 +9,9 @@ Define `APIPage` and `IncludedResource` classes.
 
 from dataclasses import dataclass
 
-from ..enums import ParseType
-from ..api_request import APIRequest
-from .api_object import APIObject
+from xbrl_filings_api.api_object import APIObject
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.enums import ParseType
 
 
 @dataclass(frozen=True)
@@ -24,7 +24,7 @@ class IncludedResource:
 class APIPage(APIObject):
     """
     Base class for JSON:API response page or document.
-    
+
     Attributes
     ----------
     api_self_url : str or None

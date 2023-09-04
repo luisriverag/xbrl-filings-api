@@ -7,19 +7,18 @@ Define download functions.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import AsyncIterator
-from pathlib import PurePath, Path
-from typing import Any, Optional, Never
 import asyncio
 import hashlib
 import urllib.parse
+from collections.abc import AsyncIterator
+from pathlib import Path, PurePath
+from typing import Any, Never, Optional
 
 import requests
 
-from ..exceptions import CorruptDownloadError
-from .download_specs import DownloadSpecs
-from .stat_counters import StatCounters
-
+from xbrl_filings_api.download_specs import DownloadSpecs
+from xbrl_filings_api.exceptions import CorruptDownloadError
+from xbrl_filings_api.stat_counters import StatCounters
 
 stats = StatCounters()
 
@@ -60,11 +59,11 @@ async def download_async(
 
     If download is interrupted, the file will be left with a suffix
     ``.unfinished``.
-    
+
     If no name could be derived from `url`, the file will be named
     ``file0001``, ``file0002``, etc. In this case a new file is always
     created.
-    
+
     Parameters
     ----------
     url : str
@@ -79,7 +78,7 @@ async def download_async(
     sha256 : str, optional
         Expected SHA-256 hash as a hex string. Case-insensitive. No
         hash is calculated if this parameter is not given.
-    
+
     Returns
     -------
     coroutine of str
@@ -117,11 +116,11 @@ async def download_async(
     hash = None
     if sha256:
         hash = hashlib.sha256()
-    
+
     if stem_pattern:
         fnpath = Path(filename)
         filename = stem_pattern.replace('/name/', fnpath.stem) + fnpath.suffix
-    
+
     save_path = Path.cwd() / to_dir / filename
     temp_path = save_path.with_suffix(f'{save_path.suffix}.unfinished')
     with open(temp_path, 'wb') as fd:
@@ -131,17 +130,17 @@ async def download_async(
                 hash.update(chunk)
             stats.byte_counter += len(chunk)
             await asyncio.sleep(0.0)
-    
+
     if sha256 and hash:
         if hash.digest() != bytes.fromhex(sha256):
             corrupt_path = save_path.with_suffix(f'{save_path.suffix}.corrupt')
             corrupt_path.unlink(missing_ok=True)
             path = str(temp_path.rename(corrupt_path))
-            
+
             calculated = hash.hexdigest().lower()
             expected = sha256.lower()
             raise CorruptDownloadError(path, url, calculated, expected)
-    
+
     save_path.unlink(missing_ok=True)
     temp_path.rename(save_path)
     return str(save_path)
@@ -152,7 +151,7 @@ def download_parallel(
         ) -> list[tuple[Any, str, str | Exception]]:
     """
     Download multiple files in parallel.
-    
+
     See documentation of `download_parallel_async_iter`.
 
     Parameters
@@ -173,7 +172,7 @@ async def download_parallel_async(
         ) -> list[tuple[Any, str, str | Exception]]:
     """
     Download multiple files in parallel.
-    
+
     See documentation of `download_parallel_async_iter`.
 
     Parameters
@@ -202,7 +201,7 @@ async def download_parallel_async_iter(
 
     Calls method `download_async` via parameter `items`, see
     documentation.
-    
+
     Parameters
     ----------
     items : list of DownloadSpecs
@@ -211,7 +210,7 @@ async def download_parallel_async_iter(
         `attr_base`.
     max_concurrent : int
         Maximum number of simultaneous downloads allowed.
-    
+
     Yields
     ------
     any
@@ -224,7 +223,7 @@ async def download_parallel_async_iter(
     dlque: asyncio.Queue[DownloadSpecs] = asyncio.Queue()
     for item in items:
         dlque.put_nowait(item)
-    
+
     resultque: asyncio.Queue[tuple[Any, str, Exception | str]] = (
         asyncio.Queue())
     tasks: list[asyncio.Task] = []
@@ -234,11 +233,11 @@ async def download_parallel_async_iter(
             name=f'worker-{worker_num}'
             )
         tasks.append(task)
-    
+
     for _ in range(len(items)):
         result = await resultque.get()
         yield result
-    
+
     for task in tasks:
         task.cancel()
     await asyncio.gather(*tasks, return_exceptions=True)
@@ -269,7 +268,7 @@ def validate_stem_pattern(stem_pattern: str | None):
     ----------
     stem_pattern : str or None
         Stem pattern parameter.
-    
+
     Raises
     ------
     ValueError

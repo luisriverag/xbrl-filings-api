@@ -7,28 +7,34 @@ Define `FilingsPage` class.
 #
 # SPDX-License-Identifier: MIT
 
+import warnings
 from collections.abc import Iterable
 from itertools import chain
 from typing import Any
-import warnings
 
-from ..api_request import APIRequest
-from ..enums import (
-    ScopeFlag, GET_ONLY_FILINGS, GET_ENTITY, GET_VALIDATION_MESSAGES)
-from ..exceptions import ApiIdCoherenceWarning
-from ..exceptions import ApiReferenceWarning
-from ..filing_set.resource_collection import ResourceCollection
-from .api_page import APIPage
-from .api_resource import APIResource
-from .entity import Entity
-from .filing import Filing
-from .validation_message import ValidationMessage
+from xbrl_filings_api.api_page import APIPage
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.entity import Entity
+from xbrl_filings_api.enums import (
+    GET_ENTITY,
+    GET_ONLY_FILINGS,
+    GET_VALIDATION_MESSAGES,
+    ScopeFlag,
+)
+from xbrl_filings_api.exceptions import (
+    ApiIdCoherenceWarning,
+    ApiReferenceWarning,
+)
+from xbrl_filings_api.filing import Filing
+from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
+from xbrl_filings_api.validation_message import ValidationMessage
 
 
 class FilingsPage(APIPage):
     """
     JSON:API response page containing filing resources.
-    
+
     Attributes
     ----------
     request_time : datetime
@@ -77,10 +83,10 @@ class FilingsPage(APIPage):
         self.entity_list: list[Entity] | None = ents # type: ignore
         """
         Set of `Entity` objects on this page.
-        
+
         Is `None` if `flags` parameter did not include `GET_ENTITY`.
         """
-        
+
         vmsgs = self._get_inc_resource(
             api_request=api_request,
             received_api_ids=received_api_ids,
@@ -96,14 +102,14 @@ class FilingsPage(APIPage):
         Is `None` if `flags` parameter did not include
         `GET_VALIDATION_MESSAGES`.
         """
-        
+
         self._json.close()
 
         self.filing_list = self._get_filings(
             received_api_ids, res_colls, flags)
         self._check_validation_messages_references()
         self._determine_unexpected_inc_resources()
-    
+
     def _get_filings(
             self, received_api_ids: dict[str, set],
             res_colls: dict[str, ResourceCollection], flags: ScopeFlag
@@ -133,7 +139,7 @@ class FilingsPage(APIPage):
                     self._json.unexpected_resource_types.add(
                         (res_type, 'data'))
         return filing_list
-    
+
     def _parse_filing_fragment(
             self, res_frag: dict[str, Any], received_set: set[str],
             res_colls: dict[str, ResourceCollection], flags: ScopeFlag
@@ -183,7 +189,7 @@ class FilingsPage(APIPage):
             ) -> list[APIResource] | None:
         if (GET_ONLY_FILINGS in flags or flag_member not in flags):
             return None
-        
+
         resource_list = []
         type_name = type_obj.__class__.__name__
         if not received_api_ids.get(type_name):
@@ -203,11 +209,11 @@ class FilingsPage(APIPage):
         for res_i in found_ix:
             del self._included_resources[res_i]
         return resource_list
-    
+
     def _determine_unexpected_inc_resources(self) -> None:
         self._json.unexpected_resource_types.update(
             [(res.type, 'included') for res in self._included_resources])
-    
+
     def _check_validation_messages_references(self) -> None:
         if self.validation_message_list is not None:
             for vmsg in self.validation_message_list:

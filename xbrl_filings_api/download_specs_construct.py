@@ -4,14 +4,14 @@ Module for constructing download items from Filing and FilingSet objects.
 """
 
 
-from collections.abc import Iterable, Mapping, Container
+import warnings
+from collections.abc import Container, Iterable, Mapping
 from pathlib import PurePath
 from typing import Any
-import warnings
 
-from .download_item import DownloadItem
-from .downloader import DownloadSpecs
-from .exceptions import FileNotAvailableWarning
+from xbrl_filings_api.download_item import DownloadItem
+from xbrl_filings_api.downloader import DownloadSpecs
+from xbrl_filings_api.exceptions import FileNotAvailableWarning
 
 
 def construct(
@@ -37,7 +37,7 @@ def construct(
                 )
             if full_item:
                 items.append(full_item)
-    
+
     elif isinstance(formats, Iterable):
         for format in formats:
             full_item = _get_filing_download_specs(
@@ -73,7 +73,7 @@ def _get_filing_download_specs(
         msg = f'{format_text} not available for {filing!r}'
         warnings.warn(msg, FileNotAvailableWarning)
         return None
-    
+
     sha256 = None
     if check_corruption and format == 'package':
         sha256 = filing.package_sha256

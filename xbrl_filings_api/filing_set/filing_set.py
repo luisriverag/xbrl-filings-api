@@ -9,24 +9,27 @@ This is an extended set type with certain added attributes.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Iterable, Mapping, AsyncIterator, Collection
+from collections.abc import AsyncIterator, Collection, Iterable, Mapping
 from pathlib import Path, PurePath
 from typing import Optional
 
-from ..api_object.api_resource import APIResource
-from ..api_object.entity import Entity
-from ..api_object.filing import Filing
-from ..api_object.validation_message import ValidationMessage
-from ..constants import ResourceLiteralType
-from ..download_item import DownloadItem
-from ..enums import (
-    ScopeFlag, GET_ENTITY, GET_VALIDATION_MESSAGES)
-from ..exceptions import DownloadErrorGroup
-from .resource_collection import ResourceCollection
 import xbrl_filings_api.database_processor as database_processor
 import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.save_paths as save_paths
+from xbrl_filings_api.api_object.api_resource import APIResource
+from xbrl_filings_api.api_object.entity import Entity
+from xbrl_filings_api.api_object.filing import Filing
+from xbrl_filings_api.api_object.validation_message import ValidationMessage
+from xbrl_filings_api.constants import ResourceLiteralType
+from xbrl_filings_api.download_item import DownloadItem
+from xbrl_filings_api.enums import (
+    GET_ENTITY,
+    GET_VALIDATION_MESSAGES,
+    ScopeFlag,
+)
+from xbrl_filings_api.exceptions import DownloadErrorGroup
+from xbrl_filings_api.resource_collection import ResourceCollection
 
 
 class FilingSet(set):
@@ -34,7 +37,7 @@ class FilingSet(set):
 
     The class is an extended set type with certain filing-related
     attributes and functionality.
-    
+
     Attributes
     ----------
     entities : ResourceCollection
@@ -77,7 +80,7 @@ class FilingSet(set):
 
         If download is interrupted, the files will be left with ending
         ``.unfinished``.
-        
+
         If no name could be derived from `url`, the file will be named
         ``file0001``, ``file0002``, etc. In this case a new file is
         always created.
@@ -103,7 +106,7 @@ class FilingSet(set):
             Calculate hashes for package files.
         max_concurrent : int, default 5
             Maximum number of simultaneous downloads allowed.
-        
+
         Raises
         ------
         DownloadErrorGroup of
@@ -114,14 +117,14 @@ class FilingSet(set):
                 HTTP status error occurs.
             requests.ConnectionError
                 Connection fails.
-        
+
         Warns
         -----
         FileNotAvailableWarning
             Requested file type for this filing is not available.
         """
         downloader.validate_stem_pattern(stem_pattern)
-        
+
         items = []
         for filing in self:
             items.extend(
@@ -175,14 +178,14 @@ class FilingSet(set):
         Exception or None
             Possible exception such as `CorruptDownloadError`,
             `requests.HTTPError` or `requests.ConnectionError`.
-        
+
         Warns
         -----
         FileNotAvailableWarning
             Requested file type for this filing is not available.
         """
         downloader.validate_stem_pattern(stem_pattern)
-        
+
         items = []
         for filing in self:
             items.extend(
@@ -195,7 +198,7 @@ class FilingSet(set):
         async for filing, format, result in dliter:
             exc = save_paths.assign_single(filing, format, result)
             yield filing, format, exc
-    
+
     def to_sqlite(
             self,
             path: str | Path,
@@ -225,7 +228,7 @@ class FilingSet(set):
             Scope of saving. Flag `GET_ENTITY` will save entity records
             of filings and `GET_VALIDATION_MESSAGES` the validation
             messages.
-        
+
         Raises
         ------
         DatabaseFileExistsError
@@ -244,10 +247,10 @@ class FilingSet(set):
         ppath = path if isinstance(path, Path) else Path(path)
 
         data_objs, flags = self._get_data_sets(flags)
-        
+
         database_processor.sets_to_sqlite(
             flags, ppath, update, data_objs)
-    
+
     def get_pandas_data(
             self, attr_names: Optional[Iterable[str]] = None
             ) -> dict[str, list[ResourceLiteralType]]:
@@ -281,7 +284,7 @@ class FilingSet(set):
             for col_name in data:
                 data[col_name].append(getattr(filing, col_name))
         return data
-    
+
     def _get_data_sets(
             self, flags: ScopeFlag
             ) -> tuple[dict[str, Iterable[APIResource]], ScopeFlag]:
@@ -299,7 +302,7 @@ class FilingSet(set):
             else:
                 data_objs[type_obj.__name__] = obj_set
         return data_objs, flags
-    
+
     @property
     def columns(self) -> list[str]:
         """List of available columns for filings of this set."""

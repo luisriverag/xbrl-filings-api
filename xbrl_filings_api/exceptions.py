@@ -17,7 +17,7 @@ All of the exceptions are subclasses of `FilingsAPIError,
 class FilingsAPIError(Exception):
     """
     Base class for exceptions in this library.
-    
+
     Not to be confused with `APIError` which is a subclass of this class
     representing an error returned by JSON:API.
     """
@@ -91,7 +91,7 @@ class FileNotAvailableWarning(FilingsAPIWarning):
 class DatabaseFileExistsError(FilingsAPIError):
     """
     The intended save path for the database is an existing file.
-    
+
     Set parameter `update` to `True` to update an existing database.
 
     Attributes

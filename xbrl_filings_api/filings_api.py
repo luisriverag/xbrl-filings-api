@@ -35,7 +35,7 @@ defined in the entity `identifier` attribute::
 
 For validation messages, plural prefix `validation_messages.` is
 required:
-    
+
     filters={'validation_messages.code': 'message:tech_duplicated_facts1'}
 
 Date fields have a special functioning in `filters`. If you filter
@@ -81,19 +81,18 @@ download_size_str : str
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Mapping, Sequence, Iterable, Iterator
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from pathlib import Path
 from typing import Optional
 
-from .api_object.filing import Filing
-from .api_object.filings_page import FilingsPage
-from .enums import ScopeFlag, GET_ONLY_FILINGS
-from .filing_set.filing_set import FilingSet
-from .filing_set.resource_collection import ResourceCollection
 import xbrl_filings_api.database_processor as database_processor
 import xbrl_filings_api.request_processor as request_processor
+from xbrl_filings_api.api_object.filings_page import FilingsPage
+from xbrl_filings_api.enums import GET_ONLY_FILINGS, ScopeFlag
+from xbrl_filings_api.filing_set.filing_set import FilingSet
+from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
 
-    
+
 def get_filings(
         filters: Optional[Mapping[str, str | Iterable[str]]] = None,
         sort: Optional[str | Sequence[str]] = None,
@@ -123,12 +122,12 @@ def get_filings(
     add_api_params: mapping, optional
         Add additional JSON:API parameters to the query. All parts
         will be URL-encoded automatically.
-    
+
     Returns
     -------
     FilingSet of Filing
         Set of retrieved filings.
-    
+
     Raises
     ------
 
@@ -148,7 +147,7 @@ def get_filings(
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
         }
-    
+
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
     for page in page_gen:
@@ -217,7 +216,7 @@ def to_sqlite(
     add_api_params: mapping, optional
         Add additional JSON:API parameters to the query. All parts
         will be URL-encoded automatically.
-    
+
     Raises
     ------
     APIErrorGroup of APIError
@@ -251,13 +250,13 @@ def to_sqlite(
     ppath = path if isinstance(path, Path) else Path(path)
     if isinstance(sort, str):
         sort = [sort]
-    
+
     filings = FilingSet({})
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
         }
-    
+
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
     database_processor.pages_to_sqlite(
@@ -293,12 +292,12 @@ def filing_page_iter(
     add_api_params: mapping, optional
         Add additional JSON:API parameters to the query. All parts
         will be URL-encoded automatically.
-    
+
     Yields
     ------
     FilingsPage
         Filings page containing a batch of downloaded filings
-    
+
     Raises
     ------
 
@@ -318,7 +317,7 @@ def filing_page_iter(
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
         }
-    
+
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
     for page in page_gen:

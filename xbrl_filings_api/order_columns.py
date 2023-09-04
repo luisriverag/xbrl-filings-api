@@ -1,7 +1,7 @@
 """Define method order_columns."""
 
 
-from .constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
+from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
 
 
 def order_columns(cols: list[str]) -> list[str]:
@@ -22,7 +22,7 @@ def order_columns(cols: list[str]) -> list[str]:
             order = 40
         if col.endswith('request_url'):
             order = 41
-        
+
         # Filing objects
         if col.endswith('_count'):
             order = 2
@@ -30,7 +30,7 @@ def order_columns(cols: list[str]) -> list[str]:
             order = 30
         elif col.endswith('_sha256'):
             order = 31
-        
+
         # ValidationMessage objects
         if col.startswith('calc_'):
             if col.endswith('_sum'):
@@ -39,7 +39,7 @@ def order_columns(cols: list[str]) -> list[str]:
                 order = 3
         elif col.startswith('duplicate_'):
             order = 4
-        
+
         col_tuples.append((order, col))
     col_tuples.sort()
     return [col for order, col in col_tuples]

@@ -7,9 +7,9 @@ Define `APIError` and `APIErrorGroup` classes.
 #
 # SPDX-License-Identifier: MIT
 
-from ..exceptions import FilingsAPIError, FilingsAPIErrorGroup
-from ..api_request import APIRequest
-from .api_object import APIObject
+from xbrl_filings_api.api_object import APIObject
+from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.exceptions import FilingsAPIError, FilingsAPIErrorGroup
 
 
 class APIErrorGroup(FilingsAPIErrorGroup):
@@ -20,7 +20,7 @@ class APIError(FilingsAPIError, APIObject):
     """
     The response contains an error from the filings.xbrl.org
     JSON:API.
-    
+
     This exception is always raised in a APIErrorGroup.
 
     Attributes
@@ -72,7 +72,7 @@ class APIError(FilingsAPIError, APIObject):
 
         self._json.close()
         FilingsAPIError.__init__(self)
-    
+
     def __str__(self) -> str:
         ats = [f'{att}={getattr(self, att)!r}' for att in self._str_attrs]
         ats_txt = ', '.join(ats)
