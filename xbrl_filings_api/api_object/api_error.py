@@ -7,7 +7,7 @@ Define `APIError` and `APIErrorGroup` classes.
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.api_object import APIObject
+from xbrl_filings_api.api_object.api_object import APIObject
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.exceptions import FilingsAPIError, FilingsAPIErrorGroup
 

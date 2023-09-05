@@ -12,10 +12,14 @@ from collections.abc import Iterable
 from itertools import chain
 from typing import Any
 
-from xbrl_filings_api.api_page import APIPage
+from xbrl_filings_api.api_object import (
+    APIPage,
+    APIResource,
+    Entity,
+    Filing,
+    ValidationMessage,
+)
 from xbrl_filings_api.api_request import APIRequest
-from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
@@ -26,9 +30,7 @@ from xbrl_filings_api.exceptions import (
     ApiIdCoherenceWarning,
     ApiReferenceWarning,
 )
-from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
-from xbrl_filings_api.validation_message import ValidationMessage
 
 
 class FilingsPage(APIPage):
@@ -198,9 +200,9 @@ class FilingsPage(APIPage):
 
         found_ix = []
         for res_i, res in enumerate(self._included_resources):
-            if res.type == type_obj.TYPE:
-                if res.id not in received_set:
-                    received_set.add(res.id)
+            if res.type_ == type_obj.TYPE:
+                if res.id_ not in received_set:
+                    received_set.add(res.id_)
                     # Construct Entity() or ValidationMessage()
                     res_instance = type_obj(res.frag, api_request)
                     resource_list.append(res_instance)
@@ -212,7 +214,7 @@ class FilingsPage(APIPage):
 
     def _determine_unexpected_inc_resources(self) -> None:
         self._json.unexpected_resource_types.update(
-            [(res.type, 'included') for res in self._included_resources])
+            [(res.type_, 'included') for res in self._included_resources])
 
     def _check_validation_messages_references(self) -> None:
         if self.validation_message_list is not None:

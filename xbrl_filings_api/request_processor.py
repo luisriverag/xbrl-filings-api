@@ -16,11 +16,14 @@ from typing import Literal
 import requests
 
 import xbrl_filings_api.options as options
-from xbrl_filings_api.api_object.api_error import APIError, APIErrorGroup
-from xbrl_filings_api.api_object.entity import Entity
-from xbrl_filings_api.api_object.filing import Filing
-from xbrl_filings_api.api_object.filings_page import FilingsPage
-from xbrl_filings_api.api_object.validation_message import ValidationMessage
+from xbrl_filings_api.api_object import (
+    APIError,
+    APIErrorGroup,
+    Entity,
+    Filing,
+    FilingsPage,
+    ValidationMessage,
+)
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.enums import (
     GET_ENTITY,

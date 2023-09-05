@@ -16,11 +16,11 @@ filings = xf.get_filings(
 async def print_progress_async(filings: xf.FilingSet):
     dl_iter = filings.download_async_iter(
         ['xhtml', 'json', 'package'], save_path, max_concurrent=4)
-    async for filing, format, exc in dl_iter:
-        print('\nDownloaded       ' + getattr(filing, f'{format}_url'))
-        dl_path = getattr(filing, f'{format}_download_path')
+    async for filing, file_format, exc in dl_iter:
+        print('\nDownloaded       ' + getattr(filing, f'{file_format}_url'))
+        dl_path = getattr(filing, f'{file_format}_download_path')
         if dl_path:
-            pretext = f'Saved {format} to'
+            pretext = f'Saved {file_format} to'
             print(f'{pretext:<16} {dl_path}')
         if exc:
             print(exc)

@@ -138,17 +138,17 @@ class APIResource(APIObject):
 
     @classmethod
     def get_columns(
-            cls, has_entities: bool = False,
-            filings: Iterable[Any] | None = None
+            cls, *, filings: Iterable[Any] | None = None,
+            has_entities: bool = False
             ) -> list[str]:
         """
         List of available columns for this `APIResource` subclass.
 
         Parameters
         ----------
-        has_entities : bool, default False
-            Only relevant for `Filing` objects.
         filings: iterable of Filing, optional
+            Only relevant for `Filing` objects.
+        has_entities : bool, default False
             Only relevant for `Filing` objects.
         """
         if cls is APIResource:

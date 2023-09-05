@@ -12,8 +12,8 @@ from datetime import datetime
 
 import xbrl_filings_api.options as options
 import xbrl_filings_api.order_columns as order_columns
+from xbrl_filings_api.api_object import JSONTree
 from xbrl_filings_api.api_request import APIRequest
-from xbrl_filings_api.json_tree import JSONTree
 from xbrl_filings_api.time_formats import time_formats
 
 
@@ -28,7 +28,7 @@ class APIObject:
     """
 
     def __init__(
-            self, json_frag: dict, api_request: APIRequest,
+            self, json_frag: dict, api_request: APIRequest, *,
             do_not_track: bool = False
             ) -> None:
         self._json = JSONTree(
@@ -70,5 +70,5 @@ class APIObject:
             else:
                 val_str = repr(val)
             attvals.append(f'{att} = {val_str}')
-        attrep = ',\n  '.join((av for av in attvals))
-        return f"{__name__}.{self.__class__.__qualname__}(\n  {attrep}\n  )"
+        attrep = ',\n  '.join(av for av in attvals)
+        return f'{__name__}.{self.__class__.__qualname__}(\n  {attrep}\n  )'

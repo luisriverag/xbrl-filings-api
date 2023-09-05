@@ -23,10 +23,13 @@ ValidationMessage
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.api_object.api_error import APIError, APIErrorGroup
-from xbrl_filings_api.api_object.entity import Entity
-from xbrl_filings_api.api_object.filing import Filing
-from xbrl_filings_api.api_object.validation_message import ValidationMessage
+from xbrl_filings_api.api_object import (
+    APIError,
+    APIErrorGroup,
+    Entity,
+    Filing,
+    ValidationMessage,
+)
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.enums import (
     GET_ENTITY,
@@ -52,4 +55,4 @@ from xbrl_filings_api.filings_api import get_filings, to_sqlite
 from xbrl_filings_api.request_processor import api_attribute_map
 from xbrl_filings_api.sqlite_views import DEFAULT_VIEWS
 
-data_attrs = [attr for attr in api_attribute_map]
+data_attrs = list(api_attribute_map)

@@ -10,8 +10,7 @@ Define classes `ResourceCollection`.
 from collections.abc import Iterable, Iterator
 from typing import Any, Optional
 
-from xbrl_filings_api.api_object.api_resource import APIResource
-from xbrl_filings_api.api_object.filing import Filing
+from xbrl_filings_api.api_object import APIResource, Filing
 from xbrl_filings_api.constants import ResourceLiteralType
 
 

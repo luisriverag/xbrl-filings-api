@@ -17,10 +17,12 @@ import xbrl_filings_api.database_processor as database_processor
 import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.save_paths as save_paths
-from xbrl_filings_api.api_object.api_resource import APIResource
-from xbrl_filings_api.api_object.entity import Entity
-from xbrl_filings_api.api_object.filing import Filing
-from xbrl_filings_api.api_object.validation_message import ValidationMessage
+from xbrl_filings_api.api_object import (
+    APIResource,
+    Entity,
+    Filing,
+    ValidationMessage,
+)
 from xbrl_filings_api.constants import ResourceLiteralType
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.enums import (
@@ -59,6 +61,7 @@ class FilingSet(set):
             self,
             formats: str | Iterable[str] | Mapping[str, DownloadItem],
             to_dir: str | PurePath | None = None,
+            *,
             stem_pattern: str | None = None,
             check_corruption: bool = True,
             max_concurrent: int = 5
@@ -143,6 +146,7 @@ class FilingSet(set):
             self,
             formats: str | Iterable[str] | Mapping[str, DownloadItem],
             to_dir: str | PurePath | None = None,
+            *,
             stem_pattern: str | None = None,
             check_corruption: bool = True,
             max_concurrent: int = 5
@@ -308,5 +312,8 @@ class FilingSet(set):
         """List of available columns for filings of this set."""
         if self._columns:
             return self._columns
-        self._columns = Filing.get_columns(self.entities.exist, self)
+        self._columns = Filing.get_columns(
+            filings=self,
+            has_entities=self.entities.exist
+            )
         return self._columns

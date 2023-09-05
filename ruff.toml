@@ -47,6 +47,9 @@ ignore = [
     "D415",
     "D416",
     "D417",
+    # Do not ask to create circular imports (from package root instead of a
+    # module in package)
+    "PLR0402",
 ]
 unfixable = [
     # Don't touch unused imports
@@ -56,7 +59,7 @@ unfixable = [
 [flake8-quotes]
 docstring-quotes = "double"
 inline-quotes = "single"
-multiline-quotes = "single"
+multiline-quotes = "double"
 
 [isort]
 known-first-party = ["xbrl_filings_api"]
@@ -70,3 +73,8 @@ convention = "numpy"
 [per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
+# Package init files have unused imports
+"__init__.py" = ["F401"]
+# Examples.py and main script may have print statements
+"examples.py" = ["T201"]
+"__main__.py" = ["T201"]

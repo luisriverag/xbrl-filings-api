@@ -1,5 +1,5 @@
 """
-Define `APIPage` and `IncludedResource` classes.
+Define `APIPage` and `_IncludedResource` classes.
 
 """
 
@@ -15,9 +15,9 @@ from xbrl_filings_api.enums import ParseType
 
 
 @dataclass(frozen=True)
-class IncludedResource:
-    type: str
-    id: str
+class _IncludedResource:
+    type_: str
+    id_: str
     frag: dict
 
 
@@ -46,10 +46,10 @@ class APIPage(APIObject):
         page.
         """
 
-        self._included_resources: list[IncludedResource] = (
+        self._included_resources: list[_IncludedResource] = (
             self._get_included_resources())
         """
-        List of included resources as objects with fields `type`, `id`
+        List of included resources as objects with fields `type_`, `id_`
         and `frag`.
 
         This list should be emptied and classified to class-specific
@@ -87,8 +87,8 @@ class APIPage(APIObject):
             'jsonapi.version')
         """Version of the JSON:API specification which this API follows."""
 
-    def _get_included_resources(self) -> list[IncludedResource]:
-        """Construct `IncludedResource` objects from `included` key."""
+    def _get_included_resources(self) -> list[_IncludedResource]:
+        """Construct `_IncludedResource` objects from `included` key."""
         inc = self._json.get('included')
         resources = []
         if inc:
@@ -98,5 +98,5 @@ class APIPage(APIObject):
                 res_id = res_frag.get('id')
                 if isinstance(res_id, str):
                     resources.append(
-                        IncludedResource(res_type, res_id, res_frag))
+                        _IncludedResource(res_type, res_id, res_frag))
         return resources

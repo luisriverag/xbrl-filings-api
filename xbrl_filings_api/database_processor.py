@@ -14,11 +14,13 @@ from pathlib import Path
 
 import xbrl_filings_api.options as options
 import xbrl_filings_api.order_columns as order_columns
-from xbrl_filings_api.api_object.api_resource import APIResource
-from xbrl_filings_api.api_object.entity import Entity
-from xbrl_filings_api.api_object.filing import Filing
-from xbrl_filings_api.api_object.filings_page import FilingsPage
-from xbrl_filings_api.api_object.validation_message import ValidationMessage
+from xbrl_filings_api.api_object import (
+    APIResource,
+    Entity,
+    Filing,
+    FilingsPage,
+    ValidationMessage,
+)
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,

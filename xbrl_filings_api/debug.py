@@ -4,7 +4,7 @@
 
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.request_processor as request_processor
-from xbrl_filings_api.api_object.json_tree import (
+from xbrl_filings_api.api_object import (
     JSONTree,
     KeyPathRetrieveCounts,
 )

@@ -14,18 +14,17 @@ from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime
 from pathlib import PurePath
 from types import EllipsisType
+from typing import ClassVar
 
 import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.save_paths as save_paths
+from xbrl_filings_api.api_object import APIResource, Entity, ValidationMessage
 from xbrl_filings_api.api_request import APIRequest
-from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.download_item import DownloadItem
-from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import ParseType
 from xbrl_filings_api.exceptions import ApiReferenceWarning, DownloadErrorGroup
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
-from xbrl_filings_api.validation_message import ValidationMessage
 
 
 class Filing(APIResource):
@@ -82,7 +81,7 @@ class Filing(APIResource):
     XHTML_URL = 'attributes.report_url'
     PACKAGE_SHA256 = 'attributes.sha256'
 
-    VALID_DOWNLOAD_FORMATS = {'json', 'package', 'xhtml'}
+    VALID_DOWNLOAD_FORMATS: ClassVar[set[str]] = {'json', 'package', 'xhtml'}
 
     def __init__(
             self,
@@ -336,6 +335,7 @@ class Filing(APIResource):
             self,
             formats: str | Iterable[str] | Mapping[str, DownloadItem],
             to_dir: str | PurePath | None = None,
+            *,
             stem_pattern: str | None = None,
             check_corruption: bool = True,
             max_concurrent: int = 5,
@@ -419,6 +419,7 @@ class Filing(APIResource):
             self,
             formats: str | Iterable[str] | Mapping[str, DownloadItem],
             to_dir: str | PurePath | None = None,
+            *,
             stem_pattern: str | None = None,
             check_corruption: bool = True,
             max_concurrent: int = 5
@@ -468,9 +469,9 @@ class Filing(APIResource):
             )
         dliter = downloader.download_parallel_async_iter(
             items, max_concurrent)
-        async for filing, format, result in dliter:
-            exc = save_paths.assign_single(filing, format, result)
-            yield filing, format, exc
+        async for filing, format_, result in dliter:
+            exc = save_paths.assign_single(filing, format_, result)
+            yield filing, format_, exc
 
     def _search_entity(
             self, json_frag: dict | EllipsisType,
@@ -546,11 +547,11 @@ class Filing(APIResource):
         part_len = len(last_part)
         if (part_len < 2
                 or part_len > 3
-                or not last_part.isalpha()):
+                or not last_part.isalpha()): # noqa: PLR2004
             return None
 
         last_part = last_part.lower()
-        if part_len == 2:
+        if part_len == 2: # noqa: PLR2004
             return last_part
         else:
             return LANG_CODE_TRANSFORM.get(last_part)
