@@ -107,8 +107,7 @@ class DatabaseFileExistsError(FilingsAPIError):
 
 class DatabasePathIsReservedError(FilingsAPIError):
     """
-    The intended save path for the database is already reserved by a
-    non-file database object.
+    The intended save path for the database is already reserved.
 
     Attributes
     ----------
@@ -121,10 +120,9 @@ class DatabasePathIsReservedError(FilingsAPIError):
         super().__init__()
 
 
-class DatabaseSchemaUnmatch(FilingsAPIError):
+class DatabaseSchemaUnmatchError(FilingsAPIError):
     """
-    The file contains a database whose schema does not match the
-    expected format.
+    The file contains a database whose schema is non-conformant.
 
     Either none of the expected tables are present or none of the
     expected columns for a matching table.
@@ -141,9 +139,7 @@ class DatabaseSchemaUnmatch(FilingsAPIError):
 
 
 class ApiReferenceWarning(FilingsAPIWarning):
-    """Resource referencing between filings, entities and validation
-    messages fails.
-    """
+    """Resource referencing between API resources fails."""
 
 
 class ApiIdCoherenceWarning(FilingsAPIWarning):

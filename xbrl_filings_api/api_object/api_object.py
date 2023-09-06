@@ -1,7 +1,4 @@
-"""
-Define `APIObject` class.
-
-"""
+"""Define `APIObject` class."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -50,6 +47,7 @@ class APIObject:
         self.request_url = api_request.url
 
     def __str__(self) -> str:
+        """Return string representation of the object."""
         attrs = [
             att for att in dir(self)
             if not (att.startswith('_') or getattr(self.__class__, att, False))

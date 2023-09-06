@@ -1,7 +1,4 @@
-"""
-Define `APIError` and `APIErrorGroup` classes.
-
-"""
+"""Define `APIError` and `APIErrorGroup` classes."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -18,8 +15,7 @@ class APIErrorGroup(FilingsAPIErrorGroup):
 
 class APIError(FilingsAPIError, APIObject):
     """
-    The response contains an error from the filings.xbrl.org
-    JSON:API.
+    The response contains an error from the filings.xbrl.org JSON:API.
 
     This exception is always raised in a APIErrorGroup.
 
@@ -74,6 +70,7 @@ class APIError(FilingsAPIError, APIObject):
         FilingsAPIError.__init__(self)
 
     def __str__(self) -> str:
+        """Return string representation of the error."""
         ats = [f'{att}={getattr(self, att)!r}' for att in self._str_attrs]
         ats_txt = ', '.join(ats)
         return f'{self.__class__.__qualname__}({ats_txt})'

@@ -1,7 +1,4 @@
-"""
-Define classes `ResourceCollection`.
-
-"""
+"""Define class `ResourceCollection`."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -16,8 +13,10 @@ from xbrl_filings_api.constants import ResourceLiteralType
 
 class ResourceCollection:
     """
-    Collection of `APIResource` objects which are accessible from a
-    `FilingSet`.
+    Collection of subresources of a `FilingSet` object.
+
+    The subresources are all other `APIResource` subclasses except
+    `Filing` objects.
 
     This object is a `collections.abc.Collection` which means it may be
     iterated over, it defines `len()` as well as operator `in`. It may
@@ -47,6 +46,7 @@ class ResourceCollection:
         self._columns: list[str] | None = None
 
     def __iter__(self) -> Iterator[APIResource]:
+        """Return iterator for subresources."""
         filing: Filing
         yielded_ids = set()
         for filing in self.parent:
@@ -58,20 +58,21 @@ class ResourceCollection:
                         if resource.api_id not in yielded_ids:
                             yielded_ids.add(resource.api_id)
                             yield resource
-                else:
-                    if attr_val.api_id not in yielded_ids:
-                        yielded_ids.add(attr_val.api_id)
-                        yield attr_val
+                elif attr_val.api_id not in yielded_ids:
+                    yielded_ids.add(attr_val.api_id)
+                    yield attr_val
 
     def __len__(self) -> int:
+        """Return count of subresources."""
         count = 0
         for _ in self:
             count += 1
         return count
 
-    def __contains__(self, other: Any) -> bool:
+    def __contains__(self, item: Any) -> bool:
+        """Return `True` if `item` exists in collection."""
         for resource in self:
-            if resource is other:
+            if resource is item:
                 return True
         return False
 
@@ -79,8 +80,12 @@ class ResourceCollection:
             self, attr_names: Optional[Iterable[str]] = None
             ) -> dict[str, list[ResourceLiteralType]]:
         """
-        Get `data` parameter content for `pandas.DataFrame` for
-        resources of this type.
+        Get data for `pandas.DataFrame` constructor for objects.
+
+        A new dataframe can be instantiated by::
+
+            pandas.DataFrame(
+                data=filingset.collection_name.get_pandas_data())
 
         If `attr_names` is not given, most data attributes will be
         extracted. Attributes ending in ``_download_path`` will be

@@ -1,7 +1,4 @@
-"""
-Define `Entity` class.
-
-"""
+"""Define `Entity` class."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -68,4 +65,5 @@ class Entity(APIResource):
         self._json.close()
 
     def __repr__(self) -> str:
+        """Return string repr of the entity."""
         return f'{self.__class__.__name__}(name={self.name!r})'

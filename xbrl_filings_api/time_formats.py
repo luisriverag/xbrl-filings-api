@@ -1,7 +1,4 @@
-"""
-Time formats for `options.time_accuracy`.
-
-"""
+"""Time formats for `options.time_accuracy`."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #

@@ -43,7 +43,7 @@ from xbrl_filings_api.exceptions import (
     CorruptDownloadError,
     DatabaseFileExistsError,
     DatabasePathIsReservedError,
-    DatabaseSchemaUnmatch,
+    DatabaseSchemaUnmatchError,
     FilingsAPIError,
     FilingsAPIErrorGroup,
     FilingsAPIWarning,

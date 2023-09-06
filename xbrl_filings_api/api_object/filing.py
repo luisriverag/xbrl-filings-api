@@ -1,7 +1,4 @@
-"""
-Define `Filing` class.
-
-"""
+"""Define `Filing` class."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -321,6 +318,13 @@ class Filing(APIResource):
         self.reporting_date = self._derive_reporting_date()
 
     def __repr__(self) -> str:
+        """
+        Return string repr of filing.
+
+        If queried with flag `GET_ENTITY`, displays `entity.name`,
+        `reporting_date` and `language`. Otherwise displays only
+        `filing_index`.
+        """
         start = f'{self.__class__.__name__}('
         if self.entity:
             return (
@@ -405,8 +409,9 @@ class Filing(APIResource):
         """
         downloader.validate_stem_pattern(stem_pattern)
         items = download_specs_construct.construct(
-            formats, self, to_dir, stem_pattern, filename, check_corruption,
-            self.VALID_DOWNLOAD_FORMATS
+            formats, self, to_dir, stem_pattern, filename,
+            self.VALID_DOWNLOAD_FORMATS,
+            check_corruption=check_corruption
             )
         dlset = downloader.download_parallel(
             items, max_concurrent)
@@ -465,7 +470,8 @@ class Filing(APIResource):
 
         items = download_specs_construct.construct(
             formats, self, to_dir, stem_pattern, None,
-            check_corruption, Filing.VALID_DOWNLOAD_FORMATS
+            Filing.VALID_DOWNLOAD_FORMATS,
+            check_corruption=check_corruption
             )
         dliter = downloader.download_parallel_async_iter(
             items, max_concurrent)
@@ -487,8 +493,8 @@ class Filing(APIResource):
         if json_frag == Ellipsis or entity_iter is None:
             return None
         if not self.entity_api_id:
-            msg = f'No entity defined for {self!r}, api_id='
-            warnings.warn(f'{msg}{self.api_id}', ApiReferenceWarning, stacklevel=2)
+            msg = f'No entity defined for {self!r}, api_id={self.api_id}'
+            warnings.warn(f'{msg}', ApiReferenceWarning, stacklevel=2)
             return None
 
         entity = None
@@ -545,9 +551,8 @@ class Filing(APIResource):
         stem = stem.replace('_', '-')
         last_part = stem.split('-')[-1]
         part_len = len(last_part)
-        if (part_len < 2
-                or part_len > 3
-                or not last_part.isalpha()): # noqa: PLR2004
+        is_bad_length = part_len < 2 or part_len > 3 # noqa: PLR2004
+        if is_bad_length or not last_part.isalpha():
             return None
 
         last_part = last_part.lower()

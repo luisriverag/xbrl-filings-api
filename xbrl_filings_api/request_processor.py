@@ -1,7 +1,4 @@
-"""
-Module for processing API requests.
-
-"""
+"""Module for processing API requests."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -77,7 +74,7 @@ def generate_pages(
     ApiReferenceWarning
     """
     params: dict[str, str] = {}
-    received_api_ids: dict[str, set] = dict()
+    received_api_ids: dict[str, set] = {}
 
     page_size = options.max_page_size
     # NO_LIMIT is int(0)
@@ -179,11 +176,11 @@ def _get_request_param_list(
                         mf_values.append(month_end.strftime('%Y-%m-%d'))
 
                         req_month += 1
-                        if req_month > 12:
+                        if req_month > 12: # noqa: PLR2004
                             req_year, req_month = req_year+1, 1
                     resolved.extend(mf_values)
 
-                if len(nums) == 2:
+                if len(nums) == 2: # noqa: PLR2004
                     year, month = nums
                     month_end = _get_month_end(year, month)
                     resolved.append(month_end.strftime('%Y-%m-%d'))
@@ -220,19 +217,20 @@ def _get_month_end(year: int, month: int) -> date:
 
 
 def _filters_to_query_params(filters: dict[str, str]) -> dict[str, str]:
-    global api_attribute_map
-    qparams = dict()
+    global api_attribute_map # noqa: PLW0602
+    qparams = {}
     for field_name, value in filters.items():
         try:
-            field_name = api_attribute_map[field_name]
+            filter_name = api_attribute_map[field_name]
         except KeyError:
-            pass
-        qparams[f'filter[{field_name}]'] = value
+            qparams[f'filter[{field_name}]'] = value
+        else:
+            qparams[f'filter[{filter_name}]'] = value
     return qparams
 
 
 def _get_sort_query_param(sort: Sequence[str]) -> str:
-    global api_attribute_map
+    global api_attribute_map # noqa: PLW0602
     qparam = ''
     for field in sort:
         if qparam != '':
@@ -249,11 +247,8 @@ def _get_sort_query_param(sort: Sequence[str]) -> str:
 
 
 def _get_request_time() -> datetime:
-    request_time = datetime.now()
-    if options.utc_time:
-        request_time = request_time.astimezone(UTC)
-    else:
-        request_time = request_time.astimezone()
+    tz = UTC if options.utc_time else None
+    request_time = datetime.now(tz)
     return request_time
 
 
@@ -277,7 +272,9 @@ def _retrieve_page_json(
     print(f'GET {urllib.parse.unquote(furl)}')
 
     res = requests.get(
-        url, params, headers={'Content-Type': 'application/vnd.api+json'})
+        url, params, headers={'Content-Type': 'application/vnd.api+json'},
+        timeout=options.timeout_sec
+        )
     page_counter += 1
     api_request = APIRequest(res.url, request_time)
 

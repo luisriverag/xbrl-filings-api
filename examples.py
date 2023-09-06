@@ -1,19 +1,25 @@
+"""Examples of the library."""
+
 import asyncio
 
 import xbrl_filings_api as xf
 
-# Query 3 filings filed in Finland which were added latest to the index,
-# download their XHTML, JSON and package files and print finished
-# downloads in real time to prompt.
 
-save_path = 'latest_finnish_fin_stmts'
-filings = xf.get_filings(
-    filters={'country': 'FI'},
-    sort='-added_time',
-    max_size=3
-    )
+async def print_progress_async():
+    """
+    Download all files of three latest additions to Finnish filings.
 
-async def print_progress_async(filings: xf.FilingSet):
+    Query three filings filed in Finland which were added latest to the
+    index, download their XHTML, JSON and package files and print
+    finished downloads in real time to prompt.
+    """
+    save_path = 'latest_finnish_fin_stmts'
+    filings = xf.get_filings(
+        filters={'country': 'FI'},
+        sort='-added_time',
+        max_size=3
+        )
+
     dl_iter = filings.download_async_iter(
         ['xhtml', 'json', 'package'], save_path, max_concurrent=4)
     async for filing, file_format, exc in dl_iter:
@@ -25,4 +31,4 @@ async def print_progress_async(filings: xf.FilingSet):
         if exc:
             print(exc)
 
-asyncio.run(print_progress_async(filings))
+asyncio.run(print_progress_async())

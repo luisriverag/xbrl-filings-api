@@ -1,7 +1,4 @@
-"""
-Define `ValidationMessage` class.
-
-"""
+"""Define `ValidationMessage` class."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -236,6 +233,11 @@ class ValidationMessage(APIResource):
                 self.duplicate_lesser = min(duplicate_1, duplicate_2)
 
     def __repr__(self) -> str:
+        """
+        Return string repr of validation message.
+
+        Displays `code` attribute.
+        """
         return f'{self.__class__.__name__}(code={self.code!r})'
 
     def _derive_calc(self, re_obj: re.Pattern) -> str | None:

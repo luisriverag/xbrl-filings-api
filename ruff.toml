@@ -107,6 +107,9 @@ ban-relative-imports = "all"
 [pydocstyle]
 convention = "numpy"
 
+[pycodestyle]
+max-doc-length = 72
+
 [per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
@@ -115,3 +118,5 @@ convention = "numpy"
 # Examples.py and main script may have print statements
 "examples.py" = ["T201"]
 "__main__.py" = ["T201"]
+# __about__.py does not have a docstring
+"__about__.py" = ["D100"]

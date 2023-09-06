@@ -1,7 +1,4 @@
-"""
-When run as a script, print the name of the package and its version.
-
-"""
+"""When run as a script, print the name of the package and its version."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #

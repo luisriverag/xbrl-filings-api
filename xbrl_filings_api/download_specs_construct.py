@@ -1,8 +1,8 @@
-"""
-Module for constructing download items from Filing and FilingSet objects.
+"""Define function for constructing `DownloadSpecs` objects."""
 
-"""
-
+# SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
+#
+# SPDX-License-Identifier: MIT
 
 import warnings
 from collections.abc import Container, Iterable, Mapping
@@ -20,10 +20,11 @@ def construct(
         to_dir: str | PurePath | None,
         stem_pattern: str | None,
         filename: str | None,
-        check_corruption: bool,
-        valid_formats: Container
+        valid_formats: Container,
+        *,
+        check_corruption: bool
         ) -> list[DownloadSpecs]:
-    """Constructs a list of `DownloadSpecs` objects."""
+    """Construct a list of `DownloadSpecs` objects."""
     if isinstance(formats, str):
         formats = [formats]
     items = []
@@ -33,16 +34,18 @@ def construct(
             download_item = formats[format_key]
             full_item = _get_filing_download_specs(
                 format_key, download_item, filing, to_dir, stem_pattern,
-                filename, check_corruption, valid_formats
+                filename, valid_formats,
+                check_corruption=check_corruption
                 )
             if full_item:
                 items.append(full_item)
 
     elif isinstance(formats, Iterable):
-        for format in formats:
+        for format_ in formats:
             full_item = _get_filing_download_specs(
-                format, None, filing, to_dir, stem_pattern, filename,
-                check_corruption, valid_formats
+                format_, None, filing, to_dir, stem_pattern, filename,
+                valid_formats,
+                check_corruption=check_corruption
                 )
             if full_item:
                 items.append(full_item)
@@ -53,29 +56,30 @@ def construct(
 
 
 def _get_filing_download_specs(
-        format: str,
+        format_: str,
         download_item: DownloadItem | None,
         filing: Any,
         to_dir: str | PurePath | None,
         stem_pattern: str | None,
         filename: str | None,
-        check_corruption: bool,
-        valid_formats: Container
+        valid_formats: Container,
+        *,
+        check_corruption: bool
         ) -> DownloadSpecs | None:
-    if format not in valid_formats:
-        msg = f'Format {format!r} is not among {valid_formats!r}'
+    if format_ not in valid_formats:
+        msg = f'Format_ {format_!r} is not among {valid_formats!r}'
         raise ValueError(msg)
 
-    url = getattr(filing, f'{format}_url')
+    url = getattr(filing, f'{format_}_url')
     if not url:
         format_text = (
-            format.capitalize() if format == 'package' else format.upper())
+            format_.capitalize() if format_ == 'package' else format_.upper())
         msg = f'{format_text} not available for {filing!r}'
-        warnings.warn(msg, FileNotAvailableWarning)
+        warnings.warn(msg, FileNotAvailableWarning, stacklevel=2)
         return None
 
     sha256 = None
-    if check_corruption and format == 'package':
+    if check_corruption and format_ == 'package':
         sha256 = filing.package_sha256
 
     if download_item:
@@ -92,7 +96,7 @@ def _get_filing_download_specs(
         url=url,
         to_dir=to_dir,
         obj=filing,
-        attr_base=format,
+        attr_base=format_,
         stem_pattern=stem_pattern,
         filename=filename,
         sha256=sha256

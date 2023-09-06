@@ -1,11 +1,11 @@
-"""
-Module for processing SQLite3 databases.
-
-"""
+"""Module for processing SQLite3 databases."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+
+# Double quotes are used in all SQL strings by default.
+# ruff: noqa: Q000
 
 import sqlite3
 from collections.abc import Generator, Iterable
@@ -30,7 +30,7 @@ from xbrl_filings_api.enums import (
 from xbrl_filings_api.exceptions import (
     DatabaseFileExistsError,
     DatabasePathIsReservedError,
-    DatabaseSchemaUnmatch,
+    DatabaseSchemaUnmatchError,
 )
 from xbrl_filings_api.time_formats import time_formats
 
@@ -41,8 +41,9 @@ CurrentSchemaType = dict[str, list[str]]
 def sets_to_sqlite(
         flags: ScopeFlag,
         ppath: Path,
-        update: bool,
         data_objs: dict[str, Iterable[APIResource]],
+        *,
+        update: bool
         ) -> None:
     """
     Save sets to SQLite3 database.
@@ -51,14 +52,14 @@ def sets_to_sqlite(
     ------
     DatabaseFileExistsError
     DatabasePathIsReservedError
-    DatabaseSchemaUnmatch
+    DatabaseSchemaUnmatchError
     sqlite3.DatabaseError
     """
-    _validate_path(update, ppath)
+    _validate_path(ppath, update)
     filing_data_attrs = Filing.get_data_attributes(
         flags, data_objs['Filing'])
     con, table_schema = _create_database_or_extend_schema(
-        flags, ppath, update, filing_data_attrs)
+        flags, ppath, filing_data_attrs, update=update)
     _insert_data(table_schema, data_objs, con)
     con.close()
 
@@ -66,8 +67,9 @@ def sets_to_sqlite(
 def pages_to_sqlite(
         flags: ScopeFlag,
         ppath: Path,
-        update: bool,
         page_gen: Generator[FilingsPage, None, None],
+        *,
+        update: bool
         ) -> None:
     """
     Save API pages to SQLite3 database.
@@ -76,13 +78,13 @@ def pages_to_sqlite(
     ------
     DatabaseFileExistsError
     DatabasePathIsReservedError
-    DatabaseSchemaUnmatch
+    DatabaseSchemaUnmatchError
     sqlite3.DatabaseError
     """
-    _validate_path(update, ppath)
+    _validate_path(ppath, update)
     filing_data_attrs = Filing.get_data_attributes(flags)
     con, table_schema = _create_database_or_extend_schema(
-        flags, ppath, update, filing_data_attrs)
+        flags, ppath, filing_data_attrs, update=update)
 
     for page in page_gen:
         entities: list[Entity] = []
@@ -101,15 +103,16 @@ def pages_to_sqlite(
     con.close()
 
 
-def _validate_path(update: bool, ppath: Path) -> None:
+def _validate_path(ppath: Path, *, update: bool) -> None:
     """
-    When file exists in path, raise if ``update=False`` and raise if
-    path is reserved.
+    Validate path by raising expections.
 
     Raises
     ------
     DatabaseFileExistsError
+        When file exists in path and `update` is `False`.
     DatabasePathIsReservedError
+        When path is reserved.
     """
     if ppath.is_file():
         if not update:
@@ -119,21 +122,23 @@ def _validate_path(update: bool, ppath: Path) -> None:
 
 
 def _create_database_or_extend_schema(
-        flags: ScopeFlag, db_path: Path, update: bool,
-        filing_data_attrs: list[str]
+        flags: ScopeFlag,
+        db_path: Path,
+        filing_data_attrs: list[str],
+        *,
+        update: bool
         ) -> tuple[sqlite3.Connection, CurrentSchemaType]:
     """
-    Creates an SQLite3 database or extends the tables and columns of
-    an existing database.
+    Create a new SQLite3 database or extend the database schema.
 
     Returns
     -------
-    tuple of sqlite3.Connection, CurrentSchemaType
-        ``(con, table_schema)``.
+    sqlite3.Connection
+    CurrentSchemaType
 
     Raises
     ------
-    DatabaseSchemaUnmatch
+    DatabaseSchemaUnmatchError
     sqlite3.DatabaseError
     """
     resource_types: list[type[APIResource]] = [Filing]
@@ -171,9 +176,9 @@ def _create_database_or_extend_schema(
                 break
         if not schema_match:
             path = str(db_path)
-            raise DatabaseSchemaUnmatch(path)
+            raise DatabaseSchemaUnmatchError(path)
 
-    table_schema: CurrentSchemaType = dict()
+    table_schema: CurrentSchemaType = {}
     for type_obj in resource_types:
         table_name = type_obj.__name__
         cols = data_attrs[table_name]
@@ -183,10 +188,8 @@ def _create_database_or_extend_schema(
 
         if table_name in existing_tables:
             schema_match = False
-            _exec(
-                cur,
-                f"SELECT name FROM pragma_table_info('{table_name}')"
-                )
+            presql = "SELECT name FROM pragma_table_info('"
+            _exec(cur, f"{presql}{table_name}')")
             existing_cols = [row[0] for row in cur.fetchall()]
             add_cols = []
             for col in cols:
@@ -198,7 +201,7 @@ def _create_database_or_extend_schema(
                     schema_match = True
             if not schema_match or 'api_id' not in cols:
                 path = str(db_path)
-                raise DatabaseSchemaUnmatch(path)
+                raise DatabaseSchemaUnmatchError(path)
             for col, tc in _get_col_defs(add_cols):
                 _exec(
                     cur,
@@ -211,7 +214,7 @@ def _create_database_or_extend_schema(
         _exec(
             cur,
             f"CREATE TABLE {table_name} (\n  "
-            + ",\n  ".join((' '.join(cd) for cd in col_defs))
+            + ",\n  ".join(' '.join(cd) for cd in col_defs)
             + "\n) WITHOUT ROWID"
             )
         connection.commit()
@@ -279,7 +282,7 @@ def _exec(cur: sqlite3.Cursor, sql: str, data: list[list[str]] | None = None) ->
         cur.execute(sql)
 
 
-def adapt_datetime(dt: datetime):
+def _adapt_datetime(dt: datetime):
     try:
         fstr = time_formats[options.time_accuracy]
     except KeyError:
@@ -287,9 +290,9 @@ def adapt_datetime(dt: datetime):
     return dt.strftime(fstr)
 
 
-def adapt_list(list_in: list):
+def _adapt_list(list_in: list):
     return '\n'.join(list_in)
 
 
-sqlite3.register_adapter(datetime, adapt_datetime)
-sqlite3.register_adapter(list, adapt_list)
+sqlite3.register_adapter(datetime, _adapt_datetime)
+sqlite3.register_adapter(list, _adapt_list)

@@ -9,7 +9,7 @@ This is an extended set type with certain added attributes.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import AsyncIterator, Collection, Iterable, Mapping
+from collections.abc import AsyncIterator, Iterable, Mapping
 from pathlib import Path, PurePath
 from typing import Optional
 
@@ -31,7 +31,7 @@ from xbrl_filings_api.enums import (
     ScopeFlag,
 )
 from xbrl_filings_api.exceptions import DownloadErrorGroup
-from xbrl_filings_api.resource_collection import ResourceCollection
+from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
 
 
 class FilingSet(set):
@@ -133,7 +133,8 @@ class FilingSet(set):
             items.extend(
                 download_specs_construct.construct(
                     formats, filing, to_dir, stem_pattern, None,
-                    check_corruption, Filing.VALID_DOWNLOAD_FORMATS
+                    Filing.VALID_DOWNLOAD_FORMATS,
+                    check_corruption=check_corruption
                     ))
         dlset = downloader.download_parallel(
             items, max_concurrent)
@@ -195,19 +196,21 @@ class FilingSet(set):
             items.extend(
                 download_specs_construct.construct(
                     formats, filing, to_dir, stem_pattern, None,
-                    check_corruption, Filing.VALID_DOWNLOAD_FORMATS
+                    Filing.VALID_DOWNLOAD_FORMATS,
+                    check_corruption=check_corruption
                     ))
         dliter = downloader.download_parallel_async_iter(
             items, max_concurrent)
-        async for filing, format, result in dliter:
-            exc = save_paths.assign_single(filing, format, result)
-            yield filing, format, exc
+        async for filing, format_, result in dliter:
+            exc = save_paths.assign_single(filing, format_, result)
+            yield filing, format_, exc
 
     def to_sqlite(
             self,
             path: str | Path,
-            update: bool = False,
-            flags: ScopeFlag = GET_ENTITY | GET_VALIDATION_MESSAGES
+            flags: ScopeFlag = GET_ENTITY | GET_VALIDATION_MESSAGES,
+            *,
+            update: bool = False
             ) -> None:
         """
         Save set to an SQLite3 database.
@@ -225,13 +228,13 @@ class FilingSet(set):
         ----------
         path or Path
             Path to the SQLite database.
-        update : bool, default False
-            If the database already exists, update it with these
-            records. Old records are updated and new ones are added.
         flags : ScopeFlag, default GET_ENTITY | GET_VALIDATION_MESSAGES
             Scope of saving. Flag `GET_ENTITY` will save entity records
             of filings and `GET_VALIDATION_MESSAGES` the validation
             messages.
+        update : bool, default False
+            If the database already exists, update it with these
+            records. Old records are updated and new ones are added.
 
         Raises
         ------
@@ -241,7 +244,7 @@ class FilingSet(set):
         DatabasePathIsReservedError
             The intended save path for the database is already reserved
             by a non-file database object.
-        DatabaseSchemaUnmatch
+        DatabaseSchemaUnmatchError
             When ``update=True``, if the file contains a database whose
             schema does not match the expected format.
         sqlite3.DatabaseError
@@ -253,14 +256,17 @@ class FilingSet(set):
         data_objs, flags = self._get_data_sets(flags)
 
         database_processor.sets_to_sqlite(
-            flags, ppath, update, data_objs)
+            flags, ppath, data_objs, update=update)
 
     def get_pandas_data(
             self, attr_names: Optional[Iterable[str]] = None
             ) -> dict[str, list[ResourceLiteralType]]:
         """
-        Get `data` parameter content for `pandas.DataFrame` for `Filing`
-        objects.
+        Get data for `pandas.DataFrame` constructor for `Filing` objects.
+
+        A new dataframe can be instantiated by::
+
+            pandas.DataFrame(data=filingset.get_pandas_data())
 
         If `attr_names` is not given, most data attributes will be
         extracted. Attributes ending in ``_download_path`` will be

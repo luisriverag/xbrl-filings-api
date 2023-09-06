@@ -1,4 +1,6 @@
 """
+Define alpha-3 to alpha-2 language code transformations.
+
 Dictionary for tranformation of offial European Union languages from
 ISO 639-2 (alpha-3 codes) to ISO 639-1 (alpha-2 codes).
 

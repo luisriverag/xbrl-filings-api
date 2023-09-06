@@ -1,7 +1,4 @@
-"""
-Define `APIPage` and `_IncludedResource` classes.
-
-"""
+"""Define `APIPage` and `_IncludedResource` classes."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #

@@ -1,7 +1,4 @@
-"""
-Define download functions.
-
-"""
+"""Define sequential and parallel download functions."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -16,9 +13,12 @@ from typing import Any, Never, Optional
 
 import requests
 
-from xbrl_filings_api.download_specs import DownloadSpecs
+from xbrl_filings_api.downloader.download_specs import DownloadSpecs
+from xbrl_filings_api.downloader.stat_counters import StatCounters
 from xbrl_filings_api.exceptions import CorruptDownloadError
-from xbrl_filings_api.stat_counters import StatCounters
+
+timeout_sec = 30
+"""Maximum timeout for getting an initial response from the server."""
 
 stats = StatCounters()
 
@@ -93,7 +93,7 @@ async def download_async(
     requests.ConnectionError
         Connection fails.
     """
-    global stats
+    global stats, timeout_sec # noqa: PLW0602
 
     validate_stem_pattern(stem_pattern)
     if not isinstance(to_dir, Path):
@@ -109,13 +109,12 @@ async def download_async(
                 num += 1
             filename = f'file{num:04}'
 
-    res = requests.get(url, stream=True)
-    stats.item_counter += 1
+    res = requests.get(url, stream=True, timeout=timeout_sec)
     res.raise_for_status()
 
-    hash = None
+    hash_ = None
     if sha256:
-        hash = hashlib.sha256()
+        hash_ = hashlib.sha256()
 
     if stem_pattern:
         fnpath = Path(filename)
@@ -126,18 +125,19 @@ async def download_async(
     with open(temp_path, 'wb') as fd:
         for chunk in res.iter_content(chunk_size=None):
             fd.write(chunk)
-            if sha256 and hash:
-                hash.update(chunk)
+            if sha256 and hash_:
+                hash_.update(chunk)
             stats.byte_counter += len(chunk)
             await asyncio.sleep(0.0)
+    stats.item_counter += 1
 
-    if sha256 and hash:
-        if hash.digest() != bytes.fromhex(sha256):
+    if sha256 and hash_:
+        if hash_.digest() != bytes.fromhex(sha256):
             corrupt_path = save_path.with_suffix(f'{save_path.suffix}.corrupt')
             corrupt_path.unlink(missing_ok=True)
             path = str(temp_path.rename(corrupt_path))
 
-            calculated = hash.hexdigest().lower()
+            calculated = hash_.hexdigest().lower()
             expected = sha256.lower()
             raise CorruptDownloadError(path, url, calculated, expected)
 
@@ -196,8 +196,7 @@ async def download_parallel_async_iter(
         items: list[DownloadSpecs], max_concurrent: int
         ) -> AsyncIterator[tuple[Any, str, str | Exception]]:
     """
-    Download multiple files in parallel and return an asynchronous
-    iterator.
+    Download multiple files in parallel.
 
     Calls method `download_async` via parameter `items`, see
     documentation.
@@ -262,7 +261,7 @@ async def _download_parallel_worker(
 
 def validate_stem_pattern(stem_pattern: str | None):
     """
-    Validates `stem_pattern` parameter of module functions.
+    Validate `stem_pattern` parameter of module functions.
 
     Parameters
     ----------
@@ -280,3 +279,29 @@ def validate_stem_pattern(stem_pattern: str | None):
             + repr(stem_pattern)
             )
         raise ValueError(msg)
+
+
+def set_timeout_sec(new_value: float) -> None:
+    """
+    Set request timeout.
+
+    Parameters
+    ----------
+    new_value: float
+        New timeout value in seconds.
+    """
+    global timeout_sec
+    timeout_sec = new_value
+
+
+def get_timeout_sec() -> float:
+    """
+    Get request timeout.
+
+    Returns
+    -------
+    float
+        Current timeout value in seconds.
+    """
+    global timeout_sec
+    return timeout_sec

@@ -1,7 +1,4 @@
-"""
-Define `JSONTree`, `_RetrieveCounter` and `KeyPathRetrieveCounts` class.
-
-"""
+"""Define `JSONTree` class and related dataclasses."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -27,10 +24,16 @@ class _RetrieveCounter:
 
 @dataclass(order=True, frozen=True)
 class KeyPathRetrieveCounts:
+    """Stores retrieve counts for JSON key paths of `class_name`."""
+
     class_name: str
+    """Name of the `APIObject` class."""
     key_path: str
+    """Key access path in the JSON fragment of the API object."""
     success_count: int
+    """Number of successful reads with a value other than `None`."""
     total_count: int
+    """Number of total reads."""
 
 
 class JSONTree:
@@ -48,6 +51,7 @@ class JSONTree:
     tree : dict or None
     do_not_track : bool
     """
+
     _unaccessed_paths: ClassVar[dict[str, set[str]]] = {}
     """``_unaccessed_paths[class_name] = {key_path1, key_path2, ...}``"""
     _object_path_counter: ClassVar[dict[str, dict[str, _RetrieveCounter]]] = {}
@@ -56,10 +60,9 @@ class JSONTree:
     """``unexpected_resource_types.pop() = (type_str, origin)``"""
 
     now = time.time()
-    _local_utc_offset = (
-        datetime.fromtimestamp(now)
-        - datetime.utcfromtimestamp(now)
-        ) # type: ignore
+    dtnow = datetime.fromtimestamp(now) # noqa: DTZ006
+    dtnowutc = datetime.utcfromtimestamp(now) # noqa: DTZ004
+    _local_utc_offset = dtnow - dtnowutc
     del now
 
     def __init__(
@@ -147,7 +150,10 @@ class JSONTree:
         return key_value
 
     def close(self) -> None:
-        """Remember all unaccessed and never existing key paths in the
+        """
+        Close JSON tree for reading.
+
+        Remember all unaccessed and never existing key paths in the
         nested dictionary structure but skip lists.
         """
         if self.do_not_track:
@@ -161,8 +167,10 @@ class JSONTree:
 
     def _find_unaccessed(
             self, json_frag: dict, comps: list[str]) -> None:
-        """Traverse the whole JSON tree/fragment by recursion, skip
-        lists.
+        """
+        Traverse the whole JSON tree/fragment by recursion.
+
+        List values are skipped.
         """
         opcounter = self._object_path_counter
         if opcounter.get(self.class_name) is None:
@@ -236,8 +244,12 @@ class JSONTree:
 
     @classmethod
     def get_unaccessed_key_paths(cls) -> set[tuple[str, str]]:
-        """Get the set of unaccessed key paths in unserialized JSON
-        fragments of API responses."""
+        """
+        Get unaccessed JSON key paths of objects.
+
+        Get the set of unaccessed key paths in unserialized JSON
+        fragments of API responses.
+        """
         unaccessed: set[tuple[str, str]] = set()
         for class_name, key_path_set in cls._unaccessed_paths.items():
             unaccessed.update(
@@ -246,7 +258,10 @@ class JSONTree:
 
     @classmethod
     def get_key_path_availability_counts(cls) -> set[KeyPathRetrieveCounts]:
-        """Get the set of successful retrieval counts for key paths in
+        """
+        Get counts of key paths that did not resolve to `None`.
+
+        Get the set of successful retrieval counts for key paths in
         unserialized JSON fragments of API responses.
         """
         availability: set[KeyPathRetrieveCounts] = set()

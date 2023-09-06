@@ -36,7 +36,9 @@ defined in the entity `identifier` attribute::
 For validation messages, plural prefix `validation_messages.` is
 required:
 
-    filters={'validation_messages.code': 'message:tech_duplicated_facts1'}
+    filters={
+        'validation_messages.code': 'message:tech_duplicated_facts1'
+        }
 
 Date fields have a special functioning in `filters`. If you filter
 by a date that only has a year, a minimum of 12 requests are made
@@ -128,9 +130,6 @@ def get_filings(
     FilingSet of Filing
         Set of retrieved filings.
 
-    Raises
-    ------
-
     Warns
     -----
     ApiIdCoherenceWarning
@@ -157,11 +156,12 @@ def get_filings(
 
 def to_sqlite(
         path: str | Path,
+        flags: ScopeFlag = GET_ONLY_FILINGS,
+        *,
         update: bool = False,
         filters: Optional[Mapping[str, str | Iterable[str]]] = None,
         sort: Optional[str | Sequence[str]] = None,
         max_size: int = 100,
-        flags: ScopeFlag = GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> None:
     """
@@ -185,7 +185,7 @@ def to_sqlite(
 
     If `update` is `True` and the database does not have any
     expected tables defined or any of the expected tables contain no
-    expected columns, a `DatabaseSchemaUnmatch` exception will be
+    expected columns, a `DatabaseSchemaUnmatchError` exception will be
     raised.
 
     The parameter `add_api_params` can be used to override
@@ -195,8 +195,12 @@ def to_sqlite(
 
     Parameters
     ----------
-    path or Path
+    path : str or Path
         Path to the SQLite database.
+    flags : ScopeFlag, default GET_ONLY_FILINGS
+        Scope of retrieval. Flag `GET_ENTITY` will retrieve entity
+        records of filings and `GET_VALIDATION_MESSAGES` the
+        validation messages.
     update : bool, default False
         If the database already exists, update it with retrieved
         records. Old records are updated and new ones are added.
@@ -209,10 +213,6 @@ def to_sqlite(
         Maximum number of filings to retrieve. With `NO_LIMIT`,
         you'll reach for the sky. Filings will be retrieved in
         batches (pages) of option `max_page_size`.
-    flags : ScopeFlag, default GET_ONLY_FILINGS
-        Scope of retrieval. Flag `GET_ENTITY` will retrieve entity
-        records of filings and `GET_VALIDATION_MESSAGES` the
-        validation messages.
     add_api_params: mapping, optional
         Add additional JSON:API parameters to the query. All parts
         will be URL-encoded automatically.
@@ -230,7 +230,7 @@ def to_sqlite(
     DatabasePathIsReservedError
         The intended save path for the database is already reserved
         by a non-file database object.
-    DatabaseSchemaUnmatch
+    DatabaseSchemaUnmatchError
         When ``update=True``, if the file contains a database whose
         schema does not match the expected format.
     requests.ConnectionError
@@ -260,7 +260,7 @@ def to_sqlite(
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
     database_processor.pages_to_sqlite(
-        flags, ppath, update, page_gen)
+        flags, ppath, page_gen, update=update)
 
 
 def filing_page_iter(
@@ -298,9 +298,6 @@ def filing_page_iter(
     FilingsPage
         Filings page containing a batch of downloaded filings
 
-    Raises
-    ------
-
     Warns
     -----
     ApiIdCoherenceWarning
@@ -320,5 +317,4 @@ def filing_page_iter(
 
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
-    for page in page_gen:
-        yield page
+    yield from page_gen

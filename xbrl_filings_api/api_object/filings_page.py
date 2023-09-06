@@ -1,7 +1,4 @@
-"""
-Define `FilingsPage` class.
-
-"""
+"""Define `FilingsPage` class."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -52,6 +49,7 @@ class FilingsPage(APIPage):
     api_last_page_url : str or None
     request_url : str
     """
+
     def __init__(
             self, json_frag: dict, api_request: APIRequest,
             flags: ScopeFlag, received_api_ids: dict[str, set],
@@ -155,7 +153,7 @@ class FilingsPage(APIPage):
         res_id = str(res_frag.get('id'))
         if res_id in received_set:
             msg = f'Same filing returned again, api_id={res_id!r}.'
-            warnings.warn(msg, ApiIdCoherenceWarning)
+            warnings.warn(msg, ApiIdCoherenceWarning, stacklevel=3)
             return None
         else:
             received_set.add(res_id)

@@ -1,7 +1,4 @@
-"""
-Define `APIResource` class.
-
-"""
+"""Define `APIResource` class."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #

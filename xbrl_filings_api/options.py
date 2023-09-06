@@ -64,3 +64,6 @@ offset and the second is calendar-style month number (e.g. 8 is August).
 
 views: dict[str, tuple[list[str], str]] | None = DEFAULT_VIEWS
 """SQLite3 views to be added to created databases."""
+
+timeout_sec: float = 30.0
+"""Maximum number of seconds to wait for response from the server."""
