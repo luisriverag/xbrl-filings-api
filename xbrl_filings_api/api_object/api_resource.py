@@ -8,7 +8,7 @@ Define `APIResource` class.
 # SPDX-License-Identifier: MIT
 
 from collections.abc import Iterable
-from datetime import datetime
+from datetime import UTC, datetime
 from types import EllipsisType
 from typing import Any, Optional
 
@@ -54,7 +54,7 @@ class APIResource(APIObject):
         if isinstance(json_frag, EllipsisType):
             is_prototype = True
             json_frag = {}
-            api_request = APIRequest('', datetime.now())
+            api_request = APIRequest('', datetime.now(tz=UTC))
         if api_request is None:
             raise ValueError()
 

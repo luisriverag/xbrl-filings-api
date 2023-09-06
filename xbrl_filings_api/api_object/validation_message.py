@@ -244,7 +244,8 @@ class ValidationMessage(APIResource):
             return mt[1]
         return None
 
-    def _derive_calc_float(self, re_obj: re.Pattern, attr_name: str) -> float | None:
+    def _derive_calc_float(
+            self, re_obj: re.Pattern, attr_name: str) -> float | None:
         calc_str = self._derive_calc(re_obj)
         calc_float = None
         if calc_str is not None:
