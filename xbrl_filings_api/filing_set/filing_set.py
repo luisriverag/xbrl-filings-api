@@ -16,21 +16,19 @@ from typing import Optional
 import xbrl_filings_api.database_processor as database_processor
 import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
-from xbrl_filings_api.api_object import (
-    APIResource,
-    Entity,
-    Filing,
-    ValidationMessage,
-)
+from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import ResourceLiteralType
 from xbrl_filings_api.download_item import DownloadItem
+from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_VALIDATION_MESSAGES,
     ScopeFlag,
 )
 from xbrl_filings_api.exceptions import DownloadErrorGroup
+from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
+from xbrl_filings_api.validation_message import ValidationMessage
 
 
 class FilingSet(set):

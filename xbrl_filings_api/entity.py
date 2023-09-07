@@ -6,8 +6,8 @@
 
 from types import EllipsisType
 
-from xbrl_filings_api.api_object import APIResource
 from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.enums import GET_ENTITY, ParseType
 
 

@@ -15,12 +15,14 @@ from typing import ClassVar
 
 import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
-from xbrl_filings_api.api_object import APIResource, Entity, ValidationMessage
 from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.download_item import DownloadItem
+from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import ParseType
 from xbrl_filings_api.exceptions import ApiReferenceWarning, DownloadErrorGroup
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
+from xbrl_filings_api.validation_message import ValidationMessage
 
 
 class Filing(APIResource):

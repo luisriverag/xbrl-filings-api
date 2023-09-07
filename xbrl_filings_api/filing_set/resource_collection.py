@@ -7,8 +7,9 @@
 from collections.abc import Iterable, Iterator
 from typing import Any, Optional
 
-from xbrl_filings_api.api_object import APIResource, Filing
+from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import ResourceLiteralType
+from xbrl_filings_api.filing import Filing
 
 
 class ResourceCollection:

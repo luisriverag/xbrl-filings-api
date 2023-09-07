@@ -5,10 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 import xbrl_filings_api.downloader.stats as downloader_stats
-from xbrl_filings_api.api_object import (
-    JSONTree,
-    KeyPathRetrieveCounts,
-)
+from xbrl_filings_api.json_tree import JSONTree, KeyPathRetrieveCounts
 
 
 def get_unaccessed_key_paths() -> list[tuple[str, str]]:

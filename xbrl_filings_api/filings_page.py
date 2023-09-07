@@ -9,14 +9,10 @@ from collections.abc import Iterable
 from itertools import chain
 from typing import Any
 
-from xbrl_filings_api.api_object import (
-    APIPage,
-    APIResource,
-    Entity,
-    Filing,
-    ValidationMessage,
-)
+from xbrl_filings_api.api_page import APIPage
 from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
@@ -27,7 +23,9 @@ from xbrl_filings_api.exceptions import (
     ApiIdCoherenceWarning,
     ApiReferenceWarning,
 )
+from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
+from xbrl_filings_api.validation_message import ValidationMessage
 
 
 class FilingsPage(APIPage):

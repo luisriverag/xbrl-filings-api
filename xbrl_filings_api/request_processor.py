@@ -14,15 +14,9 @@ import requests
 
 import xbrl_filings_api.options as options
 import xbrl_filings_api.stats as stats
-from xbrl_filings_api.api_object import (
-    APIError,
-    APIErrorGroup,
-    Entity,
-    Filing,
-    FilingsPage,
-    ValidationMessage,
-)
+from xbrl_filings_api.api_error import APIError, APIErrorGroup
 from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
@@ -31,7 +25,10 @@ from xbrl_filings_api.enums import (
     ScopeFlag,
 )
 from xbrl_filings_api.exceptions import HTTPStatusError
+from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
+from xbrl_filings_api.filings_page import FilingsPage
+from xbrl_filings_api.validation_message import ValidationMessage
 
 api_attribute_map: dict[str, str]
 

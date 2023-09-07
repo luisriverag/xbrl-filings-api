@@ -14,13 +14,8 @@ from pathlib import Path
 
 import xbrl_filings_api.options as options
 import xbrl_filings_api.order_columns as order_columns
-from xbrl_filings_api.api_object import (
-    APIResource,
-    Entity,
-    Filing,
-    FilingsPage,
-    ValidationMessage,
-)
+from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
@@ -32,7 +27,10 @@ from xbrl_filings_api.exceptions import (
     DatabasePathIsReservedError,
     DatabaseSchemaUnmatchError,
 )
+from xbrl_filings_api.filing import Filing
+from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.time_formats import time_formats
+from xbrl_filings_api.validation_message import ValidationMessage
 
 CurrentSchemaType = dict[str, list[str]]
 """`{'TableName': ['col1', 'col2', ...]}`"""

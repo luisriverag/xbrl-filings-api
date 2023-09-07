@@ -9,8 +9,8 @@ from datetime import datetime
 
 import xbrl_filings_api.options as options
 import xbrl_filings_api.order_columns as order_columns
-from xbrl_filings_api.api_object import JSONTree
 from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.json_tree import JSONTree
 from xbrl_filings_api.time_formats import time_formats
 
 
