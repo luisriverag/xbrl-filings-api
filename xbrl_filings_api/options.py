@@ -30,7 +30,7 @@ views : dict of str: tuple of (iterable of str, str), default DEFAULT_VIEWS
     be a SELECT statement.
 """
 
-# SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 

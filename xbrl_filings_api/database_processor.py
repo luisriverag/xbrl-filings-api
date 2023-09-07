@@ -1,6 +1,6 @@
 """Module for processing SQLite3 databases."""
 
-# SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -270,7 +270,11 @@ def _insert_data(
         con.commit()
 
 
-def _exec(cur: sqlite3.Cursor, sql: str, data: list[list[str]] | None = None) -> None:
+def _exec(
+        cur: sqlite3.Cursor,
+        sql: str,
+        data: list[list[str]] | None = None
+        ) -> None:
     data_len = f' <count: {len(data)}>' if data else ''
     print(sql + ';' + data_len)
 

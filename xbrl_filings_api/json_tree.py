@@ -1,6 +1,6 @@
 """Define `JSONTree` class and related dataclasses."""
 
-# SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -53,11 +53,29 @@ class JSONTree:
     """
 
     _unaccessed_paths: ClassVar[dict[str, set[str]]] = {}
-    """``_unaccessed_paths[class_name] = {key_path1, key_path2, ...}``"""
+    """
+    Unaccessed key paths of API objects.
+
+    Content::
+
+        _unaccessed_paths[class_name] = {key_path1, key_path2, ...}
+    """
     _object_path_counter: ClassVar[dict[str, dict[str, _RetrieveCounter]]] = {}
-    """``_object_path_counter[class_name][key_path] = _RetrieveCounter()``"""
+    """
+    Counter of key path access of API objects.
+
+    Content::
+
+        _object_path_counter[class_name][key_path] = _RetrieveCounter()
+    """
     unexpected_resource_types: ClassVar[set[tuple[str, str]]] = set()
-    """``unexpected_resource_types.pop() = (type_str, origin)``"""
+    """
+    Set of unexpected API resource types.
+
+    Content::
+
+        unexpected_resource_types.pop() = (type_str, origin)
+    """
 
     now = time.time()
     dtnow = datetime.fromtimestamp(now)  # noqa: DTZ006
@@ -201,7 +219,8 @@ class JSONTree:
             except ValueError:
                 msg = (
                     f'Could not parse ISO datetime string {key_value!r} for '
-                    f'object {self.class_name} JSON fragment path {key_path!r}.'
+                    f'object {self.class_name} JSON fragment path '
+                    f'{key_path!r}.'
                     )
                 warnings.warn(msg, APIStringParseWarning, stacklevel=2)
             if parsed_dt is None:
@@ -222,7 +241,8 @@ class JSONTree:
             except ValueError:
                 msg = (
                     f'Could not parse ISO date string {key_value!r} for '
-                    f'object {self.class_name} JSON fragment path {key_path!r}.'
+                    f'object {self.class_name} JSON fragment path '
+                    f'{key_path!r}.'
                     )
                 warnings.warn(msg, APIStringParseWarning, stacklevel=2)
             return parsed_date

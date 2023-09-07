@@ -5,7 +5,7 @@ This is an extended set type with certain added attributes.
 
 """
 
-# SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -273,7 +273,7 @@ class FilingSet(set):
             self, attr_names: Optional[Iterable[str]] = None
             ) -> dict[str, list[ResourceLiteralType]]:
         """
-        Get data for `pandas.DataFrame` constructor for `Filing` objects.
+        Get data for `pandas.DataFrame` constructor for filings.
 
         A new dataframe can be instantiated by::
 
@@ -309,7 +309,7 @@ class FilingSet(set):
     def _get_data_sets(
             self, flags: ScopeFlag
             ) -> tuple[dict[str, Iterable[APIResource]], ScopeFlag]:
-        """Get sets of data objects and turn flags for empty sets off."""
+        """Get sets of data objects and disable flags for empty sets."""
         data_objs: dict[str, Iterable[APIResource]] = {'Filing': self}
         subresources = [
             (Entity, self.entities),

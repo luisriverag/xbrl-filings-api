@@ -1,6 +1,6 @@
 """Define `APIPage` and `_IncludedResource` classes."""
 
-# SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -82,7 +82,7 @@ class APIPage(APIObject):
 
         self.jsonapi_version: str | None = self._json.get(
             'jsonapi.version')
-        """Version of the JSON:API specification which this API follows."""
+        """Version of the JSON:API specification of base API."""
 
     def _get_included_resources(self) -> list[_IncludedResource]:
         """Construct `_IncludedResource` objects from `included` key."""

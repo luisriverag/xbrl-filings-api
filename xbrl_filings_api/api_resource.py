@@ -1,6 +1,6 @@
 """Define `APIResource` class."""
 
-# SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -112,7 +112,9 @@ class APIResource(APIObject):
     @classmethod
     def _get_unused_download_paths(cls, filings: Iterable[Any]) -> set[str]:
         """
-        Get unused `Filing` object attributes ending in ``_download_path``.
+        Get unused `Filing` object download path attributes.
+
+        Looks for attributes ending in ``_download_path``.
 
         Parameters
         ----------

@@ -1,6 +1,6 @@
 """Define `APIError` and `APIErrorGroup` classes."""
 
-# SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
@@ -55,7 +55,8 @@ class APIError(FilingsAPIError, APIObject):
         # self.api_id: str | None = self._json.get('id')
         # self.about_url: str | None = self._json.get(
         #     'links.about', ParseType.URL)
-        # self.source_pointer: str | None = self._json.get('source.pointer')
+        # self.source_pointer: str | None = self._json.get(
+        #     'source.pointer')
         # self.source_parameter: str | None = self._json.get(
         #     'source.parameter')
         # self.meta: str | None = self._json.get('meta.abc')
