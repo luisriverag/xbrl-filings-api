@@ -4,8 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+import logging
 import time
-import warnings
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import Any, ClassVar, Optional
@@ -13,7 +13,8 @@ from urllib.parse import urljoin
 
 import xbrl_filings_api.options as options
 from xbrl_filings_api.enums import ParseType
-from xbrl_filings_api.exceptions import APIStringParseWarning
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -222,7 +223,7 @@ class JSONTree:
                     f'object {self.class_name} JSON fragment path '
                     f'{key_path!r}.'
                     )
-                warnings.warn(msg, APIStringParseWarning, stacklevel=2)
+                logger.warning(msg, stacklevel=2)
             if parsed_dt is None:
                 return None
             if options.utc_time:
@@ -244,7 +245,7 @@ class JSONTree:
                     f'object {self.class_name} JSON fragment path '
                     f'{key_path!r}.'
                     )
-                warnings.warn(msg, APIStringParseWarning, stacklevel=2)
+                logger.warning(msg, stacklevel=2)
             return parsed_date
 
         if parse_type == ParseType.URL:
@@ -257,7 +258,7 @@ class JSONTree:
                     f'{key_value!r} for object {self.class_name} JSON '
                     f'fragment path {key_path!r}.'
                     )
-                warnings.warn(msg, APIStringParseWarning, stacklevel=2)
+                logger.warning(msg, stacklevel=2)
             return parsed_url
 
         return key_value

@@ -117,11 +117,6 @@ class FilingSet(set):
                 HTTP status error occurs.
             requests.ConnectionError
                 Connection fails.
-
-        Warns
-        -----
-        FileNotAvailableWarning
-            Requested file type for this filing is not available.
         """
         downloader.validate_stem_pattern(stem_pattern)
 
@@ -186,11 +181,6 @@ class FilingSet(set):
         ------
         DownloadResult
             Contains information on the finished download.
-
-        Warns
-        -----
-        FileNotAvailableWarning
-            Requested file type for this filing is not available.
         """
         downloader.validate_stem_pattern(stem_pattern)
 

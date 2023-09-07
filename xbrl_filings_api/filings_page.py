@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-import warnings
+import logging
 from collections.abc import Iterable
 from itertools import chain
 from typing import Any
@@ -19,13 +19,11 @@ from xbrl_filings_api.enums import (
     GET_VALIDATION_MESSAGES,
     ScopeFlag,
 )
-from xbrl_filings_api.exceptions import (
-    ApiIdCoherenceWarning,
-    ApiReferenceWarning,
-)
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
+
+logger = logging.getLogger(__name__)
 
 
 class FilingsPage(APIPage):
@@ -53,14 +51,7 @@ class FilingsPage(APIPage):
             flags: ScopeFlag, received_api_ids: dict[str, set],
             res_colls: dict[str, ResourceCollection]
             ) -> None:
-        """Initiate a JSON:API response page.
-
-        Warns
-        -----
-        ApiReferenceWarning
-            Resource referencing between filings, entities and
-            validation messages fails.
-        """
+        """Initiate a JSON:API response page."""
         super().__init__(json_frag, api_request)
 
         self.query_filing_count = self._data_count
@@ -112,13 +103,7 @@ class FilingsPage(APIPage):
             self, received_api_ids: dict[str, set],
             res_colls: dict[str, ResourceCollection], flags: ScopeFlag
             ) -> list[Filing]:
-        """Get filings from from `data` key list.
-
-        Warns
-        -----
-        ApiReferenceWarning
-            When same filing `api_id` is returned again.
-        """
+        """Get filings from from `data` key list."""
         filing_list = []
         if not received_api_ids.get('Filing'):
             received_api_ids['Filing'] = set()
@@ -142,16 +127,11 @@ class FilingsPage(APIPage):
             self, res_frag: dict[str, Any], received_set: set[str],
             res_colls: dict[str, ResourceCollection], flags: ScopeFlag
             ) -> Filing | None:
-        """Get filings from from a single `data` key fragment.
-
-        Warns
-        -----
-        ApiReferenceWarning
-        """
+        """Get filings from from a single `data` key fragment."""
         res_id = str(res_frag.get('id'))
         if res_id in received_set:
             msg = f'Same filing returned again, api_id={res_id!r}.'
-            warnings.warn(msg, ApiIdCoherenceWarning, stacklevel=3)
+            logger.warning(msg, stacklevel=3)
             return None
         else:
             received_set.add(res_id)
@@ -219,4 +199,4 @@ class FilingsPage(APIPage):
                     msg = (
                         f'No filing defined for {vmsg!r}, api_id={vmsg.api_id}'
                         )
-                    warnings.warn(msg, ApiReferenceWarning, stacklevel=2)
+                    logger.warning(msg, stacklevel=2)

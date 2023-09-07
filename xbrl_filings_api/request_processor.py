@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 import itertools
+import logging
 import urllib.parse
 from collections.abc import Generator, Iterable, Mapping, Sequence
 from datetime import UTC, date, datetime, timedelta
@@ -29,6 +30,8 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.validation_message import ValidationMessage
+
+logger = logging.getLogger(__name__)
 
 api_attribute_map: dict[str, str]
 
@@ -64,11 +67,6 @@ def generate_pages(
     HTTPStatusError
     requests.ConnectionError
     requests.JSONDecodeError
-
-    Warns
-    -----
-    ApiIdCoherenceWarning
-    ApiReferenceWarning
     """
     params: dict[str, str] = {}
     received_api_ids: dict[str, set] = {}
@@ -299,7 +297,7 @@ def _retrieve_page_json(
     furl = url
     if params and len(params) > 0:
         furl += '?' + '&'.join([f'{key}={val}' for key, val in params.items()])
-    print(f'GET {urllib.parse.unquote(furl)}')
+    logger.info(f'GET {urllib.parse.unquote(furl)}')
 
     res = requests.get(
         url, params, headers={'Content-Type': 'application/vnd.api+json'},
@@ -309,9 +307,9 @@ def _retrieve_page_json(
     api_request = APIRequest(res.url, request_time)
 
     if res.status_code == 200:  # noqa: PLR2004
-        print('  > Success')
+        logger.info('  > Success')
     else:
-        print('  > STATUS ' + str(res.status_code))
+        logger.info(f'  > STATUS {res.status_code} {res.reason}')
 
     json_frag = res.json()
     if json_frag.get('errors'):

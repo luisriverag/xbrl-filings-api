@@ -4,9 +4,9 @@
 #
 # SPDX-License-Identifier: MIT
 
+import logging
 import re
 import urllib.parse
-import warnings
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime
 from pathlib import PurePath
@@ -20,9 +20,11 @@ from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import ParseType
-from xbrl_filings_api.exceptions import ApiReferenceWarning, DownloadErrorGroup
+from xbrl_filings_api.exceptions import DownloadErrorGroup
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
 from xbrl_filings_api.validation_message import ValidationMessage
+
+logger = logging.getLogger(__name__)
 
 
 class Filing(APIResource):
@@ -88,14 +90,7 @@ class Filing(APIResource):
             entity_iter: Iterable[Entity] | None = None,
             message_iter: Iterable[ValidationMessage] | None = None
             ) -> None:
-        """Initialize a `Filing` object.
-
-        Warns
-        -----
-        ApiReferenceWarning
-            Resource referencing to/from entities and validation
-            messages fails.
-        """
+        """Initialize a `Filing` object."""
         super().__init__(json_frag, api_request)
 
         self.country: str | None = self._json.get(self.COUNTRY)
@@ -402,11 +397,6 @@ class Filing(APIResource):
                 HTTP status error occurs.
             requests.ConnectionError
                 Connection fails.
-
-        Warns
-        -----
-        FileNotAvailableWarning
-            Requested file type for this filing is not available.
         """
         downloader.validate_stem_pattern(stem_pattern)
         items = download_specs_construct.construct(
@@ -467,11 +457,6 @@ class Filing(APIResource):
         ------
         DownloadResult
             Contains information on the finished download.
-
-        Warns
-        -----
-        FileNotAvailableWarning
-            Requested file type for this filing is not available.
         """
         downloader.validate_stem_pattern(stem_pattern)
 
@@ -499,18 +484,12 @@ class Filing(APIResource):
             self, json_frag: dict | EllipsisType,
             entity_iter: Iterable[Entity] | None
             ) -> Entity | None:
-        """
-        Search for an `Entity` object for the filing.
-
-        Warns
-        -----
-        ApiReferenceWarning
-        """
+        """Search for an `Entity` object for the filing."""
         if json_frag == Ellipsis or entity_iter is None:
             return None
         if not self.entity_api_id:
             msg = f'No entity defined for {self!r}, api_id={self.api_id}'
-            warnings.warn(f'{msg}', ApiReferenceWarning, stacklevel=2)
+            logger.warning(msg, stacklevel=2)
             return None
 
         entity = None
@@ -524,20 +503,14 @@ class Filing(APIResource):
                 f'Entity with api_id={self.entity_api_id} not found, '
                 f'referenced by {self!r}, api_id={self.api_id}'
                 )
-            warnings.warn(msg, ApiReferenceWarning, stacklevel=2)
+            logger.warning(msg, stacklevel=2)
         return entity
 
     def _search_validation_messages(
             self, json_frag: dict | EllipsisType,
             message_iter: Iterable[ValidationMessage] | None
             ) -> set[ValidationMessage] | None:
-        """
-        Search `ValidationMessage` objects for this filing.
-
-        Warns
-        -----
-        ApiReferenceWarning
-        """
+        """Search `ValidationMessage` objects for this filing."""
         if json_frag == Ellipsis or message_iter is None:
             return None
 
@@ -556,7 +529,7 @@ class Filing(APIResource):
                         f'Validation message with api_id={rel_api_id} not '
                         f'found, referenced by {self!r}, api_id={self.api_id}'
                         )
-                    warnings.warn(msg, ApiReferenceWarning, stacklevel=2)
+                    logger.warning(msg, stacklevel=2)
         return found_msgs
 
     def _derive_language(self) -> str | None:

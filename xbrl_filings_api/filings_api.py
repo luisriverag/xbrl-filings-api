@@ -121,14 +121,6 @@ def get_filings(
     -------
     FilingSet of Filing
         Set of retrieved filings.
-
-    Warns
-    -----
-    ApiIdCoherenceWarning
-        Filings with the same API id are returned more than once.
-    ApiReferenceWarning
-        Resource referencing between filings, entities and
-        validation messages fails.
     """
     if isinstance(sort, str):
         sort = [sort]
@@ -230,14 +222,6 @@ def to_sqlite(
     sqlite3.DatabaseError
         When ``update=True``, if the file is not a database
         (``err.sqlite_errorname='SQLITE_NOTADB'``) etc.
-
-    Warns
-    -----
-    ApiIdCoherenceWarning
-        Filings with the same API id are returned more than once.
-    ApiReferenceWarning
-        Resource referencing between filings, entities and
-        validation messages fails.
     """
     ppath = path if isinstance(path, Path) else Path(path)
     if isinstance(sort, str):
@@ -289,14 +273,6 @@ def filing_page_iter(
     ------
     FilingsPage
         Filings page containing a batch of downloaded filings
-
-    Warns
-    -----
-    ApiIdCoherenceWarning
-        Filings with the same API id are returned more than once.
-    ApiReferenceWarning
-        Resource referencing between filings, entities and
-        validation messages fails.
     """
     if isinstance(sort, str):
         sort = [sort]

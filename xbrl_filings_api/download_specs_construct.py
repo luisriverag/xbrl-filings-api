@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-import warnings
+import logging
 from collections.abc import Container, Iterable, Mapping
 from pathlib import PurePath
 from typing import Any
@@ -12,7 +12,8 @@ from typing import Any
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader import DownloadSpecs
-from xbrl_filings_api.exceptions import FileNotAvailableWarning
+
+logger = logging.getLogger(__name__)
 
 
 def construct(
@@ -83,7 +84,7 @@ def _get_filing_download_specs(
         format_text = (
             file.capitalize() if file == 'package' else file.upper())
         msg = f'{format_text} not available for {filing!r}'
-        warnings.warn(msg, FileNotAvailableWarning, stacklevel=2)
+        logger.warning(msg, stacklevel=2)
         return None
 
     sha256 = None

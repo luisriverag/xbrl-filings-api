@@ -4,16 +4,17 @@
 #
 # SPDX-License-Identifier: MIT
 
+import logging
 import re
 import urllib.parse
-import warnings
 from pathlib import PurePath
 from types import EllipsisType
 
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.enums import GET_VALIDATION_MESSAGES
-from xbrl_filings_api.exceptions import DerivedValueError
+
+logger = logging.getLogger(__name__)
 
 
 class ValidationMessage(APIResource):
@@ -258,5 +259,5 @@ class ValidationMessage(APIResource):
                     f'String {calc_str!r} of attribute {attr_name!r} could '
                     'not be parsed into float.'
                     )
-                warnings.warn(msg, DerivedValueError, stacklevel=2)
+                logger.warning(msg, stacklevel=2)
         return calc_float

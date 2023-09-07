@@ -23,6 +23,8 @@ ValidationMessage
 #
 # SPDX-License-Identifier: MIT
 
+import logging
+
 from xbrl_filings_api.api_error import APIError, APIErrorGroup
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
@@ -34,7 +36,6 @@ from xbrl_filings_api.enums import (
     ScopeFlag,
 )
 from xbrl_filings_api.exceptions import (
-    ApiReferenceWarning,
     CorruptDownloadError,
     DatabaseFileExistsError,
     DatabasePathIsReservedError,
@@ -52,3 +53,4 @@ from xbrl_filings_api.sqlite_views import DEFAULT_VIEWS
 from xbrl_filings_api.validation_message import ValidationMessage
 
 data_attrs = list(api_attribute_map)
+logging.getLogger(__name__).addHandler(logging.NullHandler())

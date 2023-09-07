@@ -7,6 +7,7 @@
 # Double quotes are used in all SQL strings by default.
 # ruff: noqa: Q000
 
+import logging
 import sqlite3
 from collections.abc import Generator, Iterable
 from datetime import datetime
@@ -31,6 +32,8 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.time_formats import time_formats
 from xbrl_filings_api.validation_message import ValidationMessage
+
+logger = logging.getLogger(__name__)
 
 CurrentSchemaType = dict[str, list[str]]
 """`{'TableName': ['col1', 'col2', ...]}`"""
@@ -276,7 +279,7 @@ def _exec(
         data: list[list[str]] | None = None
         ) -> None:
     data_len = f' <count: {len(data)}>' if data else ''
-    print(sql + ';' + data_len)
+    logger.debug(sql + ';' + data_len)
 
     if data:
         cur.executemany(sql, data)
