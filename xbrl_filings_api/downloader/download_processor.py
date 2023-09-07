@@ -9,26 +9,24 @@ import hashlib
 import urllib.parse
 from collections.abc import AsyncIterator
 from pathlib import Path, PurePath
-from typing import Any, Never, Optional
+from typing import Never, Optional
 
 import requests
 
+import xbrl_filings_api.downloader.stats as stats
+from xbrl_filings_api.downloader.download_result import DownloadResult
 from xbrl_filings_api.downloader.download_specs import DownloadSpecs
-from xbrl_filings_api.downloader.stat_counters import StatCounters
 from xbrl_filings_api.exceptions import CorruptDownloadError
-
-timeout_sec = 30
-"""Maximum timeout for getting an initial response from the server."""
-
-stats = StatCounters()
 
 
 def download(
         url: str,
         to_dir: str | PurePath,
+        *,
         stem_pattern: Optional[str] = None,
         filename: Optional[str] = None,
-        sha256: Optional[str] = None
+        sha256: Optional[str] = None,
+        timeout: float = 30.0
         ) -> str:
     """
     Download a file and optionally check if it is corrupt.
@@ -36,15 +34,20 @@ def download(
     See documentation of `download_async`.
     """
     return asyncio.run(download_async(
-        url, to_dir, stem_pattern, filename, sha256))
+        url, to_dir,
+        stem_pattern=stem_pattern, filename=filename, sha256=sha256,
+        timeout=timeout
+        ))
 
 
 async def download_async(
         url: str,
         to_dir: str | PurePath,
+        *,
         stem_pattern: Optional[str] = None,
         filename: Optional[str] = None,
-        sha256: Optional[str] = None
+        sha256: Optional[str] = None,
+        timeout: float = 30.0
         ) -> str:
     """
     Download a file and optionally check if it is corrupt.
@@ -68,7 +71,7 @@ async def download_async(
     ----------
     url : str
         URL to download.
-    to_dir : str or pathlike
+    to_dir : str or path-like
         Directory to save the file.
     stem_pattern : str, optional
         Pattern to add to the filename stems. Placeholder ``/name/``
@@ -78,10 +81,13 @@ async def download_async(
     sha256 : str, optional
         Expected SHA-256 hash as a hex string. Case-insensitive. No
         hash is calculated if this parameter is not given.
+    timeout : float, default 30.0
+        Maximum timeout for getting an initial response from the server
+        in seconds.
 
     Returns
     -------
-    coroutine of str
+    str
         Local path where the downloaded file was saved.
 
     Raises
@@ -93,8 +99,6 @@ async def download_async(
     requests.ConnectionError
         Connection fails.
     """
-    global stats, timeout_sec # noqa: PLW0602
-
     validate_stem_pattern(stem_pattern)
     if not isinstance(to_dir, Path):
         to_dir = Path(to_dir)
@@ -109,7 +113,7 @@ async def download_async(
                 num += 1
             filename = f'file{num:04}'
 
-    res = requests.get(url, stream=True, timeout=timeout_sec)
+    res = requests.get(url, stream=True, timeout=timeout)
     res.raise_for_status()
 
     hash_ = None
@@ -148,7 +152,7 @@ async def download_async(
 
 def download_parallel(
         items: list[DownloadSpecs], max_concurrent: int
-        ) -> list[tuple[Any, str, str | Exception]]:
+        ) -> list[DownloadResult]:
     """
     Download multiple files in parallel.
 
@@ -161,40 +165,17 @@ def download_parallel(
 
     Returns
     -------
-    list of tuple of (any, {str, Exception})
+    list of DownloadResult
         List of `download_parallel_async_iter` yield values.
     """
     return asyncio.run(download_parallel_async(items, max_concurrent))
 
 
 async def download_parallel_async(
-        items: list[DownloadSpecs], max_concurrent: int
-        ) -> list[tuple[Any, str, str | Exception]]:
-    """
-    Download multiple files in parallel.
-
-    See documentation of `download_parallel_async_iter`.
-
-    Parameters
-    ----------
-    items : list of DownloadSpecs
-    max_concurrent : int
-
-    Returns
-    -------
-    coroutine of list of tuple of (any, str, {str, Exception})
-        List of `download_parallel_async_iter` yield values.
-    """
-    results = []
-    async for item in download_parallel_async_iter(
-            items, max_concurrent):
-        results.append(item)
-    return results
-
-
-async def download_parallel_async_iter(
-        items: list[DownloadSpecs], max_concurrent: int
-        ) -> AsyncIterator[tuple[Any, str, str | Exception]]:
+        items: list[DownloadSpecs],
+        max_concurrent: int,
+        timeout: float = 30.0
+        ) -> list[DownloadResult]:
     """
     Download multiple files in parallel.
 
@@ -205,30 +186,67 @@ async def download_parallel_async_iter(
     ----------
     items : list of DownloadSpecs
         Instances of `DownloadSpecs` accept the same parameters as
-        method `download_async` with additional parameters `obj` and
-        `attr_base`.
+        method `download_async` with an additional attribute `info`.
     max_concurrent : int
         Maximum number of simultaneous downloads allowed.
+    timeout : float, default 30.0
+        Maximum timeout for getting an initial response from the server
+        in seconds.
+
+    Returns
+    -------
+    list of DownloadResult
+        List of `download_parallel_async_iter` yield values.
+    """
+    results = []
+    dliter = download_parallel_async_iter(
+        items,
+        max_concurrent=max_concurrent,
+        timeout=timeout
+        )
+    async for item in dliter:
+        results.append(item)
+    return results
+
+
+async def download_parallel_async_iter(
+        items: list[DownloadSpecs],
+        *,
+        max_concurrent: int,
+        timeout: float = 30.0
+        ) -> AsyncIterator[DownloadResult]:
+    """
+    Download multiple files in parallel.
+
+    Calls method `download_async` via parameter `items`, see
+    documentation.
+
+    Parameters
+    ----------
+    items : list of DownloadSpecs
+        Instances of `DownloadSpecs` accept the same parameters as
+        method `download_async` with an additional attribute `info`.
+    max_concurrent : int
+        Maximum number of simultaneous downloads allowed.
+    timeout : float, default 30.0
+        Maximum timeout for getting an initial response from the server
+        in seconds.
 
     Yields
     ------
-    any
-        Attribute `obj` from `items` item.
-    str
-        File format.
-    {str, exception}
-        Path where the file was saved or an exception.
+    DownloadResult
+        Contains information on the finished download.
     """
     dlque: asyncio.Queue[DownloadSpecs] = asyncio.Queue()
     for item in items:
         dlque.put_nowait(item)
 
-    resultque: asyncio.Queue[tuple[Any, str, Exception | str]] = (
+    resultque: asyncio.Queue[DownloadResult] = (
         asyncio.Queue())
     tasks: list[asyncio.Task] = []
     for worker_num in range(1, min(max_concurrent, len(items)) + 1):
         task = asyncio.create_task(
-            _download_parallel_worker(dlque, resultque),
+            _download_parallel_worker(dlque, resultque, timeout),
             name=f'worker-{worker_num}'
             )
         tasks.append(task)
@@ -243,19 +261,27 @@ async def download_parallel_async_iter(
 
 
 async def _download_parallel_worker(
-        dlque: asyncio.Queue, resultque: asyncio.Queue) -> Never:
+        dlque: asyncio.Queue[DownloadSpecs],
+        resultque: asyncio.Queue[DownloadResult],
+        timeout: float
+        ) -> Never:
     """Coroutine worker for `download_parallel_async_iter`."""
     while True:
-        item: DownloadSpecs = await dlque.get()
+        item = await dlque.get()
+        result = None
         try:
             path = await download_async(
-                item.url, item.to_dir, item.stem_pattern, item.filename,
-                item.sha256
+                item.url, item.to_dir,
+                stem_pattern=item.stem_pattern, filename=item.filename,
+                sha256=item.sha256, timeout=timeout
                 )
         except Exception as err:
-            resultque.put_nowait((item.obj, item.attr_base, err))
+            result = DownloadResult(
+                obj=item.info.obj, file=item.info.file, err=err)
         else:
-            resultque.put_nowait((item.obj, item.attr_base, path))
+            result = DownloadResult(
+                obj=item.info.obj, file=item.info.file, path=path)
+        resultque.put_nowait(result)
         dlque.task_done()
 
 
@@ -279,29 +305,3 @@ def validate_stem_pattern(stem_pattern: str | None):
             + repr(stem_pattern)
             )
         raise ValueError(msg)
-
-
-def set_timeout_sec(new_value: float) -> None:
-    """
-    Set request timeout.
-
-    Parameters
-    ----------
-    new_value: float
-        New timeout value in seconds.
-    """
-    global timeout_sec
-    timeout_sec = new_value
-
-
-def get_timeout_sec() -> float:
-    """
-    Get request timeout.
-
-    Returns
-    -------
-    float
-        Current timeout value in seconds.
-    """
-    global timeout_sec
-    return timeout_sec

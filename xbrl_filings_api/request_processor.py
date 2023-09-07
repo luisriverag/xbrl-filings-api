@@ -13,6 +13,7 @@ from typing import Literal
 import requests
 
 import xbrl_filings_api.options as options
+import xbrl_filings_api.stats as stats
 from xbrl_filings_api.api_object import (
     APIError,
     APIErrorGroup,
@@ -32,7 +33,6 @@ from xbrl_filings_api.enums import (
 from xbrl_filings_api.exceptions import HTTPStatusError
 from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
 
-page_counter = 0
 api_attribute_map: dict[str, str]
 
 
@@ -176,11 +176,11 @@ def _get_request_param_list(
                         mf_values.append(month_end.strftime('%Y-%m-%d'))
 
                         req_month += 1
-                        if req_month > 12: # noqa: PLR2004
+                        if req_month > 12:  # noqa: PLR2004
                             req_year, req_month = req_year+1, 1
                     resolved.extend(mf_values)
 
-                if len(nums) == 2: # noqa: PLR2004
+                if len(nums) == 2:  # noqa: PLR2004
                     year, month = nums
                     month_end = _get_month_end(year, month)
                     resolved.append(month_end.strftime('%Y-%m-%d'))
@@ -217,7 +217,7 @@ def _get_month_end(year: int, month: int) -> date:
 
 
 def _filters_to_query_params(filters: dict[str, str]) -> dict[str, str]:
-    global api_attribute_map # noqa: PLW0602
+    global api_attribute_map  # noqa: PLW0602
     qparams = {}
     for field_name, value in filters.items():
         try:
@@ -230,7 +230,7 @@ def _filters_to_query_params(filters: dict[str, str]) -> dict[str, str]:
 
 
 def _get_sort_query_param(sort: Sequence[str]) -> str:
-    global api_attribute_map # noqa: PLW0602
+    global api_attribute_map  # noqa: PLW0602
     qparam = ''
     for field in sort:
         if qparam != '':
@@ -264,8 +264,6 @@ def _retrieve_page_json(
     HTTPStatusError
     requests.ConnectionError
     """
-    global page_counter
-
     furl = url
     if params and len(params) > 0:
         furl += '?' + '&'.join([f'{key}={val}' for key, val in params.items()])
@@ -275,10 +273,10 @@ def _retrieve_page_json(
         url, params, headers={'Content-Type': 'application/vnd.api+json'},
         timeout=options.timeout_sec
         )
-    page_counter += 1
+    stats.page_counter += 1
     api_request = APIRequest(res.url, request_time)
 
-    if res.status_code == 200:
+    if res.status_code == 200:  # noqa: PLR2004
         print('  > Success')
     else:
         print('  > STATUS ' + str(res.status_code))
@@ -295,14 +293,14 @@ def _retrieve_page_json(
             for err_frag in json_frag['errors']
             ]
         raise APIErrorGroup(msg, excs)
-    elif res.status_code != 200:
+    elif res.status_code != 200:  # noqa: PLR2004
         raise HTTPStatusError(res.status_code, res.reason, res.text)
 
     return json_frag, api_request
 
 
-def get_api_attribute_map() -> dict[str, str]:
-    attrmap = dict()
+def _get_api_attribute_map() -> dict[str, str]:
+    attrmap = {}
     for proto in (Filing(...), Entity(...), ValidationMessage(...)):
         cls = proto.__class__
         for prop in dir(proto):
@@ -320,4 +318,4 @@ def get_api_attribute_map() -> dict[str, str]:
     return attrmap
 
 
-api_attribute_map = get_api_attribute_map()
+api_attribute_map = _get_api_attribute_map()

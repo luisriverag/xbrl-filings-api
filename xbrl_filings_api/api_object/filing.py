@@ -15,7 +15,6 @@ from typing import ClassVar
 
 import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
-import xbrl_filings_api.save_paths as save_paths
 from xbrl_filings_api.api_object import APIResource, Entity, ValidationMessage
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.download_item import DownloadItem
@@ -337,7 +336,7 @@ class Filing(APIResource):
 
     def download(
             self,
-            formats: str | Iterable[str] | Mapping[str, DownloadItem],
+            files: str | Iterable[str] | Mapping[str, DownloadItem],
             to_dir: str | PurePath | None = None,
             *,
             stem_pattern: str | None = None,
@@ -346,13 +345,13 @@ class Filing(APIResource):
             filename: str | None = None
             ) -> None:
         """
-        Download files in type or types of `formats`.
+        Download files in type or types of `files`.
 
         The directories in `to_dir` will be created if they do not
         exist. By default, filename is derived from download URL. If the
         file already exists, it will be overwritten.
 
-        If parameter `formats` includes `package`, the downloaded files
+        If parameter `files` includes `package`, the downloaded files
         will be checked through the `package_sha256` attribute of Filing
         objects. If the hash does not match with the one calculated from
         download, exceptions `CorruptDownloadError` will be raised in a
@@ -375,7 +374,7 @@ class Filing(APIResource):
 
         Parameters
         ----------
-        formats : str or iterable of str or mapping of str: DownloadItem
+        files : str or iterable of str or mapping of str: DownloadItem
             Value, iterable item or mapping key must be in
             ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
             override method parameters for a single file.
@@ -409,35 +408,43 @@ class Filing(APIResource):
         """
         downloader.validate_stem_pattern(stem_pattern)
         items = download_specs_construct.construct(
-            formats, self, to_dir, stem_pattern, filename,
+            files, self, to_dir, stem_pattern, filename,
             self.VALID_DOWNLOAD_FORMATS,
             check_corruption=check_corruption
             )
-        dlset = downloader.download_parallel(
+        results = downloader.download_parallel(
             items, max_concurrent)
-        excs = save_paths.assign_all(dlset)
+        for result in results:
+            if result.path:
+                setattr(
+                    result.obj,
+                    f'{result.file}_download_path',
+                    result.path
+                    )
+        excs = [result.err for result in results]
         if excs:
             msg = 'Exceptions raised while downloading.'
             raise DownloadErrorGroup(msg, excs)
 
     async def download_async_iter(
             self,
-            formats: str | Iterable[str] | Mapping[str, DownloadItem],
+            files: str | Iterable[str] | Mapping[str, DownloadItem],
             to_dir: str | PurePath | None = None,
             *,
             stem_pattern: str | None = None,
             check_corruption: bool = True,
-            max_concurrent: int = 5
-            ) -> AsyncIterator[tuple['Filing', str, Exception | None]]:
+            max_concurrent: int = 5,
+            timeout: float = 30.0
+            ) -> AsyncIterator[downloader.DownloadResult]:
         """
-        Download files in type or types of `formats`.
+        Download files in type or types of `files`.
 
         The function follows the same logic as method `download()`. See
         documentation.
 
         Parameters
         ----------
-        formats : str or iterable of str or mapping of str: DownloadItem
+        files : str or iterable of str or mapping of str: DownloadItem
             Value, iterable item or mapping key must be in
             ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
             override method parameters for a single file.
@@ -450,16 +457,14 @@ class Filing(APIResource):
             Calculate hashes for package files.
         max_concurrent : int, default 5
             Maximum number of simultaneous downloads allowed.
+        timeout : float, default 30.0
+            Maximum timeout for getting an initial response from the
+            server in seconds.
 
         Yields
         ------
-        Filing
-            Filing object.
-        {'json', 'package', 'xhtml'}
-            Format name of the download.
-        Exception or None
-            Possible exception such as `CorruptDownloadError`,
-            `requests.HTTPError` or `requests.ConnectionError`.
+        DownloadResult
+            Contains information on the finished download.
 
         Warns
         -----
@@ -469,15 +474,24 @@ class Filing(APIResource):
         downloader.validate_stem_pattern(stem_pattern)
 
         items = download_specs_construct.construct(
-            formats, self, to_dir, stem_pattern, None,
-            Filing.VALID_DOWNLOAD_FORMATS,
+            files, self, to_dir, stem_pattern, None,
+            self.VALID_DOWNLOAD_FORMATS,
             check_corruption=check_corruption
             )
         dliter = downloader.download_parallel_async_iter(
-            items, max_concurrent)
-        async for filing, format_, result in dliter:
-            exc = save_paths.assign_single(filing, format_, result)
-            yield filing, format_, exc
+            items,
+            max_concurrent=max_concurrent,
+            timeout=timeout
+            )
+        result: downloader.DownloadResult
+        async for result in dliter:
+            if result.path:
+                setattr(
+                    result.obj,
+                    f'{result.file}_download_path',
+                    result.path
+                    )
+            yield result
 
     def _search_entity(
             self, json_frag: dict | EllipsisType,
@@ -551,12 +565,12 @@ class Filing(APIResource):
         stem = stem.replace('_', '-')
         last_part = stem.split('-')[-1]
         part_len = len(last_part)
-        is_bad_length = part_len < 2 or part_len > 3 # noqa: PLR2004
+        is_bad_length = part_len < 2 or part_len > 3  # noqa: PLR2004
         if is_bad_length or not last_part.isalpha():
             return None
 
         last_part = last_part.lower()
-        if part_len == 2: # noqa: PLR2004
+        if part_len == 2:  # noqa: PLR2004
             return last_part
         else:
             return LANG_CODE_TRANSFORM.get(last_part)

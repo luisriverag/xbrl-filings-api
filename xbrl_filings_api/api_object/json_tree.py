@@ -60,8 +60,8 @@ class JSONTree:
     """``unexpected_resource_types.pop() = (type_str, origin)``"""
 
     now = time.time()
-    dtnow = datetime.fromtimestamp(now) # noqa: DTZ006
-    dtnowutc = datetime.utcfromtimestamp(now) # noqa: DTZ004
+    dtnow = datetime.fromtimestamp(now)  # noqa: DTZ006
+    dtnowutc = datetime.utcfromtimestamp(now)  # noqa: DTZ004
     _local_utc_offset = dtnow - dtnowutc
     del now
 

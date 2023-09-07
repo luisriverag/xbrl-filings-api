@@ -55,7 +55,7 @@ def sets_to_sqlite(
     DatabaseSchemaUnmatchError
     sqlite3.DatabaseError
     """
-    _validate_path(ppath, update)
+    _validate_path(ppath, update=update)
     filing_data_attrs = Filing.get_data_attributes(
         flags, data_objs['Filing'])
     con, table_schema = _create_database_or_extend_schema(
@@ -81,7 +81,7 @@ def pages_to_sqlite(
     DatabaseSchemaUnmatchError
     sqlite3.DatabaseError
     """
-    _validate_path(ppath, update)
+    _validate_path(ppath, update=update)
     filing_data_attrs = Filing.get_data_attributes(flags)
     con, table_schema = _create_database_or_extend_schema(
         flags, ppath, filing_data_attrs, update=update)

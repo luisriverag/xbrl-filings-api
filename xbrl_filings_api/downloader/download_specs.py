@@ -1,4 +1,4 @@
-"""Define class DownloadSpecs."""
+"""Define class `DownloadSpecs`."""
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -18,9 +18,23 @@ class DownloadSpecs:
     """
 
     url: str
+    """URL to download."""
     to_dir: str | PurePath
-    obj: Any
-    attr_base: Optional[str] = None
+    """Directory to save the downloaded file."""
     stem_pattern: Optional[str] = None
+    """
+    Pattern to add to the filename stems.
+
+    Placeholder ``/name/`` is always required.
+    """
     filename: Optional[str] = None
+    """Name to be used for the saved file."""
     sha256: Optional[str] = None
+    """
+    Expected SHA-256 hash as a hex string.
+
+    Case-insensitive. No hash is calculated if this parameter is not
+    given.
+    """
+    info: Any = None
+    """Download-specific information."""

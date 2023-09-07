@@ -4,15 +4,14 @@
 #
 # SPDX-License-Identifier: MIT
 
-import xbrl_filings_api.downloader as downloader
-import xbrl_filings_api.request_processor as request_processor
+import xbrl_filings_api.downloader.stats as downloader_stats
 from xbrl_filings_api.api_object import (
     JSONTree,
     KeyPathRetrieveCounts,
 )
 
 
-def unaccessed_key_paths() -> list[tuple[str, str]]:
+def get_unaccessed_key_paths() -> list[tuple[str, str]]:
     """
     Get unaccessed JSON key paths of objects.
 
@@ -29,7 +28,7 @@ def unaccessed_key_paths() -> list[tuple[str, str]]:
     return sorted(JSONTree.get_unaccessed_key_paths())
 
 
-def key_path_availability_counts() -> list[KeyPathRetrieveCounts]:
+def get_key_path_availability_counts() -> list[KeyPathRetrieveCounts]:
     """
     Get counts of key paths that did not resolve to `None`.
 
@@ -51,7 +50,7 @@ def key_path_availability_counts() -> list[KeyPathRetrieveCounts]:
     return sorted(JSONTree.get_key_path_availability_counts())
 
 
-def unexpected_resource_types() -> list[tuple[str, str]]:
+def get_unexpected_resource_types() -> list[tuple[str, str]]:
     """
     Get unexpected resource types from the API.
 
@@ -63,44 +62,7 @@ def unexpected_resource_types() -> list[tuple[str, str]]:
     return sorted(JSONTree.unexpected_resource_types)
 
 
-def download_count() -> int:
-    """
-    Return count of finished file downloads.
-
-    Counter starts when the package is imported for the first time.
-    """
-    return downloader.stats.item_counter
-
-
-def api_request_count() -> int:
-    """
-    Return count of executed API page requests.
-
-    A single query may include multiple requests. Counter starts when
-    the package is imported for the first time.
-    """
-    return request_processor.page_counter
-
-
-def total_request_count() -> int:
-    """
-    Return count of finished API page requests and file downloads.
-
-    Counter starts when the package is imported for the first time.
-    """
-    return download_count() + api_request_count()
-
-
-def download_bytes() -> int:
-    """
-    Return number of bytes downloaded excluding API requests.
-
-    Counter starts when the package is imported for the first time.
-    """
-    return downloader.stats.byte_counter
-
-
-def download_size_str() -> str:
+def get_download_size() -> str:
     """
     Return size of data downloaded as text excluding API requests.
 
@@ -109,7 +71,7 @@ def download_size_str() -> str:
     Counter starts when the package is imported for the first time.
     """
     kb = 1024
-    bcount = download_bytes()
+    bcount = downloader_stats.byte_counter
     if bcount < kb:
         return f'{bcount} B'
     if bcount < kb ** 2:

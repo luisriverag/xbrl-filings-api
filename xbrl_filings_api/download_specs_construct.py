@@ -9,77 +9,85 @@ from collections.abc import Container, Iterable, Mapping
 from pathlib import PurePath
 from typing import Any
 
+from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader import DownloadSpecs
 from xbrl_filings_api.exceptions import FileNotAvailableWarning
 
 
 def construct(
-        formats: str | Iterable[str] | Mapping[str, DownloadItem],
+        files: str | Iterable[str] | Mapping[str, DownloadItem],
         filing: Any,
         to_dir: str | PurePath | None,
         stem_pattern: str | None,
         filename: str | None,
-        valid_formats: Container,
+        valid_file_formats: Container,
         *,
         check_corruption: bool
         ) -> list[DownloadSpecs]:
-    """Construct a list of `DownloadSpecs` objects."""
-    if isinstance(formats, str):
-        formats = [formats]
+    """
+    Construct a list of `DownloadSpecs` objects.
+
+    Returns
+    -------
+    DownloadSpecs
+        Instructions for a concrete download.
+    """
+    if isinstance(files, str):
+        files = [files]
     items = []
 
-    if isinstance(formats, Mapping):
-        for format_key in formats:
-            download_item = formats[format_key]
+    if isinstance(files, Mapping):
+        for format_key in files:
+            download_item = files[format_key]
             full_item = _get_filing_download_specs(
                 format_key, download_item, filing, to_dir, stem_pattern,
-                filename, valid_formats,
+                filename, valid_file_formats,
                 check_corruption=check_corruption
                 )
             if full_item:
                 items.append(full_item)
 
-    elif isinstance(formats, Iterable):
-        for format_ in formats:
+    elif isinstance(files, Iterable):
+        for file in files:
             full_item = _get_filing_download_specs(
-                format_, None, filing, to_dir, stem_pattern, filename,
-                valid_formats,
+                file, None, filing, to_dir, stem_pattern, filename,
+                valid_file_formats,
                 check_corruption=check_corruption
                 )
             if full_item:
                 items.append(full_item)
     else:
-        msg = "Parameter 'formats' is neither a Mapping nor an Iterable"
+        msg = "Parameter 'files' is neither a Mapping nor an Iterable"
         raise ValueError(msg)
     return items
 
 
 def _get_filing_download_specs(
-        format_: str,
+        file: str,
         download_item: DownloadItem | None,
         filing: Any,
         to_dir: str | PurePath | None,
         stem_pattern: str | None,
         filename: str | None,
-        valid_formats: Container,
+        valid_file_formats: Container,
         *,
         check_corruption: bool
         ) -> DownloadSpecs | None:
-    if format_ not in valid_formats:
-        msg = f'Format_ {format_!r} is not among {valid_formats!r}'
+    if file not in valid_file_formats:
+        msg = f'file {file!r} is not among {valid_file_formats!r}'
         raise ValueError(msg)
 
-    url = getattr(filing, f'{format_}_url')
+    url = getattr(filing, f'{file}_url')
     if not url:
         format_text = (
-            format_.capitalize() if format_ == 'package' else format_.upper())
+            file.capitalize() if file == 'package' else file.upper())
         msg = f'{format_text} not available for {filing!r}'
         warnings.warn(msg, FileNotAvailableWarning, stacklevel=2)
         return None
 
     sha256 = None
-    if check_corruption and format_ == 'package':
+    if check_corruption and file == 'package':
         sha256 = filing.package_sha256
 
     if download_item:
@@ -95,9 +103,8 @@ def _get_filing_download_specs(
     return DownloadSpecs(
         url=url,
         to_dir=to_dir,
-        obj=filing,
-        attr_base=format_,
         stem_pattern=stem_pattern,
         filename=filename,
-        sha256=sha256
+        sha256=sha256,
+        info=DownloadInfo(obj=filing, file=file)
     )

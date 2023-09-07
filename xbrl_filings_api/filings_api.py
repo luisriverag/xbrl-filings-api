@@ -69,14 +69,6 @@ the most recently added filings, specify the following parameter::
 
     sort='-added_time'
 
-Attributes
-----------
-download_count : int
-api_request_count : int
-total_request_count : int
-download_bytes : int
-download_size_str : str
-
 """
 
 # SPDX-FileCopyrightText: 2023-present Lauri Salmela <lauri.m.salmela@gmail.com>
