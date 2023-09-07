@@ -96,13 +96,14 @@ def generate_pages(
     if add_api_params:
         params.update(add_api_params)
 
-    request_param_list = _get_request_param_list(filters, params)
+    params_list = _get_params_list_on_filters(params, filters)
 
     request_time = _get_request_time()
 
     received_size = 0
-    for req_params in request_param_list:
+    for query_params in params_list:
         next_url: str | None = options.entry_point_url
+        req_params: dict[str, str] | None = query_params
         while next_url:
             page_json, api_request = _retrieve_page_json(
                 next_url, req_params, request_time)
@@ -126,85 +127,119 @@ def generate_pages(
             break
 
 
-def _get_request_param_list(
-        filters: Mapping[str, str | Iterable[str]] | None,
-        params: dict[str, str]
-        ) -> list[dict[str, str] | None]:
+def _get_params_list_on_filters(
+        params: dict[str, str],
+        filters: Mapping[str, str | Iterable[str]] | None
+        ) -> list[dict[str, str]]:
+    """Append filter keys to `params` dict."""
     if not filters:
         return [params]
 
-    date_filters = {
-        fld: filters[fld] for fld in filters if fld.endswith('_date')}
-    working_filters = {
-        fld: filters[fld] for fld in filters if fld not in date_filters}
+    date_filters: dict[str, list[str]] = {}
+    for fld, val in filters.items():
+        if fld.endswith('_date'):
+            # Turn literal into a list of a string
+            if (not isinstance(val, Iterable)
+                    or isinstance(val, str)):
+                date_filters[fld] = [str(val)]
+            # Normalize iterables into lists of strings
+            else:
+                date_filters[fld] = [str(item) for item in val]
 
-    multifilters = {
-        fld: working_filters[fld] for fld in working_filters
-        if isinstance(working_filters[fld], Iterable)
-        and not isinstance(working_filters[fld], str)
+    multifilters: dict[str, list[str]] = {}
+    for fld, iterb in filters.items():
+        if (fld not in date_filters
+            and isinstance(iterb, Iterable)
+            and not isinstance(iterb, str)):
+            # Normalize multifilter values to list of strings
+            multifilters[fld] = [str(val) for val in iterb]
+
+    # Normalise single filters into strings
+    single_filters: dict[str, str] = {
+        fld: str(val)
+        for fld, val in filters.items()
+        if fld not in date_filters
+        and fld not in multifilters
         }
-    for fld in multifilters:
-        del working_filters[fld]
 
     if date_filters:
-        if options.year_filter_months[1] <= options.year_filter_months[0]:
-            msg = (
-                'The option year_filter_months stop (2nd item) is before '
-                'or equal to start (1st item)'
-                )
-            raise ValueError(msg)
+        _resolve_date_filters(date_filters, multifilters, single_filters)
 
-        for field_name, filter_iterb in date_filters.items():
-            if isinstance(filter_iterb, str):
-                filter_iterb = [filter_iterb]
-            resolved: list[str] = []
-            for date_filter in filter_iterb:
-                nums = [int(num) for num in date_filter.split('-')]
+    params |= _filters_to_query_params(single_filters)
 
-                if len(nums) == 1:
-                    year = nums[0]
-                    start_part, stop_part = options.year_filter_months
-                    req_year, req_month = year+start_part[0], start_part[1]
-                    stop_year, stop_month = year+stop_part[0], stop_part[1]
-
-                    mf_values = []
-                    while (req_year, req_month) < (stop_year, stop_month):
-                        month_end = _get_month_end(req_year, req_month)
-                        mf_values.append(month_end.strftime('%Y-%m-%d'))
-
-                        req_month += 1
-                        if req_month > 12:  # noqa: PLR2004
-                            req_year, req_month = req_year+1, 1
-                    resolved.extend(mf_values)
-
-                if len(nums) == 2:  # noqa: PLR2004
-                    year, month = nums
-                    month_end = _get_month_end(year, month)
-                    resolved.append(month_end.strftime('%Y-%m-%d'))
-                else:
-                    resolved.append(date_filter)
-            if len(resolved) == 1:
-                working_filters[field_name] = resolved[0]
-            else:
-                multifilters[field_name] = resolved
-
-    # working_filters values are all non-iterables
-    params |= _filters_to_query_params(working_filters) # type: ignore
-
-    if not multifilters:
-        return [params]
+    if multifilters:
+        return _expand_params_on_multifilters(params, multifilters)
     else:
-        # Cartesian product of multifilter values
-        filters_add_list = [
-            dict(zip(multifilters.keys(), values))
-            for values in itertools.product(*multifilters.values())
-            ]
-        rp_list: list[dict[str, str] | None] = []
-        for filters_add in filters_add_list:
-            req_params = params.copy()
-            req_params |= _filters_to_query_params(filters_add)
-            rp_list.append(req_params)
-        return rp_list
+        return [params]
+
+
+def _resolve_date_filters(
+        date_filters: dict[str, list[str]],
+        multifilters: dict[str, list[str]],
+        single_filters: dict[str, str]
+        ) -> None:
+    """Resolve `date_filters` into filter dicts."""
+    if options.year_filter_months[1] <= options.year_filter_months[0]:
+        msg = (
+            'The option year_filter_months stop (2nd item) is before '
+            'or equal to start (1st item)'
+            )
+        raise ValueError(msg)
+
+    for field_name, filter_list in date_filters.items():
+        resolved: list[str] = []
+        for date_filter in filter_list:
+            nums = [int(num) for num in date_filter.split('-')]
+
+            if len(nums) == 1:
+                year = nums[0]
+                start_part, stop_part = options.year_filter_months
+                req_year, req_month = year+start_part[0], start_part[1]
+                stop_year, stop_month = year+stop_part[0], stop_part[1]
+
+                mf_values = []
+                while (req_year, req_month) < (stop_year, stop_month):
+                    month_end = _get_month_end(req_year, req_month)
+                    mf_values.append(month_end.strftime('%Y-%m-%d'))
+
+                    req_month += 1
+                    if req_month > 12:  # noqa: PLR2004
+                        req_year, req_month = req_year+1, 1
+                resolved.extend(mf_values)
+
+            if len(nums) == 2:  # noqa: PLR2004
+                year, month = nums
+                month_end = _get_month_end(year, month)
+                resolved.append(month_end.strftime('%Y-%m-%d'))
+            else:
+                resolved.append(date_filter)
+        if len(resolved) == 1:
+            single_filters[field_name] = resolved[0]
+        else:
+            multifilters[field_name] = resolved
+
+
+def _expand_params_on_multifilters(
+        params: dict[str, str],
+        multifilters: dict[str, list[str]]
+        ) -> list[dict[str, str]]:
+    """
+    Return lists of request params based on expanded multifilters.
+
+    A Cartesian product will be taked from multifilters and these sets
+    of filters will be appended to the list of static params to form
+    complete param sets for multiple API requests.
+    """
+    params_append_list = [
+        dict(zip(multifilters.keys(), values))
+        for values in itertools.product(*multifilters.values())
+        ]
+    rp_list = []
+    for params_append in params_append_list:
+        req_params = params.copy()
+        req_params |= _filters_to_query_params(params_append)
+        rp_list.append(req_params)
+    return rp_list
 
 
 def _get_month_end(year: int, month: int) -> date:
