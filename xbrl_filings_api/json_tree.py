@@ -11,7 +11,7 @@ from datetime import UTC, date, datetime
 from typing import Any, ClassVar, Optional
 from urllib.parse import urljoin
 
-import xbrl_filings_api.options as options
+from xbrl_filings_api import options
 from xbrl_filings_api.enums import _ParseType
 
 logger = logging.getLogger(__name__)
@@ -61,6 +61,7 @@ class _JSONTree:
 
         _unaccessed_paths[class_name] = {key_path1, key_path2, ...}
     """
+
     _object_path_counter: ClassVar[dict[str, dict[str, _RetrieveCounter]]] = {}
     """
     Counter of key path access of API objects.
@@ -69,6 +70,7 @@ class _JSONTree:
 
         _object_path_counter[class_name][key_path] = _RetrieveCounter()
     """
+
     unexpected_resource_types: ClassVar[set[tuple[str, str]]] = set()
     """
     Set of unexpected API resource types.

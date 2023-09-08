@@ -7,8 +7,7 @@
 from collections.abc import Sized
 from datetime import datetime
 
-import xbrl_filings_api.options as options
-import xbrl_filings_api.order_columns as order_columns
+from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.json_tree import _JSONTree
 from xbrl_filings_api.time_formats import time_formats

@@ -6,20 +6,20 @@
 
 from enum import Enum, Flag, auto
 
-NO_LIMIT = 0
-
 
 class _ParseType(Enum):
     """Instuctions how to parse JSON key paths in API responses."""
 
     DATE = auto()
     """Parsed into `datetime.date`."""
+
     DATETIME = auto()
     """
     Parsed into `datetime.datetime`.
 
     The time zone will be determined according to `options.utc_time`.
     """
+
     URL = auto()
     """Relative URLs will be parsed into absolute URLs."""
 
@@ -29,8 +29,10 @@ class ScopeFlag(Flag):
 
     GET_ONLY_FILINGS = auto()
     """Retrieve only filings and nothing else. Overrides other flags."""
+
     GET_ENTITY = auto()
     """Retrieve entities of filings."""
+
     GET_VALIDATION_MESSAGES = auto()
     """Retrieve validation messages of filings."""
 

@@ -38,5 +38,5 @@ LANG_CODE_TRANSFORM = {
     'slk': 'sk', # Slovak
     'slv': 'sl', # Slovenian
     'spa': 'es', # Spanish
-    'swe': 'sv' # Swedish
+    'swe': 'sv', # Swedish
 }

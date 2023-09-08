@@ -13,9 +13,11 @@ from collections.abc import AsyncIterator, Iterable, Mapping
 from pathlib import Path, PurePath
 from typing import Optional
 
-import xbrl_filings_api.database_processor as database_processor
-import xbrl_filings_api.download_specs_construct as download_specs_construct
-import xbrl_filings_api.downloader as downloader
+from xbrl_filings_api import (
+    database_processor,
+    download_specs_construct,
+    downloader,
+)
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import ResourceLiteralType
 from xbrl_filings_api.download_item import DownloadItem

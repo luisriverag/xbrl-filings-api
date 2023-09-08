@@ -12,12 +12,21 @@ from typing import Optional
 @dataclass
 class DownloadItem:
     """
-    Download item class for `xbrl_filings_api`.
+    Download item class for download methods.
 
-    Will be internally parsed into a `DownloadSpecs` object based on
-    caller method arguments.
+    Can be used to override download method parameters for a single
+    file.
     """
 
     filename: Optional[str] = None
+    """Name to be used for the saved file."""
+
     to_dir: Optional[str | PurePath] = None
+    """Directory to save the file."""
+
     stem_pattern: Optional[str] = None
+    """
+    Pattern to add to the filename stems.
+
+    Placeholder ``/name/`` is always required.
+    """

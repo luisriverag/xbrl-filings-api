@@ -13,8 +13,7 @@ from pathlib import PurePath
 from types import EllipsisType
 from typing import ClassVar
 
-import xbrl_filings_api.download_specs_construct as download_specs_construct
-import xbrl_filings_api.downloader as downloader
+from xbrl_filings_api import download_specs_construct, downloader
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.download_item import DownloadItem

@@ -13,8 +13,7 @@ from collections.abc import Generator, Iterable
 from datetime import datetime
 from pathlib import Path
 
-import xbrl_filings_api.options as options
-import xbrl_filings_api.order_columns as order_columns
+from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (

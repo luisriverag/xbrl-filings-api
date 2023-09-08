@@ -6,8 +6,9 @@
 
 from datetime import date, datetime
 
-# Exclude attributes with Python objects and lists of objects in
-# subclasses of `APIResource` to not end up in the data outputs.
+NO_LIMIT = 0
+"""."""
+
 ATTRS_ALWAYS_EXCLUDE_FROM_DATA = {
     'type',
     'entity',
@@ -15,6 +16,15 @@ ATTRS_ALWAYS_EXCLUDE_FROM_DATA = {
     'filings',
     'filing'
     }
+"""
+Exclude non-data attributes from `APIResource` data columns.
+
+Exclude attributes whose value is a functional object or some sort of
+list from the data output.
+"""
 
 ResourceLiteralType = str | int | datetime | date
+"""Concrete datatype of `APIResource` data attribute."""
+
 YearFilterMonthsType = tuple[tuple[int, int], tuple[int, int]]
+"""Months chosen when only a year is given in a date filter."""

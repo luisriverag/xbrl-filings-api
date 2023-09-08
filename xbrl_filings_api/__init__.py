@@ -28,6 +28,7 @@ import logging
 from xbrl_filings_api.api_error import APIError, APIErrorGroup
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.constants import NO_LIMIT
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
@@ -37,7 +38,6 @@ from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
     GET_VALIDATION_MESSAGES,
-    NO_LIMIT,
     ScopeFlag,
 )
 from xbrl_filings_api.exceptions import (

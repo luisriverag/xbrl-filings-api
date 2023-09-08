@@ -13,16 +13,15 @@ from typing import Any, Literal
 
 import requests
 
-import xbrl_filings_api.options as options
-import xbrl_filings_api.stats as stats
+from xbrl_filings_api import options, stats
 from xbrl_filings_api.api_error import APIError, APIErrorGroup
 from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.constants import NO_LIMIT
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
     GET_VALIDATION_MESSAGES,
-    NO_LIMIT,
     ScopeFlag,
 )
 from xbrl_filings_api.exceptions import HTTPStatusError

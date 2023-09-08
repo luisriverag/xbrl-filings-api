@@ -10,10 +10,11 @@ from typing import Any
 
 @dataclass(kw_only=True)
 class DownloadInfo:
-    """Download info class for `DownloadItem` objects."""
+    """Download info class for `DownloadSpecs` objects."""
 
     obj: Any
     """Filing object which is used as the origin for the download."""
+
     file: str
     """
     File type to download.

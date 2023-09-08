@@ -13,7 +13,7 @@ from typing import Never, Optional
 
 import requests
 
-import xbrl_filings_api.downloader.stats as stats
+from xbrl_filings_api.downloader import stats
 from xbrl_filings_api.downloader.download_result import DownloadResult
 from xbrl_filings_api.downloader.download_specs import DownloadSpecs
 from xbrl_filings_api.exceptions import CorruptDownloadError
