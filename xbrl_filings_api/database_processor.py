@@ -64,45 +64,6 @@ def sets_to_sqlite(
     con.close()
 
 
-def pages_to_sqlite(
-        flags: ScopeFlag,
-        ppath: Path,
-        page_gen: Generator[FilingsPage, None, None],
-        *,
-        update: bool
-        ) -> None:
-    """
-    Save API pages to SQLite3 database.
-
-    Raises
-    ------
-    DatabaseFileExistsError
-    DatabasePathIsReservedError
-    DatabaseSchemaUnmatchError
-    sqlite3.DatabaseError
-    """
-    _validate_path(ppath, update=update)
-    filing_data_attrs = Filing.get_data_attributes(flags)
-    con, table_schema = _create_database_or_extend_schema(
-        flags, ppath, filing_data_attrs, update=update)
-
-    for page in page_gen:
-        entities: list[Entity] = []
-        messages: list[ValidationMessage] = []
-        for filing in page.filing_list:
-            if filing.entity:
-                entities.append(filing.entity)
-            if filing.validation_messages:
-                messages.extend(filing.validation_messages)
-        data_objs: dict[str, Iterable[APIResource]] = {
-            'Filing': page.filing_list,
-            'Entity': entities,
-            'ValidationMessage': messages
-            }
-        _insert_data(table_schema, data_objs, con)
-    con.close()
-
-
 def _validate_path(ppath: Path, *, update: bool) -> None:
     """
     Validate path by raising expections.

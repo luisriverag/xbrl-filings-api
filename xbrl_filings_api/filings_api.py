@@ -222,7 +222,6 @@ def to_sqlite(
         When ``update=True``, if the file is not a database
         (``err.sqlite_errorname='SQLITE_NOTADB'``) etc.
     """
-    ppath = path if isinstance(path, Path) else Path(path)
     if isinstance(sort, str):
         sort = [sort]
 
@@ -234,8 +233,9 @@ def to_sqlite(
 
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
-    database_processor.pages_to_sqlite(
-        flags, ppath, page_gen, update=update)
+    for page in page_gen:
+        FilingSet(page.filing_list).to_sqlite(path, flags, update=update)
+        filings.update(page.filing_list)
 
 
 def filing_page_iter(

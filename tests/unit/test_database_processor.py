@@ -7,7 +7,6 @@
 from xbrl_filings_api import database_processor
 
 # database_processor.sets_to_sqlite
-# database_processor.pages_to_sqlite
 # database_processor._validate_path
 # database_processor._create_database_or_extend_schema
 # database_processor._get_col_defs
