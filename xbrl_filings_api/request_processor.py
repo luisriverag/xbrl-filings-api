@@ -9,7 +9,7 @@ import logging
 import urllib.parse
 from collections.abc import Generator, Iterable, Mapping, Sequence
 from datetime import UTC, date, datetime, timedelta
-from typing import Literal
+from typing import Any, Literal
 
 import requests
 
@@ -37,7 +37,7 @@ api_attribute_map: dict[str, str]
 
 
 def generate_pages(
-        filters: Mapping[str, str | Iterable[str]] | None,
+        filters: Mapping[str, Any | Iterable[Any]] | None,
         sort: Sequence[str] | None,
         max_size: int,
         flags: ScopeFlag,
@@ -49,7 +49,7 @@ def generate_pages(
 
     Parameters
     ----------
-    filters : mapping of str: {str, iterable of str}, optional
+    filters : mapping of str: {any, iterable of any}, optional
     sort: sequence of str or None
     max_size : int or NO_LIMIT
     flags : ScopeFlag
@@ -127,7 +127,7 @@ def generate_pages(
 
 def _get_params_list_on_filters(
         params: dict[str, str],
-        filters: Mapping[str, str | Iterable[str]] | None
+        filters: Mapping[str, Any | Iterable[Any]] | None
         ) -> list[dict[str, str]]:
     """Append filter keys to `params` dict."""
     if not filters:
@@ -246,10 +246,12 @@ def _get_month_end(year: int, month: int) -> date:
     return last_day
 
 
-def _filters_to_query_params(filters: dict[str, str]) -> dict[str, str]:
+def _filters_to_query_params(
+        single_filters: dict[str, str]
+        ) -> dict[str, str]:
     global api_attribute_map  # noqa: PLW0602
     qparams = {}
-    for field_name, value in filters.items():
+    for field_name, value in single_filters.items():
         try:
             filter_name = api_attribute_map[field_name]
         except KeyError:

@@ -1,8 +1,19 @@
 """Examples of the library."""
 
 import asyncio
+import logging
+import os.path
+import tempfile
 
 import xbrl_filings_api as xf
+
+# Set up logging
+logging.basicConfig(
+    filename=os.path.join(tempfile.gettempdir(), 'example.log'),
+    encoding='utf-8',
+    level=logging.DEBUG,
+    format='%(asctime)s <%(name)s %(levelname)s> %(message)s'
+    )
 
 
 async def print_progress_async():

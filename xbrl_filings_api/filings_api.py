@@ -77,7 +77,7 @@ the most recently added filings, specify the following parameter::
 
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import xbrl_filings_api.database_processor as database_processor
 import xbrl_filings_api.request_processor as request_processor
@@ -88,7 +88,7 @@ from xbrl_filings_api.filings_page import FilingsPage
 
 
 def get_filings(
-        filters: Optional[Mapping[str, str | Iterable[str]]] = None,
+        filters: Optional[Mapping[str, Any | Iterable[Any]]] = None,
         sort: Optional[str | Sequence[str]] = None,
         max_size: int = 100,
         flags: ScopeFlag = GET_ONLY_FILINGS,
@@ -99,7 +99,7 @@ def get_filings(
 
     Parameters
     ----------
-    filters : mapping of str: {str, iterable of str}, optional
+    filters : mapping of str: {any, iterable of any}, optional
         Mapping of filters. See `FilingAPI` class documentation.
     sort : str or sequence of str, optional
         Sort result set by specified attribute(s). Use values of
@@ -143,7 +143,7 @@ def to_sqlite(
         flags: ScopeFlag = GET_ONLY_FILINGS,
         *,
         update: bool = False,
-        filters: Optional[Mapping[str, str | Iterable[str]]] = None,
+        filters: Optional[Mapping[str, Any | Iterable[Any]]] = None,
         sort: Optional[str | Sequence[str]] = None,
         max_size: int = 100,
         add_api_params: Optional[Mapping[str, str]] = None
@@ -188,7 +188,7 @@ def to_sqlite(
     update : bool, default False
         If the database already exists, update it with retrieved
         records. Old records are updated and new ones are added.
-    filters : mapping of str: {str, iterable of str}, optional
+    filters : mapping of str: {any, iterable of any}, optional
         Mapping of filters. See `FilingAPI` class documentation.
     sort : str or sequence of str, optional
         Sort result set by specified attribute(s). Use values of
@@ -240,7 +240,7 @@ def to_sqlite(
 
 
 def filing_page_iter(
-        filters: Optional[Mapping[str, str | Iterable[str]]] = None,
+        filters: Optional[Mapping[str, Any | Iterable[Any]]] = None,
         sort: Optional[str | Sequence[str]] = None,
         max_size: int = 100,
         flags: ScopeFlag = GET_ONLY_FILINGS,
@@ -251,7 +251,7 @@ def filing_page_iter(
 
     Parameters
     ----------
-    filters : mapping of str: {str, iterable of str}, optional
+    filters : mapping of str: {any, iterable of any}, optional
         Mapping of filters. See `FilingAPI` class documentation.
     sort : str or sequence of str, optional
         Sort result set by specified attribute(s). Use values of

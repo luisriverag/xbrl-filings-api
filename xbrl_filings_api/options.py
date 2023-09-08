@@ -23,11 +23,9 @@ year_filter_months : YearFilterMonthsType, default ((0, 8), (1, 8))
     field with only year defined. First int of inner tuples is a
     year offset and the second is the month of the year. Range
     end is non-inclusive, so default means until July.
-views : dict of str: tuple of (iterable of str, str), default DEFAULT_VIEWS
-    Dictionary where the key is view name and the value is a
-    tuple, where first item is a iterable of required table
-    names and the second item is the view SQL. The value should
-    be a SELECT statement.
+views : set of SQLiteView, default DEFAULT_VIEWS
+    Set of `SQLiteView` objects. The `name` attributes of objects may
+    not be overlapping.
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
@@ -35,6 +33,7 @@ views : dict of str: tuple of (iterable of str, str), default DEFAULT_VIEWS
 # SPDX-License-Identifier: MIT
 
 from xbrl_filings_api.constants import YearFilterMonthsType
+from xbrl_filings_api.sqlite_view import SQLiteView
 from xbrl_filings_api.sqlite_views import DEFAULT_VIEWS
 
 entry_point_url: str = 'https://filings.xbrl.org/api/filings'
@@ -62,8 +61,12 @@ is exclusive. Inner tuples have two values where the first is year
 offset and the second is calendar-style month number (e.g. 8 is August).
 """
 
-views: dict[str, tuple[list[str], str]] | None = DEFAULT_VIEWS
-"""SQLite3 views to be added to created databases."""
+views: set[SQLiteView] | None = DEFAULT_VIEWS
+"""
+SQLite3 views to be added to created databases.
+
+The `name` attributes of objects may not be overlapping.
+"""
 
 timeout_sec: float = 30.0
 """Maximum number of seconds to wait for response from the server."""
