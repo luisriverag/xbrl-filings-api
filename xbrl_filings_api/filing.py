@@ -15,11 +15,11 @@ from typing import ClassVar
 
 import xbrl_filings_api.download_specs_construct as download_specs_construct
 import xbrl_filings_api.downloader as downloader
-from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import ParseType
+from xbrl_filings_api.enums import _ParseType
 from xbrl_filings_api.exceptions import DownloadErrorGroup
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
 from xbrl_filings_api.validation_message import ValidationMessage
@@ -86,7 +86,7 @@ class Filing(APIResource):
     def __init__(
             self,
             json_frag: dict | EllipsisType,
-            api_request: APIRequest | None = None,
+            api_request: _APIRequest | None = None,
             entity_iter: Iterable[Entity] | None = None,
             message_iter: Iterable[ValidationMessage] | None = None
             ) -> None:
@@ -131,7 +131,7 @@ class Filing(APIResource):
         """
 
         self.last_end_date: date | None = self._json.get(
-            self.LAST_END_DATE, ParseType.DATE)
+            self.LAST_END_DATE, _ParseType.DATE)
         """
         The end date of the last period in the marked-up report
         contents.
@@ -172,7 +172,7 @@ class Filing(APIResource):
         `validation_messages`."""
 
         self.added_time: datetime | None = self._json.get(
-            self.ADDED_TIME, ParseType.DATETIME)
+            self.ADDED_TIME, _ParseType.DATETIME)
         """
         Timezone-aware datetime when the filing was added to
         filings.xbrl.org index.
@@ -189,7 +189,7 @@ class Filing(APIResource):
         """
 
         self.processed_time: datetime | None = self._json.get(
-            self.PROCESSED_TIME, ParseType.DATETIME)
+            self.PROCESSED_TIME, _ParseType.DATETIME)
         """
         Timezone-aware datetime when the filing was processed for the
         filings.xbrl.org index.
@@ -223,7 +223,7 @@ class Filing(APIResource):
         """
 
         self.json_url: str | None = self._json.get(
-            self.JSON_URL, ParseType.URL)
+            self.JSON_URL, _ParseType.URL)
         """
         Download URL for a derived xBRL-JSON document.
 
@@ -240,7 +240,7 @@ class Filing(APIResource):
         """
 
         self.package_url: str | None = self._json.get(
-            self.PACKAGE_URL, ParseType.URL)
+            self.PACKAGE_URL, _ParseType.URL)
         """
         Download URL for the official ESEF report package as filed to
         the OAM by the issuer.
@@ -254,7 +254,7 @@ class Filing(APIResource):
         """
 
         self.viewer_url: str | None = self._json.get(
-            self.VIEWER_URL, ParseType.URL)
+            self.VIEWER_URL, _ParseType.URL)
         """
         URL to a website with an inline XBRL viewer for this report.
 
@@ -265,7 +265,7 @@ class Filing(APIResource):
         """
 
         self.xhtml_url: str | None = self._json.get(
-            self.XHTML_URL, ParseType.URL)
+            self.XHTML_URL, _ParseType.URL)
         """
         Download URL for the inline XBRL report extracted from the
         official report package.

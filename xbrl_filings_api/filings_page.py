@@ -9,8 +9,8 @@ from collections.abc import Iterable
 from itertools import chain
 from typing import Any
 
-from xbrl_filings_api.api_page import APIPage
-from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_page import _APIPage
+from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
@@ -26,7 +26,7 @@ from xbrl_filings_api.validation_message import ValidationMessage
 logger = logging.getLogger(__name__)
 
 
-class FilingsPage(APIPage):
+class FilingsPage(_APIPage):
     """
     JSON:API response page containing filing resources.
 
@@ -47,7 +47,7 @@ class FilingsPage(APIPage):
     """
 
     def __init__(
-            self, json_frag: dict, api_request: APIRequest,
+            self, json_frag: dict, api_request: _APIRequest,
             flags: ScopeFlag, received_api_ids: dict[str, set],
             res_colls: dict[str, ResourceCollection]
             ) -> None:
@@ -153,13 +153,13 @@ class FilingsPage(APIPage):
                 ] = entity_iter, message_iter # type: ignore
             return Filing(
                 res_frag,
-                APIRequest(self.request_url, self.request_time),
+                _APIRequest(self.request_url, self.request_time),
                 *iters
                 )
 
     def _get_inc_resource(
             self,
-            api_request: APIRequest,
+            api_request: _APIRequest,
             received_api_ids: dict[str, set],
             type_obj: type[APIResource],
             flag_member: ScopeFlag,

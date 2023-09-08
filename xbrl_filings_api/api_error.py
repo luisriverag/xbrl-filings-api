@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from xbrl_filings_api.api_object import APIObject
-from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.exceptions import FilingsAPIError, FilingsAPIErrorGroup
 
 
@@ -32,7 +32,7 @@ class APIError(FilingsAPIError, APIObject):
     _str_attrs = ('title', 'detail', 'code')
 
     def __init__(
-            self, json_frag: dict, api_request: APIRequest,
+            self, json_frag: dict, api_request: _APIRequest,
             status: int, status_text: str) -> None:
         """Initiate an error of filings.xbrl.org API."""
         APIObject.__init__(self, json_frag, api_request)
@@ -54,7 +54,7 @@ class APIError(FilingsAPIError, APIObject):
 
         # self.api_id: str | None = self._json.get('id')
         # self.about_url: str | None = self._json.get(
-        #     'links.about', ParseType.URL)
+        #     'links.about', _ParseType.URL)
         # self.source_pointer: str | None = self._json.get(
         #     'source.pointer')
         # self.source_parameter: str | None = self._json.get(

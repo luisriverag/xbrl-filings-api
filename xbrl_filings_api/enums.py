@@ -9,7 +9,7 @@ from enum import Enum, Flag, auto
 NO_LIMIT = 0
 
 
-class ParseType(Enum):
+class _ParseType(Enum):
     """Instuctions how to parse JSON key paths in API responses."""
 
     DATE = auto()

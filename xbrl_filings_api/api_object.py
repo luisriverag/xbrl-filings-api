@@ -9,8 +9,8 @@ from datetime import datetime
 
 import xbrl_filings_api.options as options
 import xbrl_filings_api.order_columns as order_columns
-from xbrl_filings_api.api_request import APIRequest
-from xbrl_filings_api.json_tree import JSONTree
+from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.json_tree import _JSONTree
 from xbrl_filings_api.time_formats import time_formats
 
 
@@ -25,10 +25,10 @@ class APIObject:
     """
 
     def __init__(
-            self, json_frag: dict, api_request: APIRequest, *,
+            self, json_frag: dict, api_request: _APIRequest, *,
             do_not_track: bool = False
             ) -> None:
-        self._json = JSONTree(
+        self._json = _JSONTree(
             class_name=self.__class__.__qualname__,
             json_frag=json_frag,
             do_not_track=do_not_track

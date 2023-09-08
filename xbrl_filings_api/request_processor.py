@@ -16,7 +16,7 @@ import requests
 import xbrl_filings_api.options as options
 import xbrl_filings_api.stats as stats
 from xbrl_filings_api.api_error import APIError, APIErrorGroup
-from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
@@ -286,7 +286,7 @@ def _get_request_time() -> datetime:
 
 def _retrieve_page_json(
         url: str, params: dict | None, request_time: datetime
-        ) -> tuple[dict, APIRequest]:
+        ) -> tuple[dict, _APIRequest]:
     """
     Execute an API request and return the deserialized JSON object.
 
@@ -306,7 +306,7 @@ def _retrieve_page_json(
         timeout=options.timeout_sec
         )
     stats.page_counter += 1
-    api_request = APIRequest(res.url, request_time)
+    api_request = _APIRequest(res.url, request_time)
 
     if res.status_code == 200:  # noqa: PLR2004
         logger.info('  > Success')

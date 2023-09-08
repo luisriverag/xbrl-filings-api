@@ -11,7 +11,7 @@ from typing import Any, Optional
 
 import xbrl_filings_api.order_columns as order_columns
 from xbrl_filings_api.api_object import APIObject
-from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
 from xbrl_filings_api.enums import GET_ENTITY, GET_ONLY_FILINGS, ScopeFlag
 
@@ -36,7 +36,7 @@ class APIResource(APIObject):
     def __init__(
             self,
             json_frag: dict[str, Any] | EllipsisType,
-            api_request: APIRequest | None = None
+            api_request: _APIRequest | None = None
             ) -> None:
         """
         Initialize an API resource.
@@ -51,7 +51,7 @@ class APIResource(APIObject):
         if isinstance(json_frag, EllipsisType):
             is_prototype = True
             json_frag = {}
-            api_request = APIRequest('', datetime.now(tz=UTC))
+            api_request = _APIRequest('', datetime.now(tz=UTC))
         if api_request is None:
             raise ValueError()
 

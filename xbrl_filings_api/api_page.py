@@ -1,4 +1,4 @@
-"""Define `APIPage` and `_IncludedResource` classes."""
+"""Define `_APIPage` and `_IncludedResource` classes."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -7,8 +7,8 @@
 from dataclasses import dataclass
 
 from xbrl_filings_api.api_object import APIObject
-from xbrl_filings_api.api_request import APIRequest
-from xbrl_filings_api.enums import ParseType
+from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.enums import _ParseType
 
 
 @dataclass(frozen=True)
@@ -18,7 +18,7 @@ class _IncludedResource:
     frag: dict
 
 
-class APIPage(APIObject):
+class _APIPage(APIObject):
     """
     Base class for JSON:API response page or document.
 
@@ -34,7 +34,7 @@ class APIPage(APIObject):
     request_url : str
     """
 
-    def __init__(self, json_frag: dict, api_request: APIRequest):
+    def __init__(self, json_frag: dict, api_request: _APIRequest):
         super().__init__(json_frag, api_request)
 
         self._data: list | None = self._json.get(
@@ -61,23 +61,23 @@ class APIPage(APIObject):
         """
 
         self.api_self_url: str | None = self._json.get(
-            'links.self', ParseType.URL)
+            'links.self', _ParseType.URL)
         """Link to this JSON:API page."""
 
         self.api_prev_page_url: str | None = self._json.get(
-            'links.prev', ParseType.URL)
+            'links.prev', _ParseType.URL)
         """Link to previous JSON:API page in the query."""
 
         self.api_next_page_url: str | None = self._json.get(
-            'links.next', ParseType.URL)
+            'links.next', _ParseType.URL)
         """Link to next JSON:API page in the query."""
 
         self.api_first_page_url: str | None = self._json.get(
-            'links.first', ParseType.URL)
+            'links.first', _ParseType.URL)
         """Link to first JSON:API page in the query."""
 
         self.api_last_page_url: str | None = self._json.get(
-            'links.last', ParseType.URL)
+            'links.last', _ParseType.URL)
         """Link to last JSON:API page in the query."""
 
         self.jsonapi_version: str | None = self._json.get(

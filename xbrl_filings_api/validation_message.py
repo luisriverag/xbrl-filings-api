@@ -10,7 +10,7 @@ import urllib.parse
 from pathlib import PurePath
 from types import EllipsisType
 
-from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.enums import GET_VALIDATION_MESSAGES
 
@@ -75,7 +75,7 @@ class ValidationMessage(APIResource):
     def __init__(
             self,
             json_frag: dict | EllipsisType,
-            api_request: APIRequest | None = None
+            api_request: _APIRequest | None = None
             ) -> None:
         super().__init__(json_frag, api_request)
 

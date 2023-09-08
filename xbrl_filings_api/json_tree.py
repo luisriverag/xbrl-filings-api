@@ -1,4 +1,4 @@
-"""Define `JSONTree` class and related dataclasses."""
+"""Define `_JSONTree` class and related dataclasses."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -12,7 +12,7 @@ from typing import Any, ClassVar, Optional
 from urllib.parse import urljoin
 
 import xbrl_filings_api.options as options
-from xbrl_filings_api.enums import ParseType
+from xbrl_filings_api.enums import _ParseType
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class KeyPathRetrieveCounts:
     """Number of total reads."""
 
 
-class JSONTree:
+class _JSONTree:
     """
     Reader for deeply nested deserialized JSON trees.
 
@@ -92,7 +92,7 @@ class JSONTree:
             do_not_track: bool = False
             ) -> None:
         """
-        Initialize a JSONTree instance.
+        Initialize a _JSONTree instance.
 
         Parameters
         ----------
@@ -100,7 +100,7 @@ class JSONTree:
             The `__qualname__` of the parent `APIObject` subclass.
         json_frag : dict or None
             The underlying JSON:API unserialized JSON as a dictionary
-            structure. An `APIPage` contains the whole document.
+            structure. An `_APIPage` contains the whole document.
         do_not_track : bool, default False
             Do not track read and unaccessed keys.
         """
@@ -109,7 +109,7 @@ class JSONTree:
         self.do_not_track = do_not_track
 
     def get(
-            self, key_path: str, parse_type: Optional[ParseType] = None
+            self, key_path: str, parse_type: Optional[_ParseType] = None
             ) -> Any:
         """
         Read a dictionary key from a deeply nested dictionary.
@@ -120,15 +120,15 @@ class JSONTree:
             A dot-delimited key path for navigation in a deeply nested
             serialized JSON object.
             E.g. 'relationships.validation_messages.links.related'.
-        parse_type : ParseType member, optional
-            One of the `ParseType` Enum members. `ParseType.DATETIME`
+        parse_type : _ParseType member, optional
+            One of the `_ParseType` Enum members. `_ParseType.DATETIME`
             parses locale-aware ISO style UTC strings such as
-            '2023-05-09 10:51:50.382633', `ParseType.DATE` parses naive
-            dates and `ParseType.URL` resolves relative URLs based on
+            '2023-05-09 10:51:50.382633', `_ParseType.DATE` parses naive
+            dates and `_ParseType.URL` resolves relative URLs based on
             option `entry_point_url`.
         """
         if self.tree is None:
-            msg = 'Cannot call get() when JSONTree has been closed'
+            msg = 'Cannot call get() when _JSONTree has been closed'
             raise Exception(msg)
         key_value = None
         comps = key_path.split('.')
@@ -210,10 +210,10 @@ class JSONTree:
             upaths[self.class_name].add('.'.join(comps))
 
     def _parse_value(
-            self, key_value: str, parse_type: ParseType | None, key_path: str
+            self, key_value: str, parse_type: _ParseType | None, key_path: str
             ) -> datetime | date | str | None:
         """Parse string value of `key_path` based on `parse_type`."""
-        if parse_type == ParseType.DATETIME:
+        if parse_type == _ParseType.DATETIME:
             parsed_dt = None
             try:
                 parsed_dt = datetime.fromisoformat(key_value)
@@ -234,7 +234,7 @@ class JSONTree:
                     + self._local_utc_offset
                     )
 
-        if parse_type == ParseType.DATE:
+        if parse_type == _ParseType.DATE:
             parsed_date = None
             try:
                 parts = [int(part) for part in key_value.split('-')]
@@ -248,7 +248,7 @@ class JSONTree:
                 logger.warning(msg, stacklevel=2)
             return parsed_date
 
-        if parse_type == ParseType.URL:
+        if parse_type == _ParseType.URL:
             parsed_url = None
             try:
                 parsed_url = urljoin(options.entry_point_url, key_value)

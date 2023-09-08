@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 import xbrl_filings_api.downloader.stats as downloader_stats
-from xbrl_filings_api.json_tree import JSONTree, KeyPathRetrieveCounts
+from xbrl_filings_api.json_tree import KeyPathRetrieveCounts, _JSONTree
 
 
 def get_unaccessed_key_paths() -> list[tuple[str, str]]:
@@ -22,7 +22,7 @@ def get_unaccessed_key_paths() -> list[tuple[str, str]]:
     list of tuples (str, str)
         List of ordered tuples in form ``(class_qualname, key_path)``.
     """
-    return sorted(JSONTree.get_unaccessed_key_paths())
+    return sorted(_JSONTree.get_unaccessed_key_paths())
 
 
 def get_key_path_availability_counts() -> list[KeyPathRetrieveCounts]:
@@ -44,7 +44,7 @@ def get_key_path_availability_counts() -> list[KeyPathRetrieveCounts]:
         List of ordered retrieve counts for key paths of different
         API objects.
     """
-    return sorted(JSONTree.get_key_path_availability_counts())
+    return sorted(_JSONTree.get_key_path_availability_counts())
 
 
 def get_unexpected_resource_types() -> list[tuple[str, str]]:
@@ -56,7 +56,7 @@ def get_unexpected_resource_types() -> list[tuple[str, str]]:
     list of tuples (str, str)
         List of ordered tuples in form ``(type_str, origin)``.
     """
-    return sorted(JSONTree.unexpected_resource_types)
+    return sorted(_JSONTree.unexpected_resource_types)
 
 
 def get_download_size() -> str:

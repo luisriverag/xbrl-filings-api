@@ -1,4 +1,4 @@
-"""Define dataclass `APIRequest`."""
+"""Define dataclass `_APIRequest`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 @dataclass
-class APIRequest:
+class _APIRequest:
     """Metadata on a single request of an API query."""
 
     url: str

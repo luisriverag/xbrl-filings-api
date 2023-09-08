@@ -6,9 +6,9 @@
 
 from types import EllipsisType
 
-from xbrl_filings_api.api_request import APIRequest
+from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.enums import GET_ENTITY, ParseType
+from xbrl_filings_api.enums import GET_ENTITY, _ParseType
 
 
 class Entity(APIResource):
@@ -36,7 +36,7 @@ class Entity(APIResource):
     def __init__(
             self,
             json_frag: dict | EllipsisType,
-            api_request: APIRequest | None = None
+            api_request: _APIRequest | None = None
             ) -> None:
         super().__init__(json_frag, api_request)
 
@@ -57,7 +57,7 @@ class Entity(APIResource):
         """
 
         self.api_entity_filings_url: str | None = self._json.get(
-            self.API_ENTITY_FILINGS_URL, ParseType.URL)
+            self.API_ENTITY_FILINGS_URL, _ParseType.URL)
         """A link to the JSON:API page with full list of filings by this
         entity.
         """
