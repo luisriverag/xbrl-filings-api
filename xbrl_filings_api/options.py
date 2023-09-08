@@ -23,7 +23,7 @@ year_filter_months : YearFilterMonthsType, default ((0, 8), (1, 8))
     field with only year defined. First int of inner tuples is a
     year offset and the second is the month of the year. Range
     end is non-inclusive, so default means until July.
-views : set of SQLiteView, default DEFAULT_VIEWS
+views : Set of SQLiteView, default DEFAULT_VIEWS
     Set of `SQLiteView` objects. The `name` attributes of objects may
     not be overlapping.
 """
@@ -31,6 +31,8 @@ views : set of SQLiteView, default DEFAULT_VIEWS
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+
+from collections.abc import Set
 
 from xbrl_filings_api.constants import YearFilterMonthsType
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
@@ -61,11 +63,13 @@ is exclusive. Inner tuples have two values where the first is year
 offset and the second is calendar-style month number (e.g. 8 is August).
 """
 
-views: set[SQLiteView] | None = DEFAULT_VIEWS
+views: Set[SQLiteView] | None = DEFAULT_VIEWS
 """
 SQLite3 views to be added to created databases.
 
-The `name` attributes of objects may not be overlapping.
+The `name` attributes of objects may not be overlapping. `SQLiteView`
+objects use `name` for hashing, so adding another view with the same
+name to the set will be discarded.
 """
 
 timeout_sec: float = 30.0

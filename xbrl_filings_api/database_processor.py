@@ -221,16 +221,16 @@ def _create_database_or_extend_schema(
         connection.commit()
 
     if options.views:
-        for view_name, (required_tables, view_sql) in options.views.items():
-            if view_name in existing_views:
+        for view in options.views:
+            if view.name in existing_views:
                 continue
-            for table_name in required_tables:
+            for table_name in view.required_tables:
                 if table_name not in table_schema:
                     continue
             _exec(
                 cur,
-                f"CREATE VIEW {view_name}\n"
-                "AS" + view_sql.rstrip()
+                f"CREATE VIEW {view.name}\n"
+                "AS" + view.sql.rstrip()
                 )
             connection.commit()
     return connection, table_schema

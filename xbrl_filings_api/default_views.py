@@ -22,12 +22,13 @@ ViewTime
 #
 # SPDX-License-Identifier: MIT
 
+from xbrl_filings_api.sqlite_view import SQLiteView
 
-DEFAULT_VIEWS = {
-
-'ViewNumericInconsistency': (
-['ValidationMessage', 'Entity'],
-"""
+DEFAULT_VIEWS = frozenset({
+    SQLiteView(
+        name='ViewNumericInconsistency',
+        required_tables=('ValidationMessage', 'Entity'),
+        sql="""
 -- Eliminate redundant language versions of the same enclosure in 'fs'
 WITH fs AS (
   SELECT
@@ -100,11 +101,11 @@ SELECT * FROM (
 )
 ORDER BY errorPercent DESC NULLS FIRST
 """
-),
-
-'ViewFiling': (
-['Entity'],
-"""
+        ),
+    SQLiteView(
+        name='ViewFiling',
+        required_tables=('Entity',),
+        sql="""
 SELECT
   name,
   reporting_date,
@@ -121,11 +122,11 @@ FROM Filing AS f
 GROUP BY identifier, reporting_date
 ORDER BY language, name, reporting_date
 """
-),
-
-'ViewTime': (
-['Entity'],
-"""
+        ),
+    SQLiteView(
+        name='ViewTime',
+        required_tables=('Entity',),
+        sql="""
 SELECT
   name,
   reporting_date,
@@ -143,5 +144,5 @@ FROM Filing AS f
   JOIN Entity AS e ON f.entity_api_id=e.api_id
 ORDER BY added_to_processed_days DESC
 """
-)
-}
+        ),
+    })
