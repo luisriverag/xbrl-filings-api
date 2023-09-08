@@ -166,7 +166,7 @@ def download_parallel(
     Returns
     -------
     list of DownloadResult
-        List of `download_parallel_async_iter` yield values.
+        Contains information on the finished download.
     """
     return asyncio.run(download_parallel_async(items, max_concurrent))
 
@@ -196,7 +196,7 @@ async def download_parallel_async(
     Returns
     -------
     list of DownloadResult
-        List of `download_parallel_async_iter` yield values.
+        Contains information on the finished download.
     """
     results = []
     dliter = download_parallel_async_iter(
@@ -241,8 +241,7 @@ async def download_parallel_async_iter(
     for item in items:
         dlque.put_nowait(item)
 
-    resultque: asyncio.Queue[DownloadResult] = (
-        asyncio.Queue())
+    resultque: asyncio.Queue[DownloadResult] = asyncio.Queue()
     tasks: list[asyncio.Task] = []
     for worker_num in range(1, min(max_concurrent, len(items)) + 1):
         task = asyncio.create_task(
@@ -277,10 +276,12 @@ async def _download_parallel_worker(
                 )
         except Exception as err:
             result = DownloadResult(
-                obj=item.info.obj, file=item.info.file, err=err)
+                url=item.url, err=err, obj=item.info.obj, file=item.info.file)
         else:
             result = DownloadResult(
-                obj=item.info.obj, file=item.info.file, path=path)
+                url=item.url, path=path, obj=item.info.obj,
+                file=item.info.file
+                )
         resultque.put_nowait(result)
         dlque.task_done()
 

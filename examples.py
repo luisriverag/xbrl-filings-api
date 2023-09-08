@@ -9,10 +9,14 @@ import xbrl_filings_api as xf
 
 # Set up logging
 logging.basicConfig(
-    filename=os.path.join(tempfile.gettempdir(), 'example.log'),
+    filename=os.path.join(
+        tempfile.gettempdir(),
+        'xbrl-filings-api_example.log'
+        ),
     encoding='utf-8',
     level=logging.DEBUG,
-    format='%(asctime)s <%(name)s %(levelname)s> %(message)s'
+    format='{asctime} {levelname:3.3} {name}: {message}',
+    style='{'
     )
 
 
@@ -33,13 +37,12 @@ async def print_progress_async():
 
     dl_iter = filings.download_async_iter(
         ['xhtml', 'json', 'package'], save_path, max_concurrent=4)
-    async for filing, file_format, exc in dl_iter:
-        print('\nDownloaded       ' + getattr(filing, f'{file_format}_url'))
-        dl_path = getattr(filing, f'{file_format}_download_path')
-        if dl_path:
-            pretext = f'Saved {file_format} to'
-            print(f'{pretext:<16} {dl_path}')
-        if exc:
-            print(exc)
+    async for result in dl_iter:
+        print('\nDownloaded       ' + result.url)
+        if result.path:
+            pretext = f'Saved {result.file} to'
+            print(f'{pretext:<16} {result.path}')
+        if result.err:
+            print(result.err)
 
 asyncio.run(print_progress_async())

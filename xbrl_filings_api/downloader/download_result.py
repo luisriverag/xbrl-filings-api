@@ -12,7 +12,17 @@ from typing import Any
 class DownloadResult:
     """Result object from finished downloads."""
 
-    obj: Any
-    file: str
+    url: str
+    """URL which was downloaded or attempted to download."""
+
     path: str | None = None
+    """Path where the downloaded file was saved."""
+
     err: Exception | None = None
+    """Exception raised while the file was being downloaded."""
+
+    obj: Any = None
+    """Reference object related to this download."""
+
+    file: str | None = None
+    """File format of the downloaded file."""

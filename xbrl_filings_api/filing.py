@@ -470,7 +470,6 @@ class Filing(APIResource):
             max_concurrent=max_concurrent,
             timeout=timeout
             )
-        result: downloader.DownloadResult
         async for result in dliter:
             if result.path:
                 setattr(
