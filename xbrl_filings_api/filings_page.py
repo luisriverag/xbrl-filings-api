@@ -20,7 +20,7 @@ from xbrl_filings_api.enums import (
     ScopeFlag,
 )
 from xbrl_filings_api.filing import Filing
-from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
+from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
 
 logger = logging.getLogger(__name__)

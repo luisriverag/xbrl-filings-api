@@ -46,10 +46,10 @@ from xbrl_filings_api.exceptions import (
     FilingsAPIWarning,
     HTTPStatusError,
 )
-from xbrl_filings_api.filing_set.filing_set import FilingSet
-from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
+from xbrl_filings_api.filing_set import FilingSet
 from xbrl_filings_api.filings_api import get_filings, to_sqlite
 from xbrl_filings_api.request_processor import api_attribute_map
+from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
 
 data_attrs = list(api_attribute_map)

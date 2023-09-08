@@ -82,9 +82,9 @@ from typing import Any, Optional
 import xbrl_filings_api.database_processor as database_processor
 import xbrl_filings_api.request_processor as request_processor
 from xbrl_filings_api.enums import GET_ONLY_FILINGS, ScopeFlag
-from xbrl_filings_api.filing_set.filing_set import FilingSet
-from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
+from xbrl_filings_api.filing_set import FilingSet
 from xbrl_filings_api.filings_page import FilingsPage
+from xbrl_filings_api.resource_collection import ResourceCollection
 
 
 def get_filings(
