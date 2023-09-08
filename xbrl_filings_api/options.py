@@ -33,8 +33,8 @@ views : set of SQLiteView, default DEFAULT_VIEWS
 # SPDX-License-Identifier: MIT
 
 from xbrl_filings_api.constants import YearFilterMonthsType
+from xbrl_filings_api.default_views import DEFAULT_VIEWS
 from xbrl_filings_api.sqlite_view import SQLiteView
-from xbrl_filings_api.sqlite_views import DEFAULT_VIEWS
 
 entry_point_url: str = 'https://filings.xbrl.org/api/filings'
 """JSON-API entry point URL."""

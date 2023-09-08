@@ -26,6 +26,7 @@ ValidationMessage
 import logging
 
 from xbrl_filings_api.api_error import APIError, APIErrorGroup
+from xbrl_filings_api.default_views import DEFAULT_VIEWS
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
@@ -49,7 +50,6 @@ from xbrl_filings_api.filing_set.filing_set import FilingSet
 from xbrl_filings_api.filing_set.resource_collection import ResourceCollection
 from xbrl_filings_api.filings_api import get_filings, to_sqlite
 from xbrl_filings_api.request_processor import api_attribute_map
-from xbrl_filings_api.sqlite_views import DEFAULT_VIEWS
 from xbrl_filings_api.validation_message import ValidationMessage
 
 data_attrs = list(api_attribute_map)
