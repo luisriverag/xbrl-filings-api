@@ -79,7 +79,7 @@ from collections.abc import Iterable, Iterator, Mapping, Sequence
 from pathlib import Path
 from typing import Any, Optional
 
-from xbrl_filings_api import database_processor, request_processor
+from xbrl_filings_api import request_processor
 from xbrl_filings_api.enums import GET_ONLY_FILINGS, ScopeFlag
 from xbrl_filings_api.filing_set import FilingSet
 from xbrl_filings_api.filings_page import FilingsPage

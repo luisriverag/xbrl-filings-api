@@ -9,7 +9,7 @@
 
 import logging
 import sqlite3
-from collections.abc import Generator, Iterable
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
 
@@ -28,7 +28,6 @@ from xbrl_filings_api.exceptions import (
     DatabaseSchemaUnmatchError,
 )
 from xbrl_filings_api.filing import Filing
-from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.time_formats import time_formats
 from xbrl_filings_api.validation_message import ValidationMessage
 
