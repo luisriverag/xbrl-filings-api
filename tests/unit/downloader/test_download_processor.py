@@ -6,8 +6,6 @@
 
 from xbrl_filings_api.downloader import download_processor
 
-
-# download_processor.download
 # download_processor.download_async
 # download_processor.download_parallel
 # download_processor.download_parallel_async

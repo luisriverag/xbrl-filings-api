@@ -206,8 +206,8 @@ class Filing(APIResource):
         """
         The entity object of this filing.
 
-        Is available when if GET_ENTITY is set in method
-        `flags` parameter.
+        Is available when if GET_ENTITY is set in query function `flags`
+        parameter.
         """
 
         self.validation_messages: set[ValidationMessage] | None = None
@@ -430,7 +430,7 @@ class Filing(APIResource):
         """
         Download files in type or types of `files`.
 
-        The function follows the same logic as method `download()`. See
+        The method follows the same logic as `download()`. See
         documentation.
 
         Parameters

@@ -7,7 +7,7 @@ entry_point_url : str, default 'https://filings.xbrl.org/api/filings'
     URL entry point to be used for the API.
 max_page_size : int, default 1000
     Defines the maximum number of main resources (typically
-    filings) to be retrieved in a single request. If the methods
+    filings) to be retrieved in a single request. If the functions
     are called by limiting the number of results with a
     parameter `max_size` which is smaller than this value, page
     size will be set as `max_size` instead.

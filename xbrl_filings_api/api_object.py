@@ -37,7 +37,7 @@ class APIObject:
         API.
 
         This time is equivalent for all objects created in a single API
-        method call even if the response contains multiple response
+        function call even if the response contains multiple response
         pages.
 
         The timezone is chosen according to option `utc_time`.

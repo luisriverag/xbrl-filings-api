@@ -12,9 +12,9 @@ from typing import Optional
 @dataclass
 class DownloadItem:
     """
-    Download item class for download methods.
+    Download item class for download functions.
 
-    Can be used to override download method parameters for a single
+    Can be used to override download function parameters for a single
     file.
     """
 

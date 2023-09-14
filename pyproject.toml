@@ -67,8 +67,8 @@ packages = ["xbrl_filings_api"]
 [tool.hatch.envs.default]
 dependencies = [
     "coverage[toml]>=6.5",
-    "pytest",
-    "responses",
+    "pytest>=7.4",
+    "responses~=0.23.3", # Compatible release due to beta feature use
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"

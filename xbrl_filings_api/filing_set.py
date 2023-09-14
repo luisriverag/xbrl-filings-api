@@ -33,7 +33,7 @@ from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
 
 
-class FilingSet(set):
+class FilingSet(set[Filing]):
     """Set for `Filing` objects.
 
     The class is an extended set type with certain filing-related

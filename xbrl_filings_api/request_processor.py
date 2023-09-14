@@ -27,6 +27,7 @@ from xbrl_filings_api.enums import (
 from xbrl_filings_api.exceptions import HTTPStatusError
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
+from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
 
@@ -334,19 +335,40 @@ def _get_api_attribute_map() -> dict[str, str]:
     attrmap = {}
     for proto in (Filing(...), Entity(...), ValidationMessage(...)):
         cls = proto.__class__
+        clsmap = {}
         for prop in dir(proto):
+            # Exclude class attributes from instance attributes
             if getattr(cls, prop, False):
                 continue
+
             api_attr: str | Literal[False] = (
                 getattr(cls, prop.upper(), False)) # type: ignore
             if api_attr and api_attr.startswith('attributes.'):
                 attr_lib = prop
                 attr_api = api_attr[11:]
-                if cls.TYPE != 'filing':
-                    attr_lib = f'{cls.TYPE}.{attr_lib}'
-                    attr_api = f'{cls.TYPE}.{attr_api}'
-                attrmap[attr_lib] = attr_api
+                clsmap[attr_lib] = attr_api
+        ordcols = order_columns(clsmap.keys())
+        prefix = f'{cls.TYPE}.' if cls.TYPE != 'filing' else ''
+        ordered_clsmap = {
+            f'{prefix}{lib_attr}': f'{prefix}{clsmap[lib_attr]}'
+            for lib_attr in ordcols
+            }
+        attrmap |= ordered_clsmap
     return attrmap
 
 
 api_attribute_map = _get_api_attribute_map()
+"""
+Mapping from library attribute names to JSON:API used names.
+
+Is used to convert fields in `sort` and `filters` parameters of queries.
+"""
+
+FILTER_ATTRS = list(api_attribute_map)
+"""
+List of resource attribute names for `sort` and `filter` parameters.
+
+Does not include derived attributes. Despite capital letter naming, this
+value is derived from the library, but as per general API maintenance
+principles, this list is expected only to grow.
+"""

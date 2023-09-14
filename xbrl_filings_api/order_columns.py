@@ -4,10 +4,12 @@
 #
 # SPDX-License-Identifier: MIT
 
+from collections.abc import Iterable
+
 from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
 
 
-def order_columns(cols: list[str]) -> list[str]:
+def order_columns(cols: Iterable[str]) -> list[str]:
     """Order column names for display."""
     col_tuples = []
     for col in cols:

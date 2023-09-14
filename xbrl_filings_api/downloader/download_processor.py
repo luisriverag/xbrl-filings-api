@@ -179,14 +179,14 @@ async def download_parallel_async(
     """
     Download multiple files in parallel.
 
-    Calls method `download_async` via parameter `items`, see
+    Calls function `download_async` via parameter `items`, see
     documentation.
 
     Parameters
     ----------
     items : list of DownloadSpecs
         Instances of `DownloadSpecs` accept the same parameters as
-        method `download_async` with an additional attribute `info`.
+        function `download_async` with an additional attribute `info`.
     max_concurrent : int
         Maximum number of simultaneous downloads allowed.
     timeout : float, default 30.0
@@ -218,14 +218,14 @@ async def download_parallel_async_iter(
     """
     Download multiple files in parallel.
 
-    Calls method `download_async` via parameter `items`, see
+    Calls function `download_async` via parameter `items`, see
     documentation.
 
     Parameters
     ----------
     items : list of DownloadSpecs
         Instances of `DownloadSpecs` accept the same parameters as
-        method `download_async` with an additional attribute `info`.
+        function `download_async` with an additional attribute `info`.
     max_concurrent : int
         Maximum number of simultaneous downloads allowed.
     timeout : float, default 30.0

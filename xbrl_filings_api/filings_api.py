@@ -5,17 +5,17 @@ The API provides an access to a repository of XBRL filings at
 ``filings.xbrl.org``. There are three types of API resources:
 filings, entities and validation messages.
 
-The parameter `filters` in methods accepts a mapping such as a
+The parameter `filters` in functions/methods accepts a mapping such as a
 dictionary. Key is the attribute being searched for and the value is
 the searched item or an iterable of searched items. Both attribute
 styles are supported: the ones used by this library and the actual
 attribute names in the API. Search is case-sensitive. The API only
 supports equivalence filtering of one value, but by giving the
 mapping a value which is an iterable of strings, you may execute
-multiple equivalence filtering queries in one method call.
+multiple equivalence filtering queries in one function/method call.
 
 You will find the list of valid filtering attributes in list
-`data_attrs`. Please note
+`FILTER_ATTRS`. Please note
 that derived attributes such as `reporting_date` or `language` may
 not be used for filtering.
 
@@ -59,9 +59,9 @@ Will yield the following requests::
     last_end_date=2023-06-30
     last_end_date=2023-07-31
 
-The parameter `sort` in methods accepts a single attribute string or
-a sequence (e.g. list) of attribute strings. Normal sort order is
-ascending, but descending order can be obtained by prefixing the
+The parameter `sort` in functions/methods accepts a single attribute
+string or a sequence (e.g. list) of attribute strings. Normal sort order
+is ascending, but descending order can be obtained by prefixing the
 attribute with a minus sign (-). As with filtering, attributes
 ending with ``_count`` and ``_url`` did not work in July 2023. The
 same keys of `api_attributes` dict are valid values for sort. To get
@@ -88,6 +88,7 @@ from xbrl_filings_api.resource_collection import ResourceCollection
 
 def get_filings(
         filters: Optional[Mapping[str, Any | Iterable[Any]]] = None,
+        *,
         sort: Optional[str | Sequence[str]] = None,
         max_size: int = 100,
         flags: ScopeFlag = GET_ONLY_FILINGS,
@@ -102,7 +103,7 @@ def get_filings(
         Mapping of filters. See `FilingAPI` class documentation.
     sort : str or sequence of str, optional
         Sort result set by specified attribute(s). Use values of
-        `data_attrs`. Descending order field begins with minus sign (-).
+        `FILTER_ATTRS`. Descending order field begins with minus sign (-).
     max_size : int or NO_LIMIT, default 100
         Maximum number of filings to retrieve. With `NO_LIMIT`,
         you'll reach for the sky. Filings will be retrieved in
@@ -148,7 +149,7 @@ def to_sqlite(
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> None:
     """
-    Read data from filings.xbrl.org database to an SQLite3 database.
+    Retrieve filings from the API and save them to an SQLite3 database.
 
     Tables ``Filing``, ``Entity`` and ``ValidationMessage`` will be
     created according to settings in `flags`. Dependencies for SQL
@@ -191,7 +192,7 @@ def to_sqlite(
         Mapping of filters. See `FilingAPI` class documentation.
     sort : str or sequence of str, optional
         Sort result set by specified attribute(s). Use values of
-        `data_attrs`. Descending order field begins with minus sign (-).
+        `FILTER_ATTRS`. Descending order field begins with minus sign (-).
     max_size : int or NO_LIMIT, default 100
         Maximum number of filings to retrieve. With `NO_LIMIT`,
         you'll reach for the sky. Filings will be retrieved in
@@ -254,7 +255,7 @@ def filing_page_iter(
         Mapping of filters. See `FilingAPI` class documentation.
     sort : str or sequence of str, optional
         Sort result set by specified attribute(s). Use values of
-        `data_attrs`. Descending order field begins with minus sign (-).
+        `FILTER_ATTRS`. Descending order field begins with minus sign (-).
     max_size : int or NO_LIMIT, default 100
         Maximum number of filings to retrieve. With `NO_LIMIT`,
         you'll reach for the sky. Filings will be retrieved in
