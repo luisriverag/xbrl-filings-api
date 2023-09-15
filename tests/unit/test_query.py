@@ -6,7 +6,7 @@
 
 import responses
 
-from xbrl_filings_api import GET_ONLY_FILINGS, filings_api
+from xbrl_filings_api import GET_ONLY_FILINGS, query
 
 
 class Test_get_filings:
@@ -30,5 +30,5 @@ class Test_get_filings:
         asml22 = next((f for f in fs if f.filing_index == asml22_fxo), None)
         assert asml22.country == 'NL'
 
-# filings_api.to_sqlite
-# filings_api.filing_page_iter
+# query.to_sqlite
+# query.filing_page_iter

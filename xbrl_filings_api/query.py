@@ -1,5 +1,5 @@
 """
-Define query functions Python API for filings.xbrl.org JSON:API.
+Define query functions for filings.xbrl.org JSON:API.
 
 The API provides an access to a repository of XBRL filings at
 ``filings.xbrl.org``. There are three types of API resources:
