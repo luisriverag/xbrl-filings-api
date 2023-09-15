@@ -11,7 +11,7 @@ from xbrl_filings_api import GET_ONLY_FILINGS, filings_api
 
 class Test_get_filings:
     def test_fetch_asml22(api_responses):
-        fs = filings_api.get_filings(
+        fs = query.get_filings(
             filters={'entity.identifier': '724500Y6DUVHQD6OXN27'},
             max_size=2,
             flags=GET_ONLY_FILINGS
@@ -21,7 +21,7 @@ class Test_get_filings:
         assert asml22 is not None, 'Requested filing was not returned'
 
     def test_fetch_asml22_country(api_responses):
-        fs = filings_api.get_filings(
+        fs = query.get_filings(
             filters={'entity.identifier': '724500Y6DUVHQD6OXN27'},
             max_size=2,
             flags=GET_ONLY_FILINGS

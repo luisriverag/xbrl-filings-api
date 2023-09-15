@@ -91,8 +91,8 @@ from xbrl_filings_api.enums import (
 )
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set import FilingSet
-from xbrl_filings_api.filings_api import get_filings, to_sqlite
 from xbrl_filings_api.filings_page import FilingsPage
+from xbrl_filings_api.query import get_filings, to_sqlite
 from xbrl_filings_api.request_processor import FILTER_ATTRS
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.sqlite_view import SQLiteView
