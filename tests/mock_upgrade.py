@@ -12,23 +12,35 @@ The fetched URLs will be saved to YAML files in directory
     `responses` version 0.23.3).
 """
 
+from collections.abc import Callable
 from pathlib import Path
 
 import requests
 from responses import _recorder
 
 MOCK_URL_SET_IDS = (
-    'api',
-    'download',
+    'asml22en',
+    'asml22en_entities',
+    'asml22en_vmessages',
+    'asml22en_ent_vmsg',
+    'finnish_jan22',
+    'oldest3_fi',
+    'sort_two_fields',
+    'multipage',
+    # 'download',
     )
-MOCK_URL_DIR_NAME = '.mock_url_cache'
+MOCK_URL_DIR_NAME = 'mock_responses'
 entry_point_url = 'https://filings.xbrl.org/api/filings'
 
 mock_dir_path = Path(__file__).parent / MOCK_URL_DIR_NAME
+JSON_API_HEADERS = {
+    'Content-Type': 'application/vnd.api+json'
+    }
+REQUEST_TIMEOUT = 30.0
 
 
 def _get_absolute_path(set_id):
-    file_path = mock_dir_path / f'{set_id}_mock.yaml'
+    file_path = mock_dir_path / f'{set_id}.yaml'
     return str(file_path)
 
 
@@ -40,37 +52,178 @@ def _ensure_dir_exists():
     Path(some_path).parent.mkdir(parents=True, exist_ok=True)
 
 
-@_recorder.record(file_path=set_paths['api'])
-def _get_api_mocks():
-    """Record mock URLs to file."""
-    jsonapi_headers = {
-        'Content-Type': 'application/vnd.api+json'
-        }
+@_recorder.record(file_path=set_paths['asml22en'])
+def _fetch_asml22en():
+    """ASML Holding 2022 English AFR filing."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0', # filing_index
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['asml22en_entities'])
+def _fetch_asml22en_entities():
+    """ASML Holding 2022 English AFR filing with entity."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0', # filing_index
+            'include': 'entity'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['asml22en_vmessages'])
+def _fetch_asml22en_vmessages():
+    """ASML Holding 2022 English AFR filing with validation messages."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'include': 'validation_messages',
+            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0' # filing_index
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['asml22en_ent_vmsg'])
+def _fetch_asml22en_ent_vmsg():
+    """ASML Holding 2022 English AFR filing with entities and v-messages."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0', # filing_index
+            'include': 'entity,message'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['finnish_jan22'])
+def _fetch_finnish_jan22():
+    """Finnish AFR filings with reporting period ending in Jan 2022."""
     _ = requests.get(
         url=entry_point_url,
         params={
             'page[size]': 2,
-            'filter[entity.identifier]': '724500Y6DUVHQD6OXN27',
+            'filter[country]': 'FI',
+            'filter[period_end]': '2022-01-31' # last_end_date
             },
-        headers=jsonapi_headers,
-        timeout=30
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
         )
 
 
-@_recorder.record(file_path=set_paths['download'])
-def _get_download_mocks():
-    """Record mock URLs to file."""
-    # _ = requests.get(
-    #     url="",
-    #     stream=True,
-    #     timeout=30
-    #     )
+@_recorder.record(file_path=set_paths['oldest3_fi'])
+def _fetch_oldest3_fi():
+    """Oldest 3 AFR filings reported in Finland."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 3,
+            'filter[country]': 'FI',
+            'sort': 'date_added' # added_time
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['sort_two_fields'])
+def _fetch_sort_two_fields():
+    """
+    Sort Finnish filings by `last_end_date` and `added_time`.
+
+    .. warning::
+
+        Volatile with ``mock_upgrade.py`` run. See test
+        ``test_query::Test_get_filings::test_sort_two_fields``.
+    """
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 3,
+            'filter[country]': 'FI',
+            'sort': 'period_end,date_added' # last_end_date, added_time
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['multipage'])
+def _fetch_multipage():
+    """Get 3 pages (2pc) of oldest Swedish filings."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 2,
+            'filter[country]': 'SE',
+            'sort': 'date_added' # added_time
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 2,
+            'filter[country]': 'SE',
+            'sort': 'date_added', # added_time
+            'page[number]': 2
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 2,
+            'filter[country]': 'SE',
+            'sort': 'date_added', # added_time
+            'page[number]': 3
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+# @_recorder.record(file_path=set_paths['download'])
+# def _fetch_download():
+#     """Record mock URLs to file."""
+#     _ = requests.get(
+#         url="",
+#         stream=True,
+#         timeout=REQUEST_TIMEOUT
+#         )
 
 
 if __name__ == '__main__':
     _ensure_dir_exists()
-    _get_api_mocks()
-    _get_download_mocks()
+    
+    # Run recorder functions
+    gitems = globals().copy()
+    for name, val in gitems.items():
+        if name.startswith('_fetch_') and isinstance(val, Callable):
+            val()
+
+    print(
+        'Mock upgrade finished.\n'
+        f'Folder path: {mock_dir_path}'
+        f'\n  - ' + '\n  - '.join(MOCK_URL_SET_IDS)
+        )
 else:
     msg = 'This module must be run as a script.'
     raise NotImplementedError(msg)

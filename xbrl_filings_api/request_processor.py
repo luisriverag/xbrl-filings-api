@@ -333,27 +333,26 @@ def _retrieve_page_json(
 
 def _get_api_attribute_map() -> dict[str, str]:
     attrmap = {}
-    for proto in (Filing(...), Entity(...), ValidationMessage(...)):
-        cls = proto.__class__
-        clsmap = {}
-        for prop in dir(proto):
-            # Exclude class attributes from instance attributes
-            if getattr(cls, prop, False):
-                continue
+    fproto = Filing(...)
+    cls = fproto.__class__
+    clsmap = {}
+    for prop in dir(fproto):
+        # Exclude class attributes from instance attributes
+        if getattr(cls, prop, False):
+            continue
 
-            api_attr: str | Literal[False] = (
-                getattr(cls, prop.upper(), False)) # type: ignore
-            if api_attr and api_attr.startswith('attributes.'):
-                attr_lib = prop
-                attr_api = api_attr[11:]
-                clsmap[attr_lib] = attr_api
-        ordcols = order_columns(clsmap.keys())
-        prefix = f'{cls.TYPE}.' if cls.TYPE != 'filing' else ''
-        ordered_clsmap = {
-            f'{prefix}{lib_attr}': f'{prefix}{clsmap[lib_attr]}'
-            for lib_attr in ordcols
-            }
-        attrmap |= ordered_clsmap
+        api_attr: str | Literal[False] = (
+            getattr(cls, prop.upper(), False)) # type: ignore
+        if api_attr and api_attr.startswith('attributes.'):
+            attr_lib = prop
+            attr_api = api_attr[11:]
+            clsmap[attr_lib] = attr_api
+    ordcols = order_columns(clsmap.keys())
+    ordered_clsmap = {
+        lib_attr: clsmap[lib_attr]
+        for lib_attr in ordcols
+        }
+    attrmap |= ordered_clsmap
     return attrmap
 
 

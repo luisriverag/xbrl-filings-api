@@ -211,9 +211,9 @@ class FilingSet(set[Filing]):
     def to_sqlite(
             self,
             path: str | Path,
-            flags: ScopeFlag = GET_ENTITY | GET_VALIDATION_MESSAGES,
             *,
-            update: bool = False
+            update: bool = False,
+            flags: ScopeFlag = GET_ENTITY | GET_VALIDATION_MESSAGES
             ) -> None:
         """
         Save set to an SQLite3 database.
@@ -231,13 +231,13 @@ class FilingSet(set[Filing]):
         ----------
         path or Path
             Path to the SQLite database.
+        update : bool, default False
+            If the database already exists, update it with these
+            records. Old records are updated and new ones are added.
         flags : ScopeFlag, default GET_ENTITY | GET_VALIDATION_MESSAGES
             Scope of saving. Flag `GET_ENTITY` will save entity records
             of filings and `GET_VALIDATION_MESSAGES` the validation
             messages.
-        update : bool, default False
-            If the database already exists, update it with these
-            records. Old records are updated and new ones are added.
 
         Raises
         ------

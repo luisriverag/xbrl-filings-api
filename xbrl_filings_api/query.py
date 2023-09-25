@@ -19,9 +19,12 @@ You will find the list of valid filtering attributes in list
 that derived attributes such as `reporting_date` or `language` may
 not be used for filtering.
 
-Note however that as of July 2023, attributes ending with ``_count``
-and ``_url`` could not be used. To filter only the filings reported
-in Finland, you may use the following parameter::
+.. note::
+    As of July 2023, attributes ending with ``_count`` and ``_url``
+    could not be used.
+
+To filter only the filings reported in Finland, you may use the
+following parameter::
 
     filters={'country': 'FI'}
 
@@ -64,10 +67,15 @@ string or a sequence (e.g. list) of attribute strings. Normal sort order
 is ascending, but descending order can be obtained by prefixing the
 attribute with a minus sign (-). As with filtering, attributes
 ending with ``_count`` and ``_url`` did not work in July 2023. The
-same keys of `api_attributes` dict are valid values for sort. To get
-the most recently added filings, specify the following parameter::
+same keys of `FILTER_ATTRS` dict are valid values for sort. To get the
+most recently added filings, specify the following parameter::
 
     sort='-added_time'
+
+.. note::
+    The query functions return sets. Parameter `sort` can be used to
+    filter either ends of the value spectrum but it does not mean that
+    the returned sets would have any kind of order.
 
 """
 
@@ -100,10 +108,14 @@ def get_filings(
     Parameters
     ----------
     filters : mapping of str: {any, iterable of any}, optional
-        Mapping of filters. See `FilingAPI` class documentation.
+        Mapping of filters. Iterable values may be used for AND-style
+        multirequest queries. See `xbrl_filings_api.query` module
+        documentation.
     sort : str or sequence of str, optional
-        Sort result set by specified attribute(s). Use values of
-        `FILTER_ATTRS`. Descending order field begins with minus sign (-).
+        Used together with `max_size` to return filings from either end
+        of sorted attribute values. Order is lost in `FilingSet` object.
+        Default order is ascending; prefix attribute name with minus (-)
+        to get descending order.
     max_size : int or NO_LIMIT, default 100
         Maximum number of filings to retrieve. With `NO_LIMIT`,
         you'll reach for the sky. Filings will be retrieved in
@@ -140,12 +152,12 @@ def get_filings(
 
 def to_sqlite(
         path: str | Path,
-        flags: ScopeFlag = GET_ONLY_FILINGS,
         *,
         update: bool = False,
         filters: Optional[Mapping[str, Any | Iterable[Any]]] = None,
         sort: Optional[str | Sequence[str]] = None,
         max_size: int = 100,
+        flags: ScopeFlag = GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> None:
     """
@@ -181,22 +193,26 @@ def to_sqlite(
     ----------
     path : str or Path
         Path to the SQLite database.
-    flags : ScopeFlag, default GET_ONLY_FILINGS
-        Scope of retrieval. Flag `GET_ENTITY` will retrieve entity
-        records of filings and `GET_VALIDATION_MESSAGES` the
-        validation messages.
     update : bool, default False
         If the database already exists, update it with retrieved
         records. Old records are updated and new ones are added.
     filters : mapping of str: {any, iterable of any}, optional
-        Mapping of filters. See `FilingAPI` class documentation.
+        Mapping of filters. Iterable values may be used for AND-style
+        multirequest queries. See `xbrl_filings_api.query` module
+        documentation.
     sort : str or sequence of str, optional
-        Sort result set by specified attribute(s). Use values of
-        `FILTER_ATTRS`. Descending order field begins with minus sign (-).
+        Used together with `max_size` to return filings from either end
+        of sorted attribute values. Order is lost in `FilingSet` object.
+        Default order is ascending; prefix attribute name with minus (-)
+        to get descending order.
     max_size : int or NO_LIMIT, default 100
         Maximum number of filings to retrieve. With `NO_LIMIT`,
         you'll reach for the sky. Filings will be retrieved in
         batches (pages) of option `max_page_size`.
+    flags : ScopeFlag, default GET_ONLY_FILINGS
+        Scope of retrieval. Flag `GET_ENTITY` will retrieve entity
+        records of filings and `GET_VALIDATION_MESSAGES` the
+        validation messages.
     add_api_params: mapping, optional
         Add additional JSON:API parameters to the query. All parts
         will be URL-encoded automatically.
@@ -235,7 +251,11 @@ def to_sqlite(
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
     for page in page_gen:
-        FilingSet(page.filing_list).to_sqlite(path, flags, update=update)
+        FilingSet(page.filing_list).to_sqlite(
+            path=path,
+            update=update,
+            flags=flags
+            )
         filings.update(page.filing_list)
 
 
@@ -252,10 +272,14 @@ def filing_page_iter(
     Parameters
     ----------
     filters : mapping of str: {any, iterable of any}, optional
-        Mapping of filters. See `FilingAPI` class documentation.
+        Mapping of filters. Iterable values may be used for AND-style
+        multirequest queries. See `xbrl_filings_api.query` module
+        documentation.
     sort : str or sequence of str, optional
-        Sort result set by specified attribute(s). Use values of
-        `FILTER_ATTRS`. Descending order field begins with minus sign (-).
+        Used together with `max_size` to return filings from either end
+        of sorted attribute values. Order is lost in `FilingSet` object.
+        Default order is ascending; prefix attribute name with minus (-)
+        to get descending order.
     max_size : int or NO_LIMIT, default 100
         Maximum number of filings to retrieve. With `NO_LIMIT`,
         you'll reach for the sky. Filings will be retrieved in

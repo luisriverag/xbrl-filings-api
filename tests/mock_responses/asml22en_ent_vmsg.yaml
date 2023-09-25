@@ -1,0 +1,11 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"errors":[{"detail":"FilingSchema has no attribute message","status":"400","title":"Invalid
+      include querystring parameter."}],"jsonapi":{"version":"1.0"}}
+
+      '
+    content_type: text/plain
+    method: GET
+    status: 400
+    url: https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&filter%5Bfxo_id%5D=724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0&include=entity%2Cmessage
