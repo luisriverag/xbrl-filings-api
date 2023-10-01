@@ -131,3 +131,14 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+    "sqlite: test has sqlite3 operations",
+    "iter: iterator functions",
+]
+
+[tool.isort]
+py_version=39
+# Vertical Hanging Indent Bracket
+multi_line_output = 8

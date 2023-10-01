@@ -15,6 +15,10 @@ from xbrl_filings_api import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
     GET_VALIDATION_MESSAGES,
+    Entity,
+    Filing,
+    FilingsPage,
+    ValidationMessage,
     options,
     query,
 )
@@ -34,8 +38,9 @@ class TestFundamentalOperation:
             flags=GET_ONLY_FILINGS
             )
         asml22 = next(iter(fs), None)
-        assert asml22 is not None, 'Filing is returned'
+        assert isinstance(asml22, Filing), 'Filing is returned'
 
+    @pytest.mark.sqlite
     def test_to_sqlite(s, asml22en_response, tmp_path):
         """Requested filing is inserted into a database."""
         tmp_db = tmp_path / 'temp.db'
@@ -52,15 +57,34 @@ class TestFundamentalOperation:
         assert os.access(tmp_db, os.F_OK), 'Database file is created'
         con = sqlite3.connect(tmp_db)
         cur = con.cursor()
-        cur.execute("SELECT COUNT(*) FROM Filing WHERE filing_index = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'")
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE filing_index = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'"
+            )
         assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
+
+    @pytest.mark.iter
+    def test_filing_page_iter(s, asml22en_response):
+        """Requested filing is returned on a filing page."""
+        piter = query.filing_page_iter(
+            filters={
+                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        page = next(piter, None)
+        assert isinstance(page, FilingsPage), 'First iteration returns a page'
+        asml22 = next(iter(page.filing_list), None)
+        assert isinstance(asml22, Filing), 'Filing is returned'
 
 
 class TestParam_filters_single:
     """Test parameter `filters` of query functions using single filters."""
 
-    def test_get_filings_has_country(s, asml22en_response):
-        """Test if function returns a filing with correct country."""
+    def test_get_filings_filing_index(s, asml22en_response):
+        """Requested filing index is returned."""
         fs = query.get_filings(
             filters={
                 'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
@@ -69,11 +93,12 @@ class TestParam_filters_single:
             max_size=1,
             flags=GET_ONLY_FILINGS
             )
+        assert len(fs) == 1, 'One filing is returned'
         asml22 = next(iter(fs), None)
-        assert asml22.country == 'NL'
+        assert asml22.filing_index == '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
 
-    def test_two_filters_ent_enddate(s, finnish_jan22_response):
-        """Test that 2 filters return 3 unique filings."""
+    def test_2_filters_country_enddate(s, finnish_jan22_response):
+        """Filters `country` and `last_end_date` return 2 ."""
         fs = query.get_filings(
             filters={
                 'country': 'FI',
@@ -207,7 +232,7 @@ class TestParam_flags:
             )
         asml22 = next(iter(fs), None)
         assert asml22.validation_messages is None, 'Validation messages must not be available'
-        assert asml22.entity is not None, 'Entity is available'
+        assert isinstance(asml22.entity, Entity), 'Entity is available'
         assert asml22.entity.name == 'ASML Holding N.V.', 'Entity attributes are accessible'
 
     def test_asml22en_flag_vmessages(s, asml22en_vmessages_response):
@@ -222,9 +247,9 @@ class TestParam_flags:
             )
         asml22 = next(iter(fs), None)
         assert asml22.entity is None, 'Entity must not be available'
-        assert asml22.validation_messages is not None, 'Validation messages are available'
-        first_msg = next(iter(asml22.validation_messages))
-        assert isinstance(first_msg.text, str), 'Message attributes are accessible'
+        vmsg = next(iter(asml22.validation_messages), None)
+        assert isinstance(vmsg, ValidationMessage), 'Validation messages are available'
+        assert isinstance(vmsg.text, str), 'Message attributes are accessible'
 
     def test_asml22en_flag_only_filings_and_entities(s, asml22en_response):
         """Test if `GET_ONLY_FILINGS` is stronger than `GET_ENTITY` in `flags`."""
@@ -288,11 +313,11 @@ class TestParam_paging_single:
             flags=GET_ONLY_FILINGS
             )
         page1 = next(piter, None)
-        assert page1 is not None, 'Pages are returned'
+        assert isinstance(page1, FilingsPage), 'Pages are returned'
         page2 = next(piter, None)
-        assert page2 is not None, '3 pages are returned'
+        assert isinstance(page2, FilingsPage), '3 pages are returned'
         page3 = next(piter, None)
-        assert page3 is not None, '3 pages are returned'
+        assert isinstance(page3, FilingsPage), '3 pages are returned'
         page_none = next(piter, None)
         assert page_none is None, 'No more than 3 pages are returned'
 

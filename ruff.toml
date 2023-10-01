@@ -120,5 +120,6 @@ max-doc-length = 72
 "__main__.py" = ["T201"]
 # __about__.py does not have a docstring
 "__about__.py" = ["D100"]
-# Tests allow mixed case names and may leave parameters (fixtures) unused
-"test_*" = ["N801", "N805", "ARG002"]
+# Tests allow mixed case names, may leave parameters (fixtures) unused and
+# decorators unparenthesised
+"test_*" = ["N801", "N805", "ARG002", "PT023"]
