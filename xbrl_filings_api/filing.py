@@ -21,6 +21,7 @@ from xbrl_filings_api.enums import _ParseType
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
 from xbrl_filings_api.validation_message import ValidationMessage
 
+EllipsisType = type(Ellipsis)
 logger = logging.getLogger(__name__)
 
 
@@ -82,7 +83,7 @@ class Filing(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, type(Ellipsis)],
+            json_frag: Union[dict, EllipsisType],
             api_request: Union[_APIRequest, None] = None,
             entity_iter: Union[Iterable[Entity], None] = None,
             message_iter: Union[Iterable[ValidationMessage], None] = None
@@ -474,7 +475,7 @@ class Filing(APIResource):
             yield result
 
     def _search_entity(
-            self, json_frag: Union[dict, Ellipsis],
+            self, json_frag: Union[dict, EllipsisType],
             entity_iter: Union[Iterable[Entity], None]
             ) -> Union[Entity, None]:
         """Search for an `Entity` object for the filing."""
@@ -500,7 +501,7 @@ class Filing(APIResource):
         return entity
 
     def _search_validation_messages(
-            self, json_frag: Union[dict, type(Ellipsis)],
+            self, json_frag: Union[dict, EllipsisType],
             message_iter: Union[Iterable[ValidationMessage], None]
             ) -> Union[set[ValidationMessage], None]:
         """Search `ValidationMessage` objects for this filing."""

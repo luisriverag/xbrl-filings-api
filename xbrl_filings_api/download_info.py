@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass(kw_only=True)
+@dataclass
 class _DownloadInfo:
     """Download info class for `DownloadSpecs` objects."""
 
