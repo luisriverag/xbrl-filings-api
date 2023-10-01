@@ -11,7 +11,7 @@ from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime
 from pathlib import PurePath
 from types import EllipsisType
-from typing import ClassVar
+from typing import ClassVar, Union
 
 from xbrl_filings_api import download_specs_construct, downloader
 from xbrl_filings_api.api_request import _APIRequest
@@ -84,15 +84,15 @@ class Filing(APIResource):
 
     def __init__(
             self,
-            json_frag: dict | EllipsisType,
-            api_request: _APIRequest | None = None,
-            entity_iter: Iterable[Entity] | None = None,
-            message_iter: Iterable[ValidationMessage] | None = None
+            json_frag: Union[dict, EllipsisType],
+            api_request: Union[_APIRequest, None] = None,
+            entity_iter: Union[Iterable[Entity], None] = None,
+            message_iter: Union[Iterable[ValidationMessage], None] = None
             ) -> None:
         """Initialize a `Filing` object."""
         super().__init__(json_frag, api_request)
 
-        self.country: str | None = self._json.get(self.COUNTRY)
+        self.country: Union[str, None] = self._json.get(self.COUNTRY)
         """
         The country where the filing was reported.
 
@@ -101,7 +101,7 @@ class Filing(APIResource):
         shares but could be other securities as well such as bonds.
         """
 
-        self.filing_index: str | None = self._json.get(self.FILING_INDEX)
+        self.filing_index: Union[str, None] = self._json.get(self.FILING_INDEX)
         """
         The filing index.
 
@@ -118,7 +118,7 @@ class Filing(APIResource):
         The original field name in the API is ``fxo_id``.
         """
 
-        self.language: str | None = None
+        self.language: Union[str, None] = None
         """
         Derived two-letter lower-case language identifier defining the
         language of the filing.
@@ -129,7 +129,7 @@ class Filing(APIResource):
         two-letter identifiers for official EU languages.
         """
 
-        self.last_end_date: date | None = self._json.get(
+        self.last_end_date: Union[date, None] = self._json.get(
             self.LAST_END_DATE, _ParseType.DATE)
         """
         The end date of the last period in the marked-up report
@@ -142,7 +142,7 @@ class Filing(APIResource):
         The original field name in the API is ``period_end``.
         """
 
-        self.reporting_date: date | None = None
+        self.reporting_date: Union[date, None] = None
         """
         Derived end date of the reporting period.
 
@@ -156,21 +156,21 @@ class Filing(APIResource):
         future-bound facts.
         """
 
-        self.error_count: str | None = self._json.get(self.ERROR_COUNT)
+        self.error_count: Union[str, None] = self._json.get(self.ERROR_COUNT)
         """The count of validation errors listed in
         `validation_messages`."""
 
-        self.inconsistency_count: str | None = self._json.get(
+        self.inconsistency_count: Union[str, None] = self._json.get(
             self.INCONSISTENCY_COUNT)
         """The count of validation inconsistencies listed in
         `validation_messages`."""
 
-        self.warning_count: str | None = self._json.get(
+        self.warning_count: Union[str, None] = self._json.get(
             self.WARNING_COUNT)
         """The count of validation warnings listed in
         `validation_messages`."""
 
-        self.added_time: datetime | None = self._json.get(
+        self.added_time: Union[datetime, None] = self._json.get(
             self.ADDED_TIME, _ParseType.DATETIME)
         """
         Timezone-aware datetime when the filing was added to
@@ -187,7 +187,7 @@ class Filing(APIResource):
         The original field name in the API is ``date_added``.
         """
 
-        self.processed_time: datetime | None = self._json.get(
+        self.processed_time: Union[datetime, None] = self._json.get(
             self.PROCESSED_TIME, _ParseType.DATETIME)
         """
         Timezone-aware datetime when the filing was processed for the
@@ -199,10 +199,10 @@ class Filing(APIResource):
         The original field name in the API is ``processed``.
         """
 
-        self.entity_api_id: str | None = self._json.get(self.ENTITY_API_ID)
+        self.entity_api_id: Union[str, None] = self._json.get(self.ENTITY_API_ID)
         """`api_id` of Entity object."""
 
-        self.entity: Entity | None = None
+        self.entity: Union[Entity, None] = None
         """
         The entity object of this filing.
 
@@ -210,7 +210,7 @@ class Filing(APIResource):
         parameter.
         """
 
-        self.validation_messages: set[ValidationMessage] | None = None
+        self.validation_messages: Union[set[ValidationMessage], None] = None
         """
         The set of validation message objects of this filing.
 
@@ -221,7 +221,7 @@ class Filing(APIResource):
         When flag is not set, this attribute is `None`.
         """
 
-        self.json_url: str | None = self._json.get(
+        self.json_url: Union[str, None] = self._json.get(
             self.JSON_URL, _ParseType.URL)
         """
         Download URL for a derived xBRL-JSON document.
@@ -238,7 +238,7 @@ class Filing(APIResource):
         these letters in a noncanonical order.
         """
 
-        self.package_url: str | None = self._json.get(
+        self.package_url: Union[str, None] = self._json.get(
             self.PACKAGE_URL, _ParseType.URL)
         """
         Download URL for the official ESEF report package as filed to
@@ -252,7 +252,7 @@ class Filing(APIResource):
         largest file in the package.
         """
 
-        self.viewer_url: str | None = self._json.get(
+        self.viewer_url: Union[str, None] = self._json.get(
             self.VIEWER_URL, _ParseType.URL)
         """
         URL to a website with an inline XBRL viewer for this report.
@@ -263,7 +263,7 @@ class Filing(APIResource):
         and it is developed by Workiva.
         """
 
-        self.xhtml_url: str | None = self._json.get(
+        self.xhtml_url: Union[str, None] = self._json.get(
             self.XHTML_URL, _ParseType.URL)
         """
         Download URL for the inline XBRL report extracted from the
@@ -281,19 +281,19 @@ class Filing(APIResource):
         fact that this file is not the official report but a part of it.
         """
 
-        self.json_download_path: str | None = None
+        self.json_download_path: Union[str, None] = None
         """Local path where `json_url` was downloaded."""
 
-        self.package_download_path: str | None = None
+        self.package_download_path: Union[str, None] = None
         """Local path where `package_url` was downloaded."""
 
-        self.viewer_download_path: str | None = None
+        self.viewer_download_path: Union[str, None] = None
         """Local path where `viewer_url` was downloaded."""
 
-        self.xhtml_download_path: str | None = None
+        self.xhtml_download_path: Union[str, None] = None
         """Local path where `xhtml_url` was downloaded."""
 
-        self.package_sha256: str | None = self._json.get(self.PACKAGE_SHA256)
+        self.package_sha256: Union[str, None] = self._json.get(self.PACKAGE_SHA256)
         """
         The SHA-256 hash of the report package file.
 
@@ -332,13 +332,13 @@ class Filing(APIResource):
 
     def download(
             self,
-            files: str | Iterable[str] | Mapping[str, DownloadItem],
-            to_dir: str | PurePath | None = None,
+            files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+            to_dir: Union[str, PurePath, None] = None,
             *,
-            stem_pattern: str | None = None,
+            stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
             max_concurrent: int = 5,
-            filename: str | None = None
+            filename: Union[str, None] = None
             ) -> None:
         """
         Download files in type or types of `files`.
@@ -419,10 +419,10 @@ class Filing(APIResource):
 
     async def download_async_iter(
             self,
-            files: str | Iterable[str] | Mapping[str, DownloadItem],
-            to_dir: str | PurePath | None = None,
+            files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+            to_dir: Union[str, PurePath, None] = None,
             *,
-            stem_pattern: str | None = None,
+            stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
             max_concurrent: int = 5,
             timeout: float = 30.0
@@ -479,9 +479,9 @@ class Filing(APIResource):
             yield result
 
     def _search_entity(
-            self, json_frag: dict | EllipsisType,
-            entity_iter: Iterable[Entity] | None
-            ) -> Entity | None:
+            self, json_frag: Union[dict, EllipsisType],
+            entity_iter: Union[Iterable[Entity], None]
+            ) -> Union[Entity, None]:
         """Search for an `Entity` object for the filing."""
         if json_frag == Ellipsis or entity_iter is None:
             return None
@@ -505,15 +505,15 @@ class Filing(APIResource):
         return entity
 
     def _search_validation_messages(
-            self, json_frag: dict | EllipsisType,
-            message_iter: Iterable[ValidationMessage] | None
-            ) -> set[ValidationMessage] | None:
+            self, json_frag: Union[dict, EllipsisType],
+            message_iter: Union[Iterable[ValidationMessage], None]
+            ) -> Union[set[ValidationMessage], None]:
         """Search `ValidationMessage` objects for this filing."""
         if json_frag == Ellipsis or message_iter is None:
             return None
 
         found_msgs = set()
-        msgs_relfrags: list | None = self._json.get(self.VALIDATION_MESSAGES)
+        msgs_relfrags: Union[list, None] = self._json.get(self.VALIDATION_MESSAGES)
         if msgs_relfrags:
             for rel_api_id in (mf['id'] for mf in msgs_relfrags):
                 for vmsg in message_iter:
@@ -530,7 +530,7 @@ class Filing(APIResource):
                     logger.warning(msg, stacklevel=2)
         return found_msgs
 
-    def _derive_language(self) -> str | None:
+    def _derive_language(self) -> Union[str, None]:
         stem = self._get_package_url_stem()
         if not stem:
             return None
@@ -548,7 +548,7 @@ class Filing(APIResource):
         else:
             return LANG_CODE_TRANSFORM.get(last_part)
 
-    def _derive_reporting_date(self) -> date | None:
+    def _derive_reporting_date(self) -> Union[date, None]:
         stem = self._get_package_url_stem()
         if not stem:
             return self.last_end_date
@@ -560,7 +560,7 @@ class Filing(APIResource):
             return date(int(year), int(month), int(day))
         return self.last_end_date
 
-    def _get_package_url_stem(self) -> str | None:
+    def _get_package_url_stem(self) -> Union[str, None]:
         url_path = urllib.parse.urlparse(self.package_url).path
         if not url_path.strip():
             return None

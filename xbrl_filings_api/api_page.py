@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass
+from typing import Union
 
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
@@ -37,7 +38,7 @@ class _APIPage(APIObject):
     def __init__(self, json_frag: dict, api_request: _APIRequest):
         super().__init__(json_frag, api_request)
 
-        self._data: list | None = self._json.get(
+        self._data: Union[list, None] = self._json.get(
             'data')
         """List of main resources as unserialized JSON fragments of the
         page.
@@ -54,33 +55,33 @@ class _APIPage(APIObject):
         methods.
         """
 
-        self._data_count: int | None = self._json.get(
+        self._data_count: Union[int, None] = self._json.get(
             'meta.count')
         """Total count of total main resources of the query including
         the ones not on this page.
         """
 
-        self.api_self_url: str | None = self._json.get(
+        self.api_self_url: Union[str, None] = self._json.get(
             'links.self', _ParseType.URL)
         """Link to this JSON:API page."""
 
-        self.api_prev_page_url: str | None = self._json.get(
+        self.api_prev_page_url: Union[str, None] = self._json.get(
             'links.prev', _ParseType.URL)
         """Link to previous JSON:API page in the query."""
 
-        self.api_next_page_url: str | None = self._json.get(
+        self.api_next_page_url: Union[str, None] = self._json.get(
             'links.next', _ParseType.URL)
         """Link to next JSON:API page in the query."""
 
-        self.api_first_page_url: str | None = self._json.get(
+        self.api_first_page_url: Union[str, None] = self._json.get(
             'links.first', _ParseType.URL)
         """Link to first JSON:API page in the query."""
 
-        self.api_last_page_url: str | None = self._json.get(
+        self.api_last_page_url: Union[str, None] = self._json.get(
             'links.last', _ParseType.URL)
         """Link to last JSON:API page in the query."""
 
-        self.jsonapi_version: str | None = self._json.get(
+        self.jsonapi_version: Union[str, None] = self._json.get(
             'jsonapi.version')
         """Version of the JSON:API specification of base API."""
 

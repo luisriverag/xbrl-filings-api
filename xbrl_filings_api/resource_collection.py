@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from collections.abc import Iterable, Iterator
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import ResourceLiteralType
@@ -44,7 +44,7 @@ class ResourceCollection:
 
         self._attr_name = attr_name
         self._type_obj = type_obj
-        self._columns: list[str] | None = None
+        self._columns: Union[list[str], None] = None
 
     def __iter__(self) -> Iterator[APIResource]:
         """Return iterator for subresources."""

@@ -33,6 +33,7 @@ views : Set of SQLiteView, default DEFAULT_VIEWS
 # SPDX-License-Identifier: MIT
 
 from collections.abc import Set
+from typing import Union
 
 from xbrl_filings_api.constants import YearFilterMonthsType
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
@@ -63,7 +64,7 @@ is exclusive. Inner tuples have two values where the first is year
 offset and the second is calendar-style month number (e.g. 8 is August).
 """
 
-views: Set[SQLiteView] | None = DEFAULT_VIEWS
+views: Union[Set[SQLiteView], None] = DEFAULT_VIEWS
 """
 SQLite3 views to be added to created databases.
 

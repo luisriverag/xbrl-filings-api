@@ -7,7 +7,7 @@
 import logging
 from collections.abc import Iterable
 from itertools import chain
-from typing import Any
+from typing import Any, Union
 
 from xbrl_filings_api.api_page import _APIPage
 from xbrl_filings_api.api_request import _APIRequest
@@ -69,7 +69,7 @@ class FilingsPage(_APIPage):
             flag_member=GET_ENTITY,
             flags=flags
             )
-        self.entity_list: list[Entity] | None = ents # type: ignore
+        self.entity_list: Union[list[Entity], None] = ents # type: ignore
         """
         Set of `Entity` objects on this page.
 
@@ -83,7 +83,7 @@ class FilingsPage(_APIPage):
             flag_member=GET_VALIDATION_MESSAGES,
             flags=flags
             )
-        self.validation_message_list: list[ValidationMessage] | None = (
+        self.validation_message_list: Union[list[ValidationMessage], None] = (
             vmsgs) # type: ignore
         """
         Set of `ValidationMessage` objects on this page.
@@ -126,7 +126,7 @@ class FilingsPage(_APIPage):
     def _parse_filing_fragment(
             self, res_frag: dict[str, Any], received_set: set[str],
             res_colls: dict[str, ResourceCollection], flags: ScopeFlag
-            ) -> Filing | None:
+            ) -> Union[Filing, None]:
         """Get filings from from a single `data` key fragment."""
         res_id = str(res_frag.get('id'))
         if res_id in received_set:
@@ -148,8 +148,8 @@ class FilingsPage(_APIPage):
                         )
                     message_iter = chain(vmsgs, res_colls['ValidationMessage'])
             iters: tuple[
-                Iterable[Entity] | None,
-                Iterable[ValidationMessage] | None
+                Union[Iterable[Entity], None],
+                Union[Iterable[ValidationMessage], None]
                 ] = entity_iter, message_iter # type: ignore
             return Filing(
                 res_frag,
@@ -164,7 +164,7 @@ class FilingsPage(_APIPage):
             type_obj: type[APIResource],
             flag_member: ScopeFlag,
             flags: ScopeFlag
-            ) -> list[APIResource] | None:
+            ) -> Union[list[APIResource], None]:
         if (GET_ONLY_FILINGS in flags or flag_member not in flags):
             return None
 

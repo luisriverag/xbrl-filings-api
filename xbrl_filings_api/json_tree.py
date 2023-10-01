@@ -8,7 +8,7 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, Optional, Union
 from urllib.parse import urljoin
 
 from xbrl_filings_api import options
@@ -91,7 +91,7 @@ class _JSONTree:
             self,
             *,
             class_name: str,
-            json_frag: dict | None,
+            json_frag: Union[dict, None],
             do_not_track: bool = False
             ) -> None:
         """
@@ -108,7 +108,7 @@ class _JSONTree:
             Do not track read and unaccessed keys.
         """
         self.class_name = class_name
-        self.tree: dict[str, Any] | None = json_frag
+        self.tree: Union[dict[str, Any], None] = json_frag
         self.do_not_track = do_not_track
 
     def get(
@@ -213,8 +213,8 @@ class _JSONTree:
             upaths[self.class_name].add('.'.join(comps))
 
     def _parse_value(
-            self, key_value: str, parse_type: _ParseType | None, key_path: str
-            ) -> datetime | date | str | None:
+            self, key_value: str, parse_type: Union[_ParseType, None], key_path: str
+            ) -> Union[datetime, date, str, None]:
         """Parse string value of `key_path` based on `parse_type`."""
         if parse_type == _ParseType.DATETIME:
             parsed_dt = None

@@ -6,7 +6,7 @@
 
 from dataclasses import dataclass
 from pathlib import PurePath
-from typing import Optional
+from typing import Optional, Union
 
 
 @dataclass
@@ -21,7 +21,7 @@ class DownloadItem:
     filename: Optional[str] = None
     """Name to be used for the saved file."""
 
-    to_dir: Optional[str | PurePath] = None
+    to_dir: Optional[Union[str, PurePath]] = None
     """Directory to save the file."""
 
     stem_pattern: Optional[str] = None

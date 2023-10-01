@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Union
 
 
 @dataclass(frozen=True)
@@ -15,14 +15,14 @@ class DownloadResult:
     url: str
     """URL which was downloaded or attempted to download."""
 
-    path: str | None = None
+    path: Union[str, None] = None
     """Path where the downloaded file was saved."""
 
-    err: Exception | None = None
+    err: Union[Exception, None] = None
     """Exception raised while the file was being downloaded."""
 
     obj: Any = None
     """Reference object related to this download."""
 
-    file: str | None = None
+    file: Union[str, None] = None
     """File format of the downloaded file."""

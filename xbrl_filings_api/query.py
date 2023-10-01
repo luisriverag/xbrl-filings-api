@@ -85,7 +85,7 @@ most recently added filings, specify the following parameter::
 
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from xbrl_filings_api import request_processor
 from xbrl_filings_api.enums import GET_ONLY_FILINGS, ScopeFlag
@@ -95,9 +95,9 @@ from xbrl_filings_api.resource_collection import ResourceCollection
 
 
 def get_filings(
-        filters: Optional[Mapping[str, Any | Iterable[Any]]] = None,
+        filters: Optional[Mapping[str, Union[Any, Iterable[Any]]]] = None,
         *,
-        sort: Optional[str | Sequence[str]] = None,
+        sort: Optional[Union[str, Sequence[str]]] = None,
         max_size: int = 100,
         flags: ScopeFlag = GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
@@ -151,11 +151,11 @@ def get_filings(
 
 
 def to_sqlite(
-        path: str | Path,
+        path: Union[str, Path],
         *,
         update: bool = False,
-        filters: Optional[Mapping[str, Any | Iterable[Any]]] = None,
-        sort: Optional[str | Sequence[str]] = None,
+        filters: Optional[Mapping[str, Union[Any, Iterable[Any]]]] = None,
+        sort: Optional[Union[str, Sequence[str]]] = None,
         max_size: int = 100,
         flags: ScopeFlag = GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
@@ -260,8 +260,8 @@ def to_sqlite(
 
 
 def filing_page_iter(
-        filters: Optional[Mapping[str, Any | Iterable[Any]]] = None,
-        sort: Optional[str | Sequence[str]] = None,
+        filters: Optional[Mapping[str, Union[Any, Iterable[Any]]]] = None,
+        sort: Optional[Union[str, Sequence[str]]] = None,
         max_size: int = 100,
         flags: ScopeFlag = GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None

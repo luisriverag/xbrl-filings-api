@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from types import EllipsisType
+from typing import Union
 
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
@@ -18,10 +19,10 @@ class Entity(APIResource):
     Attributes
     ----------
     api_id : str or None
-    identifier: str | None
-    name: str | None
+    identifier: Union[str, None]
+    name: Union[str, None]
     filings: set of Filing
-    api_entity_filings_url: str | None
+    api_entity_filings_url: Union[str, None]
     request_time : datetime
     request_url : str
     """
@@ -35,19 +36,19 @@ class Entity(APIResource):
 
     def __init__(
             self,
-            json_frag: dict | EllipsisType,
-            api_request: _APIRequest | None = None
+            json_frag: Union[dict, EllipsisType],
+            api_request: Union[_APIRequest, None] = None
             ) -> None:
         super().__init__(json_frag, api_request)
 
-        self.identifier: str | None = self._json.get(self.IDENTIFIER)
+        self.identifier: Union[str, None] = self._json.get(self.IDENTIFIER)
         """
         The identifier for entity.
 
         For ESEF filers, this is the LEI code.
         """
 
-        self.name: str | None = self._json.get(self.NAME)
+        self.name: Union[str, None] = self._json.get(self.NAME)
         """Name of the entity."""
 
         # Set of Filing objects
@@ -56,7 +57,7 @@ class Entity(APIResource):
         entity.
         """
 
-        self.api_entity_filings_url: str | None = self._json.get(
+        self.api_entity_filings_url: Union[str, None] = self._json.get(
             self.API_ENTITY_FILINGS_URL, _ParseType.URL)
         """A link to the JSON:API page with full list of filings by this
         entity.

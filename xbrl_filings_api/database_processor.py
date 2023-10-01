@@ -12,6 +12,7 @@ import sqlite3
 from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
+from typing import Union
 
 from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_resource import APIResource
@@ -235,7 +236,7 @@ def _insert_data(
 def _exec(
         cur: sqlite3.Cursor,
         sql: str,
-        data: list[list[str]] | None = None
+        data: Union[list[list[str]], None] = None
         ) -> None:
     data_len = f' <count: {len(data)}>' if data else ''
     logger.debug(sql + ';' + data_len)

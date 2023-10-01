@@ -9,7 +9,7 @@ import logging
 import urllib.parse
 from collections.abc import Generator, Iterable, Mapping, Sequence
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Literal
+from typing import Any, Literal, Union
 
 import requests
 
@@ -38,11 +38,11 @@ api_attribute_map: dict[str, str]
 
 
 def generate_pages(
-        filters: Mapping[str, Any | Iterable[Any]] | None,
-        sort: Sequence[str] | None,
+        filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None],
+        sort: Union[Sequence[str], None],
         max_size: int,
         flags: ScopeFlag,
-        add_api_params: Mapping | None,
+        add_api_params: Union[Mapping, None],
         res_colls: dict[str, ResourceCollection]
         ) -> Generator[FilingsPage, None, None]:
     """
@@ -101,8 +101,8 @@ def generate_pages(
 
     received_size = 0
     for query_params in params_list:
-        next_url: str | None = options.entry_point_url
-        req_params: dict[str, str] | None = query_params
+        next_url: Union[str, None] = options.entry_point_url
+        req_params: Union[dict[str, str], None] = query_params
         while next_url:
             page_json, api_request = _retrieve_page_json(
                 next_url, req_params, request_time)
@@ -128,7 +128,7 @@ def generate_pages(
 
 def _get_params_list_on_filters(
         params: dict[str, str],
-        filters: Mapping[str, Any | Iterable[Any]] | None
+        filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None]
         ) -> list[dict[str, str]]:
     """Append filter keys to `params` dict."""
     if not filters:
@@ -286,7 +286,7 @@ def _get_request_time() -> datetime:
 
 
 def _retrieve_page_json(
-        url: str, params: dict | None, request_time: datetime
+        url: str, params: Union[dict, None], request_time: datetime
         ) -> tuple[dict, _APIRequest]:
     """
     Execute an API request and return the deserialized JSON object.
@@ -342,7 +342,7 @@ def _get_api_attribute_map() -> dict[str, str]:
         if getattr(cls, prop, False):
             continue
 
-        api_attr: str | Literal[False] = (
+        api_attr: Union[str, Literal[False]] = (
             getattr(cls, prop.upper(), False)) # type: ignore
         if api_attr and api_attr.startswith('attributes.'):
             attr_lib = prop

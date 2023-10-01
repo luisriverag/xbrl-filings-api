@@ -9,6 +9,7 @@ import re
 import urllib.parse
 from pathlib import PurePath
 from types import EllipsisType
+from typing import Union
 
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
@@ -74,12 +75,12 @@ class ValidationMessage(APIResource):
 
     def __init__(
             self,
-            json_frag: dict | EllipsisType,
-            api_request: _APIRequest | None = None
+            json_frag: Union[dict, EllipsisType],
+            api_request: Union[_APIRequest, None] = None
             ) -> None:
         super().__init__(json_frag, api_request)
 
-        self.severity: str | None = self._json.get(self.SEVERITY)
+        self.severity: Union[str, None] = self._json.get(self.SEVERITY)
         """
         Severity of the validation message.
 
@@ -92,12 +93,12 @@ class ValidationMessage(APIResource):
         ``DEBUG``, ``EXCEPTION``, ``INFO``, ``INFO-RESULT``).
         """
 
-        self.text: str | None = self._json.get(self.TEXT)
+        self.text: Union[str, None] = self._json.get(self.TEXT)
         """Validation message text."""
         if isinstance(self.text, str):
             self.text = self.text.strip()
 
-        self.code: str | None = self._json.get(self.CODE)
+        self.code: Union[str, None] = self._json.get(self.CODE)
         """
         The code describing the source of the broken rule.
 
@@ -106,16 +107,16 @@ class ValidationMessage(APIResource):
         <calculationArc> element".
         """
 
-        self.filing_api_id: str | None = None
+        self.filing_api_id: Union[str, None] = None
         """`api_id` of Filing object."""
 
         # Filing object
-        self.filing: object | None = None
+        self.filing: Union[object, None] = None
         """`Filing` object of this validation message."""
 
         self._json.close()
 
-        self.calc_computed_sum: float | None = None
+        self.calc_computed_sum: Union[float, None] = None
         """
         Derived computed sum of the calculation inconsistency.
 
@@ -123,7 +124,7 @@ class ValidationMessage(APIResource):
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
 
-        self.calc_reported_sum: float | None = None
+        self.calc_reported_sum: Union[float, None] = None
         """
         Derived reported sum of the calculation inconsistency.
 
@@ -131,7 +132,7 @@ class ValidationMessage(APIResource):
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
 
-        self.calc_context_id: str | None = None
+        self.calc_context_id: Union[str, None] = None
         """
         Derived XBRL context ID of the calculation inconsistency.
 
@@ -139,7 +140,7 @@ class ValidationMessage(APIResource):
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
 
-        self.calc_line_item: str | None = None
+        self.calc_line_item: Union[str, None] = None
         """
         Derived line item name of the calculation inconsistency.
 
@@ -151,7 +152,7 @@ class ValidationMessage(APIResource):
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
 
-        self.calc_short_role: str | None = None
+        self.calc_short_role: Union[str, None] = None
         """
         Derived last part of the link role of the calculation
         inconsistency.
@@ -164,7 +165,7 @@ class ValidationMessage(APIResource):
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
 
-        self.calc_unreported_items: list[str] | None = None
+        self.calc_unreported_items: Union[list[str], None] = None
         """
         Derived unreported contributing line items of the calculation
         inconsistency.
@@ -181,7 +182,7 @@ class ValidationMessage(APIResource):
         is ``xbrl.5.2.5.2:calcInconsistency``.
         """
 
-        self.duplicate_greater: float | None = None
+        self.duplicate_greater: Union[float, None] = None
         """
         Derived greater item of the duplicate pair.
 
@@ -189,7 +190,7 @@ class ValidationMessage(APIResource):
         is ``message:tech_duplicated_facts1``.
         """
 
-        self.duplicate_lesser: float | None = None
+        self.duplicate_lesser: Union[float, None] = None
         """
         Derived lesser item of the duplicate pair.
 
@@ -241,14 +242,14 @@ class ValidationMessage(APIResource):
         """
         return f'{self.__class__.__name__}(code={self.code!r})'
 
-    def _derive_calc(self, re_obj: re.Pattern) -> str | None:
+    def _derive_calc(self, re_obj: re.Pattern) -> Union[str, None]:
         mt = re_obj.search(self.text)
         if mt:
             return mt[1]
         return None
 
     def _derive_calc_float(
-            self, re_obj: re.Pattern, attr_name: str) -> float | None:
+            self, re_obj: re.Pattern, attr_name: str) -> Union[float, None]:
         calc_str = self._derive_calc(re_obj)
         calc_float = None
         if calc_str is not None:

@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+from typing import Union
+
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.exceptions import FilingsAPIError, FilingsAPIErrorGroup
@@ -37,34 +39,34 @@ class APIError(FilingsAPIError, APIObject):
         """Initiate an error of filings.xbrl.org API."""
         APIObject.__init__(self, json_frag, api_request)
 
-        self.title: str | None = self._json.get('title')
+        self.title: Union[str, None] = self._json.get('title')
         """Title of the error."""
 
-        self.detail: str | None = self._json.get('detail')
+        self.detail: Union[str, None] = self._json.get('detail')
         """Details of the error."""
 
-        self.code: str | None = self._json.get('code')
+        self.code: Union[str, None] = self._json.get('code')
         """Code of the error."""
 
-        self.api_status: str | None = self._json.get('status')
+        self.api_status: Union[str, None] = self._json.get('status')
         """HTTP status code according to JSON:API reponse."""
 
         # The following lines may be uncommented if they are taken into
         # use in filing.xbrl.org API.
 
-        # self.api_id: str | None = self._json.get('id')
-        # self.about_url: str | None = self._json.get(
+        # self.api_id: Union[str, None] = self._json.get('id')
+        # self.about_url: Union[str, None] = self._json.get(
         #     'links.about', _ParseType.URL)
-        # self.source_pointer: str | None = self._json.get(
+        # self.source_pointer: Union[str, None] = self._json.get(
         #     'source.pointer')
-        # self.source_parameter: str | None = self._json.get(
+        # self.source_parameter: Union[str, None] = self._json.get(
         #     'source.parameter')
-        # self.meta: str | None = self._json.get('meta.abc')
+        # self.meta: Union[str, None] = self._json.get('meta.abc')
 
         self.status: int = status
         """HTTP status code of the reponse."""
 
-        self.status_text: str | None = status_text
+        self.status_text: Union[str, None] = status_text
         """HTTP status code description of the reponse."""
 
         self._json.close()

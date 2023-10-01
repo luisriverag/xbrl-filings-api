@@ -7,7 +7,7 @@
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from types import EllipsisType
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from xbrl_filings_api import order_columns
 from xbrl_filings_api.api_object import APIObject
@@ -32,13 +32,13 @@ class APIResource(APIObject):
     request_url : str
     """
 
-    TYPE: str | None = None
+    TYPE: Union[str, None] = None
     _FILING_FLAG: ScopeFlag
 
     def __init__(
             self,
-            json_frag: dict[str, Any] | EllipsisType,
-            api_request: _APIRequest | None = None
+            json_frag: Union[dict[str, Any], EllipsisType],
+            api_request: Union[_APIRequest, None] = None
             ) -> None:
         """
         Initialize an API resource.
@@ -63,7 +63,7 @@ class APIResource(APIObject):
             do_not_track=is_prototype
             )
 
-        self.api_id: str | None = None
+        self.api_id: Union[str, None] = None
         api_id = self._json.get('id')
         if isinstance(api_id, str):
             self.api_id = api_id
@@ -139,7 +139,7 @@ class APIResource(APIObject):
 
     @classmethod
     def get_columns(
-            cls, *, filings: Iterable[Any] | None = None,
+            cls, *, filings: Union[Iterable[Any], None] = None,
             has_entities: bool = False
             ) -> list[str]:
         """

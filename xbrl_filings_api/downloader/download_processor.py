@@ -9,7 +9,7 @@ import hashlib
 import urllib.parse
 from collections.abc import AsyncIterator
 from pathlib import Path, PurePath
-from typing import Never, Optional
+from typing import Never, Optional, Union
 
 import requests
 
@@ -21,7 +21,7 @@ from xbrl_filings_api.exceptions import CorruptDownloadError
 
 def download(
         url: str,
-        to_dir: str | PurePath,
+        to_dir: Union[str, PurePath],
         *,
         stem_pattern: Optional[str] = None,
         filename: Optional[str] = None,
@@ -42,7 +42,7 @@ def download(
 
 async def download_async(
         url: str,
-        to_dir: str | PurePath,
+        to_dir: Union[str, PurePath],
         *,
         stem_pattern: Optional[str] = None,
         filename: Optional[str] = None,
@@ -286,7 +286,7 @@ async def _download_parallel_worker(
         dlque.task_done()
 
 
-def validate_stem_pattern(stem_pattern: str | None):
+def validate_stem_pattern(stem_pattern: Union[str, None]):
     """
     Validate `stem_pattern` parameter of module functions.
 

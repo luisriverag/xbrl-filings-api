@@ -11,7 +11,7 @@ This is an extended set type with certain added attributes.
 
 from collections.abc import AsyncIterator, Iterable, Mapping
 from pathlib import Path, PurePath
-from typing import Optional
+from typing import Optional, Union
 
 from xbrl_filings_api import (
     database_processor,
@@ -54,14 +54,14 @@ class FilingSet(set[Filing]):
         self.entities = ResourceCollection(self, 'entity', Entity)
         self.validation_messages = ResourceCollection(
             self, 'validation_messages', ValidationMessage)
-        self._columns: list[str] | None = None
+        self._columns: Union[list[str], None] = None
 
     def download(
             self,
-            files: str | Iterable[str] | Mapping[str, DownloadItem],
-            to_dir: str | PurePath | None = None,
+            files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+            to_dir: Union[str, PurePath, None] = None,
             *,
-            stem_pattern: str | None = None,
+            stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
             max_concurrent: int = 5
             ) -> None:
@@ -146,10 +146,10 @@ class FilingSet(set[Filing]):
 
     async def download_async_iter(
             self,
-            files: str | Iterable[str] | Mapping[str, DownloadItem],
-            to_dir: str | PurePath | None = None,
+            files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+            to_dir: Union[str, PurePath, None] = None,
             *,
-            stem_pattern: str | None = None,
+            stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
             max_concurrent: int = 5,
             timeout: float = 30.0
@@ -210,7 +210,7 @@ class FilingSet(set[Filing]):
 
     def to_sqlite(
             self,
-            path: str | Path,
+            path: Union[str, Path],
             *,
             update: bool = False,
             flags: ScopeFlag = GET_ENTITY | GET_VALIDATION_MESSAGES

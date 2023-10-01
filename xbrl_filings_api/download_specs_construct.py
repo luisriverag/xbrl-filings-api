@@ -7,7 +7,7 @@
 import logging
 from collections.abc import Container, Iterable, Mapping
 from pathlib import PurePath
-from typing import Any
+from typing import Any, Union
 
 from xbrl_filings_api.download_info import _DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 def construct(
-        files: str | Iterable[str] | Mapping[str, DownloadItem],
+        files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
         filing: Any,
-        to_dir: str | PurePath | None,
-        stem_pattern: str | None,
-        filename: str | None,
+        to_dir: Union[str, PurePath, None],
+        stem_pattern: Union[str, None],
+        filename: Union[str, None],
         valid_file_formats: Container,
         *,
         check_corruption: bool
@@ -66,15 +66,15 @@ def construct(
 
 def _get_filing_download_specs(
         file: str,
-        download_item: DownloadItem | None,
+        download_item: Union[DownloadItem, None],
         filing: Any,
-        to_dir: str | PurePath | None,
-        stem_pattern: str | None,
-        filename: str | None,
+        to_dir: Union[str, PurePath, None],
+        stem_pattern: Union[str, None],
+        filename: Union[str, None],
         valid_file_formats: Container,
         *,
         check_corruption: bool
-        ) -> DownloadSpecs | None:
+        ) -> Union[DownloadSpecs, None]:
     if file not in valid_file_formats:
         msg = f'file {file!r} is not among {valid_file_formats!r}'
         raise ValueError(msg)

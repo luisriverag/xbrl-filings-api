@@ -6,7 +6,7 @@
 
 from dataclasses import dataclass
 from pathlib import PurePath
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 
 @dataclass(frozen=True)
@@ -20,7 +20,7 @@ class DownloadSpecs:
     url: str
     """URL to download."""
 
-    to_dir: str | PurePath
+    to_dir: Union[str, PurePath]
     """Directory to save the downloaded file."""
 
     stem_pattern: Optional[str] = None
