@@ -6,7 +6,7 @@
 
 import os
 import sqlite3
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 import requests
@@ -22,6 +22,8 @@ from xbrl_filings_api import (
     options,
     query,
 )
+
+UTC = timezone.utc
 
 
 class TestFundamentalOperation:

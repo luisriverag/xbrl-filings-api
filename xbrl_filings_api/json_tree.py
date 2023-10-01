@@ -7,13 +7,14 @@
 import logging
 import time
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import date, datetime, timezone
 from typing import Any, ClassVar, Optional
 from urllib.parse import urljoin
 
 from xbrl_filings_api import options
 from xbrl_filings_api.enums import _ParseType
 
+UTC = timezone.utc
 logger = logging.getLogger(__name__)
 
 

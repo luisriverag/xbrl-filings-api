@@ -8,7 +8,7 @@ import itertools
 import logging
 import urllib.parse
 from collections.abc import Generator, Iterable, Mapping, Sequence
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Literal
 
 import requests
@@ -31,6 +31,7 @@ from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
 
+UTC = timezone.utc
 logger = logging.getLogger(__name__)
 
 api_attribute_map: dict[str, str]

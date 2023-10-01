@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from collections.abc import Iterable
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from types import EllipsisType
 from typing import Any, Optional
 
@@ -14,6 +14,8 @@ from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
 from xbrl_filings_api.enums import GET_ENTITY, GET_ONLY_FILINGS, ScopeFlag
+
+UTC = timezone.utc
 
 
 class APIResource(APIObject):

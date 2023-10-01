@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from datetime import date, datetime
+from typing import Union
 
 NO_LIMIT = 0
 """."""
@@ -23,7 +24,7 @@ Exclude attributes whose value is a functional object or some sort of
 list from the data output.
 """
 
-ResourceLiteralType = str | int | datetime | date
+ResourceLiteralType = Union[str, int, datetime, date]
 """Concrete datatype of `APIResource` data attribute."""
 
 YearFilterMonthsType = tuple[tuple[int, int], tuple[int, int]]
