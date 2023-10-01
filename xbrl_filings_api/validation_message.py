@@ -8,7 +8,6 @@ import logging
 import re
 import urllib.parse
 from pathlib import PurePath
-from types import EllipsisType
 from typing import Union
 
 from xbrl_filings_api.api_request import _APIRequest
@@ -75,7 +74,7 @@ class ValidationMessage(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, EllipsisType],
+            json_frag: Union[dict, Ellipsis],
             api_request: Union[_APIRequest, None] = None
             ) -> None:
         super().__init__(json_frag, api_request)

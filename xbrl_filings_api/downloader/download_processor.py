@@ -9,7 +9,7 @@ import hashlib
 import urllib.parse
 from collections.abc import AsyncIterator
 from pathlib import Path, PurePath
-from typing import Never, Optional, Union
+from typing import NoReturn, Optional, Union
 
 import requests
 
@@ -263,7 +263,7 @@ async def _download_parallel_worker(
         dlque: asyncio.Queue[DownloadSpecs],
         resultque: asyncio.Queue[DownloadResult],
         timeout: float
-        ) -> Never:
+        ) -> NoReturn:
     """Coroutine worker for `download_parallel_async_iter`."""
     while True:
         item = await dlque.get()

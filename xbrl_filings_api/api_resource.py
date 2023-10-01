@@ -6,7 +6,6 @@
 
 from collections.abc import Iterable
 from datetime import datetime, timezone
-from types import EllipsisType
 from typing import Any, Optional, Union
 
 from xbrl_filings_api import order_columns
@@ -37,7 +36,7 @@ class APIResource(APIObject):
 
     def __init__(
             self,
-            json_frag: Union[dict[str, Any], EllipsisType],
+            json_frag: Union[dict[str, Any], Ellipsis],
             api_request: Union[_APIRequest, None] = None
             ) -> None:
         """
@@ -50,7 +49,7 @@ class APIResource(APIObject):
             given to create a prototype.
         """
         is_prototype = False
-        if isinstance(json_frag, EllipsisType):
+        if json_frag == Ellipsis:
             is_prototype = True
             json_frag = {}
             api_request = _APIRequest('', datetime.now(tz=UTC))

@@ -10,7 +10,6 @@ import urllib.parse
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime
 from pathlib import PurePath
-from types import EllipsisType
 from typing import ClassVar, Union
 
 from xbrl_filings_api import download_specs_construct, downloader
@@ -83,7 +82,7 @@ class Filing(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, EllipsisType],
+            json_frag: Union[dict, Ellipsis],
             api_request: Union[_APIRequest, None] = None,
             entity_iter: Union[Iterable[Entity], None] = None,
             message_iter: Union[Iterable[ValidationMessage], None] = None
@@ -475,7 +474,7 @@ class Filing(APIResource):
             yield result
 
     def _search_entity(
-            self, json_frag: Union[dict, EllipsisType],
+            self, json_frag: Union[dict, Ellipsis],
             entity_iter: Union[Iterable[Entity], None]
             ) -> Union[Entity, None]:
         """Search for an `Entity` object for the filing."""
@@ -501,7 +500,7 @@ class Filing(APIResource):
         return entity
 
     def _search_validation_messages(
-            self, json_frag: Union[dict, EllipsisType],
+            self, json_frag: Union[dict, Ellipsis],
             message_iter: Union[Iterable[ValidationMessage], None]
             ) -> Union[set[ValidationMessage], None]:
         """Search `ValidationMessage` objects for this filing."""
