@@ -1,4 +1,4 @@
-"""Define `APIError` and `APIErrorGroup` classes."""
+"""Define `APIError` classes."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -8,18 +8,12 @@ from typing import Union
 
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
-from xbrl_filings_api.exceptions import FilingsAPIError, FilingsAPIErrorGroup
-
-
-class APIErrorGroup(FilingsAPIErrorGroup):
-    """Stores instances of `APIError`."""
+from xbrl_filings_api.exceptions import FilingsAPIError
 
 
 class APIError(FilingsAPIError, APIObject):
     """
-    The response contains an error from the filings.xbrl.org JSON:API.
-
-    This exception is always raised in a APIErrorGroup.
+    An error from the filings.xbrl.org JSON:API.
 
     Attributes
     ----------

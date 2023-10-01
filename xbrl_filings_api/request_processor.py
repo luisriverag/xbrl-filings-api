@@ -14,7 +14,7 @@ from typing import Any, Literal, Union
 import requests
 
 from xbrl_filings_api import options, stats
-from xbrl_filings_api.api_error import APIError, APIErrorGroup
+from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.constants import NO_LIMIT
 from xbrl_filings_api.entity import Entity
@@ -64,7 +64,7 @@ def generate_pages(
 
     Raises
     ------
-    APIErrorGroup of APIError
+    APIError
     HTTPStatusError
     requests.ConnectionError
     requests.JSONDecodeError
@@ -293,7 +293,7 @@ def _retrieve_page_json(
 
     Raises
     ------
-    APIErrorGroup of APIError
+    APIError
     HTTPStatusError
     requests.ConnectionError
     """
@@ -316,16 +316,8 @@ def _retrieve_page_json(
 
     json_frag = res.json()
     if json_frag.get('errors'):
-        msg = (
-            f'The filings API returned errors. Status {res.status_code} '
-            + res.reason
-            )
-        excs = [
-            APIError(
-                err_frag, api_request, res.status_code, res.reason)
-            for err_frag in json_frag['errors']
-            ]
-        raise APIErrorGroup(msg, excs)
+        err_frag = next(iter(json_frag['errors'], None))
+        raise APIError(err_frag, api_request, res.status_code, res.reason)
     elif res.status_code != 200:  # noqa: PLR2004
         raise HTTPStatusError(res.status_code, res.reason, res.text)
 

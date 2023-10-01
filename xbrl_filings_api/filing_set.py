@@ -27,7 +27,6 @@ from xbrl_filings_api.enums import (
     GET_VALIDATION_MESSAGES,
     ScopeFlag,
 )
-from xbrl_filings_api.exceptions import DownloadErrorGroup
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
@@ -75,10 +74,9 @@ class FilingSet(set[Filing]):
         If parameter `files` includes `package`, the downloaded files
         will be checked through the `package_sha256` attribute of Filing
         objects. If the hash does not match with the one calculated from
-        download, exceptions `CorruptDownloadError` will be raised in a
-        `DownloadErrorGroup` after all downloads have finished. The
-        downloaded file will not be deleted but its name will be
-        appended with ending ``.corrupt``.
+        download, exceptions `CorruptDownloadError` after all downloads
+        have finished. The downloaded file will not be deleted but its
+        name will be appended with ending ``.corrupt``.
 
         If download is interrupted, the files will be left with ending
         ``.unfinished``.
@@ -111,14 +109,13 @@ class FilingSet(set[Filing]):
 
         Raises
         ------
-        DownloadErrorGroup of
-            CorruptDownloadError
-                Parameter `sha256` does not match the calculated hash of
-                package.
-            requests.HTTPError
-                HTTP status error occurs.
-            requests.ConnectionError
-                Connection fails.
+        CorruptDownloadError
+            Parameter `sha256` does not match the calculated hash of
+            package.
+        requests.HTTPError
+            HTTP status error occurs.
+        requests.ConnectionError
+            Connection fails.
         """
         downloader.validate_stem_pattern(stem_pattern)
 
@@ -141,8 +138,7 @@ class FilingSet(set[Filing]):
                     )
         excs = [result.err for result in results]
         if excs:
-            msg = 'Exceptions raised while downloading.'
-            raise DownloadErrorGroup(msg, excs)
+            raise excs[0]
 
     async def download_async_iter(
             self,

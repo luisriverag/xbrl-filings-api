@@ -19,7 +19,6 @@ from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import _ParseType
-from xbrl_filings_api.exceptions import DownloadErrorGroup
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
 from xbrl_filings_api.validation_message import ValidationMessage
 
@@ -350,10 +349,9 @@ class Filing(APIResource):
         If parameter `files` includes `package`, the downloaded files
         will be checked through the `package_sha256` attribute of Filing
         objects. If the hash does not match with the one calculated from
-        download, exceptions `CorruptDownloadError` will be raised in a
-        `DownloadErrorGroup` after all downloads have finished. The
-        downloaded file will not be deleted but its name will be
-        appended with ending ``.corrupt``.
+        download, exceptions `CorruptDownloadError` after all downloads
+        have finished. The downloaded file will not be deleted but its
+        name will be appended with ending ``.corrupt``.
 
         If download is interrupted, the files will be left with ending
         ``.unfinished``.
@@ -388,14 +386,13 @@ class Filing(APIResource):
 
         Raises
         ------
-        DownloadErrorGroup of
-            CorruptDownloadError
-                Parameter `sha256` does not match the calculated hash of
-                package.
-            requests.HTTPError
-                HTTP status error occurs.
-            requests.ConnectionError
-                Connection fails.
+        CorruptDownloadError
+            Parameter `sha256` does not match the calculated hash of
+            package.
+        requests.HTTPError
+            HTTP status error occurs.
+        requests.ConnectionError
+            Connection fails.
         """
         downloader.validate_stem_pattern(stem_pattern)
         items = download_specs_construct.construct(
@@ -414,8 +411,7 @@ class Filing(APIResource):
                     )
         excs = [result.err for result in results]
         if excs:
-            msg = 'Exceptions raised while downloading.'
-            raise DownloadErrorGroup(msg, excs)
+            raise excs[0]
 
     async def download_async_iter(
             self,

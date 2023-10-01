@@ -8,9 +8,7 @@ entities and validation messages.
 Classes
 -------
 APIError
-    Errors returned by the JSON:API.
-APIErrorGroup
-    Exception group for `APIError` objects.
+    First error returned by the JSON:API.
 APIObject
     Base class for all JSON-originated API objects.
 APIResource
@@ -77,7 +75,7 @@ to_sqlite
 
 import logging
 
-from xbrl_filings_api.api_error import APIError, APIErrorGroup
+from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import NO_LIMIT

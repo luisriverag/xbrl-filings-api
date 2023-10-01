@@ -219,8 +219,8 @@ def to_sqlite(
 
     Raises
     ------
-    APIErrorGroup of APIError
-        If filings API returns errors.
+    APIError
+        First error returned by the filings API.
     HTTPStatusError
         If filings API does not return errors but HTTP status is not
         200.

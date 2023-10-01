@@ -1,11 +1,10 @@
 """
 The exceptions for the library.
 
-Exception `APIError` is defined separately in module
-`api_object.api_error`.
+Exception `APIError` is defined separately in module `api_error`.
 
-All of the exceptions are subclasses of `FilingsAPIError,
-`FilingsAPIErrorGroup` or `FilingsAPIWarning`. This includes `APIError`.
+All of the exceptions are subclasses of `FilingsAPIError or
+`FilingsAPIWarning`. This includes `APIError`.
 
 """
 
@@ -21,10 +20,6 @@ class FilingsAPIError(Exception):
     Not to be confused with `APIError` which is a subclass of this class
     representing an error returned by JSON:API.
     """
-
-
-class FilingsAPIErrorGroup(ExceptionGroup):
-    """Base class for exception groups in this library."""
 
 
 class FilingsAPIWarning(Warning):
@@ -51,10 +46,6 @@ class HTTPStatusError(FilingsAPIError):
         self.body = body
         """Body text of the response."""
         super().__init__()
-
-
-class DownloadErrorGroup(FilingsAPIErrorGroup):
-    """Exceptions raised during download of files."""
 
 
 class CorruptDownloadError(FilingsAPIError):
