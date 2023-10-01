@@ -44,9 +44,9 @@ Constants
 ---------
 DEFAULT_VIEWS
     Library-defined SQLite views for the exported database.
-FILTER_ATTRS
-    List of resource attribute names for `sort` and `filter` parameters.
-    Does not include derived attributes.
+FILING_QUERY_ATTRS
+    List of resource attribute names for `sort` and `filter` parameters
+    of filing queries. Does not include derived attributes.
 GET_ENTITY
     Request entities of filings in a query. A member of enum
     `ScopeFlag`.
@@ -93,7 +93,7 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set import FilingSet
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.query import filing_page_iter, get_filings, to_sqlite
-from xbrl_filings_api.request_processor import FILTER_ATTRS
+from xbrl_filings_api.request_processor import FILING_QUERY_ATTRS
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.sqlite_view import SQLiteView
 from xbrl_filings_api.validation_message import ValidationMessage

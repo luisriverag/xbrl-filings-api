@@ -15,9 +15,8 @@ mapping a value which is an iterable of strings, you may execute
 multiple equivalence filtering queries in one function/method call.
 
 You will find the list of valid filtering attributes in list
-`FILTER_ATTRS`. Please note
-that derived attributes such as `reporting_date` or `language` may
-not be used for filtering.
+`FILING_QUERY_ATTRS`. Please note that derived attributes such as
+`reporting_date` or `language` may not be used for filtering.
 
 .. note::
     As of July 2023, attributes ending with ``_count`` and ``_url``
@@ -66,9 +65,11 @@ The parameter `sort` in functions/methods accepts a single attribute
 string or a sequence (e.g. list) of attribute strings. Normal sort order
 is ascending, but descending order can be obtained by prefixing the
 attribute with a minus sign (-). As with filtering, attributes
-ending with ``_count`` and ``_url`` did not work in July 2023. The
-same keys of `FILTER_ATTRS` dict are valid values for sort. To get the
-most recently added filings, specify the following parameter::
+ending with ``_count`` and ``_url`` did not work in July 2023.
+
+The attributes in `FILING_QUERY_ATTRS` dict are valid values for sort.
+To get the most recently added filings, specify the following
+parameter::
 
     sort='-added_time'
 

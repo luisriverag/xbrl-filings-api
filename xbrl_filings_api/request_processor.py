@@ -356,7 +356,7 @@ Mapping from library attribute names to JSON:API used names.
 Is used to convert fields in `sort` and `filters` parameters of queries.
 """
 
-FILTER_ATTRS = list(api_attribute_map)
+FILING_QUERY_ATTRS = list(api_attribute_map)
 """
 List of resource attribute names for `sort` and `filter` parameters.
 
