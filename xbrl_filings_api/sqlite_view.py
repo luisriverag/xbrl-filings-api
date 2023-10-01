@@ -1,5 +1,9 @@
 """Define `SQLiteView` class."""
 
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 

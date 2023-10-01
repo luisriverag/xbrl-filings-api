@@ -6,6 +6,10 @@ Configuration of `pytest` library.
     `responses` version 0.23.3).
 """
 
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 from pathlib import Path
 
 import pytest

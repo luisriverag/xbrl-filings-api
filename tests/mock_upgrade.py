@@ -12,6 +12,10 @@ The fetched URLs will be saved to YAML files in directory
     `responses` version 0.23.3).
 """
 
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 from collections.abc import Callable
 from pathlib import Path
 
