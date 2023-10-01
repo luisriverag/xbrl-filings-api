@@ -35,7 +35,7 @@ class Entity(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, Ellipsis],
+            json_frag: Union[dict, type(Ellipsis)],
             api_request: Union[_APIRequest, None] = None
             ) -> None:
         super().__init__(json_frag, api_request)

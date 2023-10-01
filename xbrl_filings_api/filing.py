@@ -82,7 +82,7 @@ class Filing(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, Ellipsis],
+            json_frag: Union[dict, type(Ellipsis)],
             api_request: Union[_APIRequest, None] = None,
             entity_iter: Union[Iterable[Entity], None] = None,
             message_iter: Union[Iterable[ValidationMessage], None] = None
@@ -500,7 +500,7 @@ class Filing(APIResource):
         return entity
 
     def _search_validation_messages(
-            self, json_frag: Union[dict, Ellipsis],
+            self, json_frag: Union[dict, type(Ellipsis)],
             message_iter: Union[Iterable[ValidationMessage], None]
             ) -> Union[set[ValidationMessage], None]:
         """Search `ValidationMessage` objects for this filing."""

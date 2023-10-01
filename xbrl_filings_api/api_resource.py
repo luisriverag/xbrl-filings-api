@@ -36,7 +36,7 @@ class APIResource(APIObject):
 
     def __init__(
             self,
-            json_frag: Union[dict[str, Any], Ellipsis],
+            json_frag: Union[dict[str, Any], type(Ellipsis)],
             api_request: Union[_APIRequest, None] = None
             ) -> None:
         """
