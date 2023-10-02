@@ -7,7 +7,6 @@
 import os
 import sqlite3
 from datetime import datetime, timezone
-from typing import Union
 
 import pytest
 import requests
@@ -28,13 +27,14 @@ UTC = timezone.utc
 
 
 class TestFundamentalOperation:
-    """Test fundamental operation of query functions."""
+    """Test fundamental operation."""
 
     def test_get_filings(s, asml22en_response):
         """Requested filing is returned."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=1,
@@ -46,12 +46,13 @@ class TestFundamentalOperation:
     @pytest.mark.sqlite
     def test_to_sqlite(s, asml22en_response, tmp_path):
         """Requested filing is inserted into a database."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         tmp_db = tmp_path / 'temp.db'
         query.to_sqlite(
             path=tmp_db,
             update=False,
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=1,
@@ -62,16 +63,17 @@ class TestFundamentalOperation:
         cur = con.cursor()
         cur.execute(
             "SELECT COUNT(*) FROM Filing "
-            "WHERE filing_index = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'"
-            )
+            "WHERE filing_index = ?"
+            (asml22_fxo,))
         assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
 
     @pytest.mark.iter
     def test_filing_page_iter(s, asml22en_response):
         """Requested filing is returned on a filing page."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         piter = query.filing_page_iter(
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=1,
@@ -84,13 +86,14 @@ class TestFundamentalOperation:
 
 
 class TestParam_filters_single:
-    """Test parameter `filters` of query functions using single filters."""
+    """Test parameter `filters` using single filters."""
 
     def test_get_filings_filing_index(s, asml22en_response):
         """Requested filing index is returned."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=1,
@@ -98,7 +101,7 @@ class TestParam_filters_single:
             )
         assert len(fs) == 1, 'One filing is returned'
         asml22 = next(iter(fs), None)
-        assert asml22.filing_index == '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+        assert asml22.filing_index == asml22_fxo
 
     def test_2_filters_country_enddate(s, finnish_jan22_response):
         """Filters `country` and `last_end_date` return 2 ."""
@@ -111,17 +114,19 @@ class TestParam_filters_single:
             max_size=2,
             flags=GET_ONLY_FILINGS
             )
-        assert len(fs) == 2, 'Two reports were reported in Finland for Jan 2022.'
+        assert len(fs) == 2, 'Two reports issued in Finland for Jan 2022.'
         fxo_set = {filing.filing_index for filing in fs}
-        assert '743700UJUT6FWHBXPR69-2022-01-31-ESEF-FI-0' in fxo_set, 'Puuilo Oyj 2022-01-31'
-        assert '743700UNWAM0XWPHXP50-2022-01-31-ESEF-FI-0' in fxo_set, 'HLRE Holding Oyj 2022-01-31'
+        puuilo22_fxo = '743700UJUT6FWHBXPR69-2022-01-31-ESEF-FI-0'
+        assert puuilo22_fxo in fxo_set, 'Puuilo Oyj 2022-01-31'
+        hlre22_fxo = '743700UNWAM0XWPHXP50-2022-01-31-ESEF-FI-0'
+        assert hlre22_fxo in fxo_set, 'HLRE Holding Oyj 2022-01-31'
 
     # to_sqlite
     # filing_page_iter
 
 
 class TestParam_filters_multifilters:
-    """Test parameter `filters` of query functions using multifilters."""
+    """Test parameter `filters` using multifilters."""
 
 
     # to_sqlite
@@ -129,7 +134,7 @@ class TestParam_filters_multifilters:
 
 
 class TestParam_filters_short_dates:
-    """Test parameter `filters` of query functions using date filters."""
+    """Test parameter `filters` using date filters."""
 
 
     # to_sqlite
@@ -137,7 +142,7 @@ class TestParam_filters_short_dates:
 
 
 class TestParam_sort:
-    """Test parameter `sort` of query functions."""
+    """Test parameter `sort`."""
 
     def test_sort_oldest_finnish_str(s, oldest3_fi_response, monkeypatch):
         """Test sorting by `added_time` str for filings from Finland."""
@@ -152,10 +157,10 @@ class TestParam_sort:
             )
         date_max = datetime(2021, 5, 18, 0, 0, 1, tzinfo=UTC)
         for f in fs:
-            assert f.added_time < date_max, 'All filings are added before 2021-05-18T00:00:01Z'
+            assert f.added_time < date_max, 'Before 2021-05-18T00:00:01Z'
 
     def test_sort_oldest_finnish_list(s, oldest3_fi_response, monkeypatch):
-        """Test sorting by `added_time` list for filings from Finland."""
+        """Sort by `added_time` for filings from Finland."""
         monkeypatch.setattr(options, 'utc_time', True)
         fs = query.get_filings(
             filters={
@@ -167,7 +172,7 @@ class TestParam_sort:
             )
         date_max = datetime(2021, 5, 18, 0, 0, 1, tzinfo=UTC)
         for f in fs:
-            assert f.added_time < date_max, 'All filings are added before 2021-05-18T00:00:01Z'
+            assert f.added_time < date_max, 'Before 2021-05-18T00:00:01Z'
 
     def test_sort_two_fields(s, sort_two_fields_response):
         """
@@ -191,95 +196,103 @@ class TestParam_sort:
         assert len(fs) == 3, 'Three filings were requested'
         filing_indexes = {f.filing_index for f in fs}
         # TODO: Must be checked from full database output
-        assert '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0' in filing_indexes
-        assert '549300UWB1AIR85BM957-2020-12-31-ESEF-FI-0' in filing_indexes
-        assert '7437007N96FK4N3WHT09-2020-12-31-ESEF-FI-0' in filing_indexes
+        oldest_fi_fxo = '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0'
+        assert oldest_fi_fxo in filing_indexes
+        _2nd_oldest_fi_fxo = '549300UWB1AIR85BM957-2020-12-31-ESEF-FI-0'
+        assert _2nd_oldest_fi_fxo in filing_indexes
+        _3rd_oldest_fi_fxo = '7437007N96FK4N3WHT09-2020-12-31-ESEF-FI-0'
+        assert _3rd_oldest_fi_fxo in filing_indexes
 
     # to_sqlite
     # filing_page_iter
 
 
 class TestParam_max_size:
-    """Test parameter `max_size` of query functions."""
+    """Test parameter `max_size`."""
 
     # to_sqlite
     # filing_page_iter
 
 
 class TestParam_flags:
-    """Test parameter `flags` of query functions."""
+    """Test parameter `flags`."""
 
     def test_asml22en_flag_only_filings(s, asml22en_response):
         """Test if function returns the filing according to `flags`."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=1,
             flags=GET_ONLY_FILINGS
             )
         asml22 = next(iter(fs), None)
-        assert asml22.entity is None, 'Entities must not be available'
-        assert asml22.validation_messages is None, 'Validation messages must not be available'
+        assert asml22.entity is None, 'No entities'
+        assert asml22.validation_messages is None, 'No messages'
 
     def test_asml22en_flag_entities(s, asml22en_entities_response):
         """Test if function returns the filing with `entity`."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=1,
             flags=GET_ENTITY
             )
         asml22 = next(iter(fs), None)
-        assert asml22.validation_messages is None, 'Validation messages must not be available'
+        assert asml22.validation_messages is None, 'No messages'
         assert isinstance(asml22.entity, Entity), 'Entity is available'
-        assert asml22.entity.name == 'ASML Holding N.V.', 'Entity attributes are accessible'
+        assert asml22.entity.name == 'ASML Holding N.V.', 'Accessible'
 
     def test_asml22en_flag_vmessages(s, asml22en_vmessages_response):
-        """Test if function returns the filing with `validation_messages`."""
+        """Function returns the filing with `validation_messages`."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=1,
             flags=GET_VALIDATION_MESSAGES
             )
         asml22 = next(iter(fs), None)
-        assert asml22.entity is None, 'Entity must not be available'
+        assert asml22.entity is None, 'No entity'
         vmsg = next(iter(asml22.validation_messages), None)
-        assert isinstance(vmsg, ValidationMessage), 'Validation messages are available'
-        assert isinstance(vmsg.text, str), 'Message attributes are accessible'
+        assert isinstance(vmsg, ValidationMessage), 'Messages available'
+        assert isinstance(vmsg.text, str), 'Accessible'
 
     def test_asml22en_flag_only_filings_and_entities(s, asml22en_response):
-        """Test if `GET_ONLY_FILINGS` is stronger than `GET_ENTITY` in `flags`."""
+        """`GET_ONLY_FILINGS` is stronger than `GET_ENTITY`."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=1,
             flags=GET_ONLY_FILINGS | GET_ENTITY
             )
         asml22 = next(iter(fs), None)
-        assert asml22.entity is None, 'Entities must not be available'
-        assert asml22.validation_messages is None, 'Validation messages must not be available'
+        assert asml22.entity is None, 'No entities'
+        assert asml22.validation_messages is None, 'No messages'
 
     # to_sqlite
     # filing_page_iter
 
 
 class TestParam_add_api_params:
-    """Test parameter `add_api_params` of query functions."""
+    """Test parameter `add_api_params`."""
 
     def test_asml22en_override_max_size(s, asml22en_response):
-        """Test if `max_size` can be overridden with `add_api_params`."""
+        """`max_size` can be overridden with `add_api_params`."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
             filters={
-                'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                'filing_index': asml22_fxo
                 },
             sort=None,
             max_size=10,
@@ -324,8 +337,9 @@ class TestParam_paging_single:
         page_none = next(piter, None)
         assert page_none is None, 'No more than 3 pages are returned'
 
-    # def test_filing_page_iter_filings_count(s, multipage_response, monkeypatch):
-        # """Test if function returns correct number of filings."""
+    # def test_filing_page_iter_filings_count(s,
+            # multipage_response, monkeypatch):
+        # """Function returns correct number of filings."""
         # monkeypatch.setattr(options, 'max_page_size', 2)
         # piter = query.filing_page_iter(
             # filters={
