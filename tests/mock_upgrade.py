@@ -16,8 +16,8 @@ The fetched URLs will be saved to YAML files in directory
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Callable
 from pathlib import Path
+from types import FunctionType
 
 import requests
 from responses import _recorder
@@ -158,9 +158,9 @@ def _fetch_sort_two_fields():
     _ = requests.get(
         url=entry_point_url,
         params={
-            'page[size]': 3,
+            'page[size]': 2,
             'filter[country]': 'FI',
-            'sort': 'period_end,date_added' # last_end_date, added_time
+            'sort': 'period_end,processed' # last_end_date, processed_time
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
@@ -216,11 +216,11 @@ def _fetch_multipage():
 
 if __name__ == '__main__':
     _ensure_dir_exists()
-    
+
     # Run recorder functions
     gitems = globals().copy()
     for name, val in gitems.items():
-        if name.startswith('_fetch_') and isinstance(val, Callable):
+        if name.startswith('_fetch_') and isinstance(val, FunctionType):
             val()
 
     print(

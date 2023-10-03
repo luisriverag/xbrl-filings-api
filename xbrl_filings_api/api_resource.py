@@ -14,6 +14,7 @@ from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
 from xbrl_filings_api.enums import GET_ENTITY, GET_ONLY_FILINGS, ScopeFlag
 
+EllipsisType = type(Ellipsis) # No valid solution for Python 3.9
 UTC = timezone.utc
 
 
@@ -36,7 +37,7 @@ class APIResource(APIObject):
 
     def __init__(
             self,
-            json_frag: Union[dict[str, Any], type(Ellipsis)],
+            json_frag: Union[dict[str, Any], EllipsisType],
             api_request: Union[_APIRequest, None] = None
             ) -> None:
         """

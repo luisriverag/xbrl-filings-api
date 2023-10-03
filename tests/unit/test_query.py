@@ -63,7 +63,7 @@ class TestFundamentalOperation:
         cur = con.cursor()
         cur.execute(
             "SELECT COUNT(*) FROM Filing "
-            "WHERE filing_index = ?"
+            "WHERE filing_index = ?",
             (asml22_fxo,))
         assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
 
@@ -82,7 +82,7 @@ class TestFundamentalOperation:
         page = next(piter, None)
         assert isinstance(page, FilingsPage), 'First iteration returns a page'
         asml22 = next(iter(page.filing_list), None)
-        assert isinstance(asml22, Filing), 'Filing is returned'
+        assert isinstance(asml22, Filing), 'Filing is returned on a page'
 
 
 class TestParam_filters_single:
@@ -145,7 +145,7 @@ class TestParam_sort:
     """Test parameter `sort`."""
 
     def test_sort_oldest_finnish_str(s, oldest3_fi_response, monkeypatch):
-        """Test sorting by `added_time` str for filings from Finland."""
+        """Sort by `added_time` for filings from Finland."""
         monkeypatch.setattr(options, 'utc_time', True)
         fs = query.get_filings(
             filters={
@@ -176,7 +176,7 @@ class TestParam_sort:
 
     def test_sort_two_fields(s, sort_two_fields_response):
         """
-        Test sorting by `added_time` list for filings from Finland.
+        Sort by `last_end_date`, `processed_time` for Finland filings.
 
         .. warning::
 
@@ -189,19 +189,17 @@ class TestParam_sort:
             filters={
                 'country': 'FI'
                 },
-            sort=['last_end_date', 'added_time'],
-            max_size=3,
+            sort=['last_end_date', 'processed_time'],
+            max_size=2,
             flags=GET_ONLY_FILINGS
             )
-        assert len(fs) == 3, 'Three filings were requested'
+        assert len(fs) == 2, 'Two filings were requested'
         filing_indexes = {f.filing_index for f in fs}
         # TODO: Must be checked from full database output
-        oldest_fi_fxo = '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0'
-        assert oldest_fi_fxo in filing_indexes
-        _2nd_oldest_fi_fxo = '549300UWB1AIR85BM957-2020-12-31-ESEF-FI-0'
-        assert _2nd_oldest_fi_fxo in filing_indexes
-        _3rd_oldest_fi_fxo = '7437007N96FK4N3WHT09-2020-12-31-ESEF-FI-0'
-        assert _3rd_oldest_fi_fxo in filing_indexes
+        neste20en_fxo = '5493009GY1X8GQ66AM14-2020-12-31-ESEF-FI-0'
+        assert neste20en_fxo in filing_indexes
+        neste20fi_fxo = '5493009GY1X8GQ66AM14-2020-12-31-ESEF-FI-1'
+        assert neste20fi_fxo in filing_indexes
 
     # to_sqlite
     # filing_page_iter

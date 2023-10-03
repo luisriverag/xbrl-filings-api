@@ -21,7 +21,7 @@ from xbrl_filings_api.enums import _ParseType
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
 from xbrl_filings_api.validation_message import ValidationMessage
 
-EllipsisType = type(Ellipsis)
+EllipsisType = type(Ellipsis) # No valid solution for Python 3.9
 logger = logging.getLogger(__name__)
 
 

@@ -136,7 +136,10 @@ class FilingSet(set[Filing]):
                     f'{result.file}_download_path',
                     result.path
                     )
-        excs = [result.err for result in results]
+        excs = [
+            result.err for result in results
+            if isinstance(result.err, Exception)
+            ]
         if excs:
             raise excs[0]
 
