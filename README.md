@@ -19,7 +19,10 @@ The library is not connected to XBRL International.
 
 - [Installation](#installation)
 - [License](#license)
-- [API objects](#api_objects)
+- [Data objects](#data-objects)
+    * [Filing](#filing)
+    * [Entity](#entity)
+    * [ValidationMessage](#validationmessage)
 
 ## Installation
 
@@ -31,11 +34,11 @@ pip install xbrl-filings-api
 
 `xbrl-filings-api` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
 
-## API objects
+## Data objects
 
 ### Filing
 
-Data attributes::
+Data attributes:
 
 | Attribute name          | Type     | Description                         | JSON:API field name | Query   |
 | ----------------------- | -------- | ----------------------------------- | ------------------- | ------- |
@@ -52,7 +55,7 @@ Data attributes::
 | `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | `processed`  | **X**   |
 | `entity_api_id`         | str      | Same as `entity.api_id`             | `entity.id`         |         |
 | `entity`                | Entity   | Reference to `Entity` object        | \-                  |         |
-| `validation_messages`   | set\[ValidationMessage\] | Set of `ValidationMessage` objects | `validation_messages` | |
+| `validation_messages`   | set of ValidationMessage | Validation messages | `validation_messages` |       |
 | `json_url`              | str      | xBRL-JSON download URL              | `json_url`          | (**X**) |
 | `package_url`           | str      | ESEF report package download URL    | `package_url`       | (**X**) |
 | `viewer_url`            | str      | Inline XBRL viewer URL              | `viewer_url`        | (**X**) |
@@ -69,23 +72,25 @@ Data attributes::
 > As of October 2023, attributes ending with `_count` and `_url` could
 > not be used for filtering or sorting queries.
 
+
 ### Entity
 
-Data attributes::
+Data attributes:
 
 | Attribute name           | Type     | Description                         | JSON:API field name |
 | ------------------------ | -------- | ----------------------------------- | ------------------- |
 | `api_id`                 | str      | JSON:API identifier                 | Resource `id`       |
 | `identifier`             | str      | Identifier of entity (LEI code)     | `identifier`        |
 | `name`                   | str      | Name                                | `name`              |
-| `filings`                | set\[Filing\] | Set of `Filing` objects reported by the entity | \-  |
+| `filings`                | set of Filing | Filings reported by the entity | \-                  |
 | `api_entity_filings_url` | str      | JSON:API api_entity_filings_url     | \-                  |
 | `query_time`             | datetime | Time when query function was called | \-                  |
 | `request_url`            | str      | URL of the API request              | \-                  |
 
-### Validation Message
 
-Data attributes::
+### ValidationMessage
+
+Data attributes:
 
 | Attribute name          | Type     | Description                         | JSON:API field name |
 | ----------------------- | -------- | ----------------------------------- | ------------------- |
