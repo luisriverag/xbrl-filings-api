@@ -135,7 +135,7 @@ exclude_lines = [
 [tool.pytest.ini_options]
 markers = [
     "sqlite: test has sqlite3 operations",
-    "iter: iterator functions",
+    "paging: paging iterations",
 ]
 
 [tool.isort]

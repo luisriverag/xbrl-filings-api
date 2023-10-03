@@ -26,6 +26,14 @@ def _get_absolute_path(set_id):
 
 
 @pytest.fixture
+def creditsuisse21en_response():
+    """Credit Suisse 2021 English AFR filing by `api_id`."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_absolute_path('creditsuisse21en'))
+        yield rsps
+
+
+@pytest.fixture
 def asml22en_response():
     """ASML Holding 2022 English AFR filing."""
     with responses.RequestsMock() as rsps:
@@ -50,10 +58,26 @@ def asml22en_vmessages_response():
 
 
 @pytest.fixture
-def asml22en_ent_vmsg_response_response():
+def asml22en_ent_vmsg_response():
     """ASML Holding 2022 English AFR filing with entities and v-messages."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('asml22en_vmessages'))
+        rsps._add_from_file(_get_absolute_path('asml22en_ent_vmsg'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_language_response():
+    """Filter by language 'fi'."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_absolute_path('filter_language'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_error_count_response():
+    """Filter by error_count value 1."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_absolute_path('filter_error_count'))
         yield rsps
 
 

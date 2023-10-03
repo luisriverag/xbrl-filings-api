@@ -23,10 +23,13 @@ import requests
 from responses import _recorder
 
 MOCK_URL_SET_IDS = (
+    'creditsuisse21en',
     'asml22en',
     'asml22en_entities',
     'asml22en_vmessages',
     'asml22en_ent_vmsg',
+    'filter_language',
+    'filter_error_count',
     'finnish_jan22',
     'oldest3_fi',
     'sort_two_fields',
@@ -54,6 +57,21 @@ set_paths = {set_id: _get_absolute_path(set_id) for set_id in MOCK_URL_SET_IDS}
 def _ensure_dir_exists():
     some_path = next(iter(set_paths.values()))
     Path(some_path).parent.mkdir(parents=True, exist_ok=True)
+
+
+@_recorder.record(file_path=set_paths['creditsuisse21en'])
+def _fetch_creditsuisse21en():
+    """Credit Suisse 2021 English AFR filing by `api_id`."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            # id = api_id
+            'filter[id]': '162',
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
 
 
 @_recorder.record(file_path=set_paths['asml22en'])
@@ -112,7 +130,35 @@ def _fetch_asml22en_ent_vmsg():
             'page[size]': 1,
             # fxo_id = filing_index
             'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
-            'include': 'entity,message'
+            'include': 'entity,validation_messages'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['filter_language'])
+def _fetch_filter_language():
+    """Filter by language 'fi'."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[language]': 'fi',
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['filter_error_count'])
+def _fetch_filter_error_count():
+    """Filter by error_count value 1."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[error_count]': 1
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT

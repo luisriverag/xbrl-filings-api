@@ -314,8 +314,9 @@ def _retrieve_page_json(
 
     json_frag = res.json()
     if json_frag.get('errors'):
-        err_frag: dict = next(iter(json_frag['errors'], None))
-        raise APIError(err_frag, api_request, res.status_code, res.reason)
+        err_frag: Union[dict, None] = next(iter(json_frag['errors']), None)
+        if err_frag:
+            raise APIError(err_frag, api_request, res.status_code, res.reason)
     elif res.status_code != 200:  # noqa: PLR2004
         raise HTTPStatusError(res.status_code, res.reason, res.text)
 
@@ -326,7 +327,7 @@ def _get_api_attribute_map() -> dict[str, str]:
     attrmap: dict[str, str] = {}
     fproto = Filing(...)
     cls = fproto.__class__
-    clsmap = {}
+    clsmap = {'api_id': 'id'}
     for prop in dir(fproto):
         # Exclude class attributes from instance attributes
         if getattr(cls, prop, False):

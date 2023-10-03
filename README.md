@@ -45,7 +45,7 @@ Data attributes:
 
 | Attribute name          | Type     | Description                         | JSON:API field name | Query   |
 | ----------------------- | -------- | ----------------------------------- | ------------------- | ------- |
-| `api_id`                | str      | JSON:API identifier                 | Resource `id`       |         |
+| `api_id`                | str      | JSON:API identifier                 | Resource `id`       | **X**   |
 | `country`               | str      | Country of entity                   | `country`           | **X**   |
 | `filing_index`          | str      | Database identifier                 | `fxo_id`            | **X**   |
 | `language`              | str      | Language from `package_url`         | *derived*           |         |

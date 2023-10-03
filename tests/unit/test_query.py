@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-# Ignore quote type as file includes SQL statements.
+# Allow unnecessary double quotes as file includes SQL statements.
 # ruff: noqa: Q000
 
 import os
@@ -18,6 +18,7 @@ from xbrl_filings_api import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
     GET_VALIDATION_MESSAGES,
+    APIError,
     Entity,
     Filing,
     FilingsPage,
@@ -70,7 +71,7 @@ class TestFundamentalOperation:
             (asml22_fxo,))
         assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
 
-    @pytest.mark.iter
+    @pytest.mark.paging
     def test_filing_page_iter(s, asml22en_response):
         """Requested filing is returned on a filing page."""
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
@@ -97,8 +98,23 @@ class TestParam_filters_single:
     object).
     """
 
+    def test_get_filings_api_id(s, creditsuisse21en_response):
+        """Requested `api_id` is returned."""
+        creditsuisse21en_api_id = '162'
+        fs = query.get_filings(
+            filters={
+                'api_id': creditsuisse21en_api_id
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert len(fs) == 1, 'One filing is returned'
+        creditsuisse21 = next(iter(fs), None)
+        assert creditsuisse21.api_id == creditsuisse21en_api_id
+
     def test_get_filings_filing_index(s, asml22en_response):
-        """Requested filing index is returned."""
+        """Requested `filing_index` is returned."""
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
             filters={
@@ -111,6 +127,49 @@ class TestParam_filters_single:
         assert len(fs) == 1, 'One filing is returned'
         asml22 = next(iter(fs), None)
         assert asml22.filing_index == asml22_fxo
+
+    def test_get_filings_language(s, filter_language_response):
+        """Filter `language` raises an `APIError`."""
+        with pytest.raises(APIError) as exc_info:
+            fs = query.get_filings(
+                filters={
+                    'language': 'fi'
+                    },
+                sort=None,
+                max_size=1,
+                flags=GET_ONLY_FILINGS
+                )
+        assert 'Bad filter value' in exc_info.value.detail
+
+    @pytest.mark.xfail(
+        reason=(
+            'Filtering by "_count" attributes is not supported by the '
+            'API.'
+            ),
+        raises=APIError)
+    def test_get_filings_error_count(s, filter_error_count_response):
+        """Filtering by `error_count` value 1 return one filing."""
+        fs = query.get_filings(
+            filters={
+                'error_count': 1
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert len(fs) == 1, 'At least one filing exists'
+
+    # def test_get_filings_added_time(s, filter_added_time_response):
+    #     """Filter `added_time` raises an `APIError`."""
+    #     fs = query.get_filings(
+    #         filters={
+    #             'added_time': 1/0
+    #             },
+    #         sort=None,
+    #         max_size=1,
+    #         flags=GET_ONLY_FILINGS
+    #         )
+    #     assert len(fs) == 1, 'At least one filing exists'
 
     def test_2_filters_country_enddate(s, finnish_jan22_response):
         """Filters `country` and `last_end_date` return 2 ."""
@@ -224,7 +283,7 @@ class TestParam_max_size:
 class TestParam_flags:
     """Test parameter `flags`."""
 
-    def test_asml22en_flag_only_filings(s, asml22en_response):
+    def test_get_filings_flag_only_filings(s, asml22en_response):
         """Test if function returns the filing according to `flags`."""
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
@@ -239,7 +298,7 @@ class TestParam_flags:
         assert asml22.entity is None, 'No entities'
         assert asml22.validation_messages is None, 'No messages'
 
-    def test_asml22en_flag_entities(s, asml22en_entities_response):
+    def test_get_filings_flag_entities(s, asml22en_entities_response):
         """Test if function returns the filing with `entity`."""
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
@@ -255,7 +314,7 @@ class TestParam_flags:
         assert isinstance(asml22.entity, Entity), 'Entity is available'
         assert asml22.entity.name == 'ASML Holding N.V.', 'Accessible'
 
-    def test_asml22en_flag_vmessages(s, asml22en_vmessages_response):
+    def test_get_filings_flag_vmessages(s, asml22en_vmessages_response):
         """Function returns the filing with `validation_messages`."""
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
@@ -270,9 +329,9 @@ class TestParam_flags:
         assert asml22.entity is None, 'No entity'
         vmsg = next(iter(asml22.validation_messages), None)
         assert isinstance(vmsg, ValidationMessage), 'Messages available'
-        assert isinstance(vmsg.text, str), 'Accessible'
+        assert isinstance(vmsg.text, str), 'Messages accessible'
 
-    def test_asml22en_flag_only_filings_and_entities(s, asml22en_response):
+    def test_get_filings_flag_only_filings_and_entities(s, asml22en_response):
         """`GET_ONLY_FILINGS` is stronger than `GET_ENTITY`."""
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
@@ -287,6 +346,23 @@ class TestParam_flags:
         assert asml22.entity is None, 'No entities'
         assert asml22.validation_messages is None, 'No messages'
 
+    def test_get_filings_flag_entities_vmessages(s, asml22en_ent_vmsg_response):
+        """Get entities and validation messages."""
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+        fs = query.get_filings(
+            filters={
+                'filing_index': asml22_fxo
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ENTITY | GET_VALIDATION_MESSAGES
+            )
+        asml22 = next(iter(fs), None)
+        assert isinstance(asml22.entity, Entity), 'Entity available'
+        vmsg = next(iter(asml22.validation_messages), None)
+        assert isinstance(vmsg, ValidationMessage), 'Messages available'
+        assert isinstance(vmsg.text, str), 'Messages accessible'
+
     # to_sqlite
     # filing_page_iter
 
@@ -294,7 +370,7 @@ class TestParam_flags:
 class TestParam_add_api_params:
     """Test parameter `add_api_params`."""
 
-    def test_asml22en_override_max_size(s, asml22en_response):
+    def test_get_filings_override_max_size(s, asml22en_response):
         """`max_size` can be overridden with `add_api_params`."""
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
         fs = query.get_filings(
