@@ -63,7 +63,8 @@ def _fetch_asml22en():
         url=entry_point_url,
         params={
             'page[size]': 1,
-            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0', # filing_index
+            # fxo_id = filing_index
+            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
@@ -77,7 +78,8 @@ def _fetch_asml22en_entities():
         url=entry_point_url,
         params={
             'page[size]': 1,
-            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0', # filing_index
+            # fxo_id = filing_index
+            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
             'include': 'entity'
             },
         headers=JSON_API_HEADERS,
@@ -93,7 +95,8 @@ def _fetch_asml22en_vmessages():
         params={
             'page[size]': 1,
             'include': 'validation_messages',
-            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0' # filing_index
+            # fxo_id = filing_index
+            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
@@ -107,7 +110,8 @@ def _fetch_asml22en_ent_vmsg():
         url=entry_point_url,
         params={
             'page[size]': 1,
-            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0', # filing_index
+            # fxo_id = filing_index
+            'filter[fxo_id]': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
             'include': 'entity,message'
             },
         headers=JSON_API_HEADERS,

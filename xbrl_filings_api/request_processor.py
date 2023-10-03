@@ -17,7 +17,6 @@ from xbrl_filings_api import options, stats
 from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.constants import NO_LIMIT
-from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
@@ -29,7 +28,6 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
-from xbrl_filings_api.validation_message import ValidationMessage
 
 UTC = timezone.utc
 logger = logging.getLogger(__name__)

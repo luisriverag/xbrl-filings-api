@@ -45,7 +45,7 @@ class APIObject:
         self.query_time = api_request.query_time
         """
         Time when the query function was called.
-        
+
         The same moment may have multiple different objects with
         different `request_url` values due to paging. This time is not
         the time of receiving the actual request (page) from the API.

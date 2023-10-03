@@ -115,11 +115,12 @@ max-doc-length = 72
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 # Package init files have unused imports
 "__init__.py" = ["F401"]
-# Examples.py and main script may have print statements
-"examples.py" = ["T201"]
-"__main__.py" = ["T201"]
 # __about__.py does not have a docstring
 "__about__.py" = ["D100"]
 # Tests allow mixed case names (N801), have shortened 'self' (N805), may leave
 # parameters/fixtures unused (ARG002) and decorators unparenthesised (PT023)
 "test_*" = ["N801", "N805", "ARG002", "PT023"]
+# Allow print() in scripts
+"examples.py" = ["T201"]
+"__main__.py" = ["T201"]
+"mock_upgrade.py" = ["T201"]

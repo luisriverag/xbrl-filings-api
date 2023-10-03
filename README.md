@@ -38,6 +38,9 @@ pip install xbrl-filings-api
 
 ### Filing
 
+Access to `entity` requires flag `GET_ENTITY` and to
+`validation_messages` flag `GET_VALIDATION_MESSAGES`.
+
 Data attributes:
 
 | Attribute name          | Type     | Description                         | JSON:API field name | Query   |
@@ -53,9 +56,9 @@ Data attributes:
 | `warning_count`         | str      | Count of validation warnings        | `warning_count`     | (**X**) |
 | `added_time`            | datetime | Time when added to `filings.xbrl.org` | `date_added`      | **X**   |
 | `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | `processed`  | **X**   |
-| `entity_api_id`         | str      | Same as `entity.api_id`             | `entity.id`         |         |
+| `entity_api_id`         | str      | Same as `entity.api_id`             | Entity resource `id` |        |
 | `entity`                | Entity   | Reference to `Entity` object        | \-                  |         |
-| `validation_messages`   | set of ValidationMessage | Validation messages | `validation_messages` |       |
+| `validation_messages`   | set of ValidationMessage | Validation messages | \-                  |         |
 | `json_url`              | str      | xBRL-JSON download URL              | `json_url`          | (**X**) |
 | `package_url`           | str      | ESEF report package download URL    | `package_url`       | (**X**) |
 | `viewer_url`            | str      | Inline XBRL viewer URL              | `viewer_url`        | (**X**) |
@@ -82,8 +85,8 @@ Data attributes:
 | `api_id`                 | str      | JSON:API identifier                 | Resource `id`       |
 | `identifier`             | str      | Identifier of entity (LEI code)     | `identifier`        |
 | `name`                   | str      | Name                                | `name`              |
-| `filings`                | set of Filing | Filings reported by the entity | \-                  |
-| `api_entity_filings_url` | str      | JSON:API api_entity_filings_url     | \-                  |
+| `filings`                | set of Filing | Filings of the entity in current query | \-                  |
+| `api_entity_filings_url` | str      | JSON:API query for full list of `filings` | `filings.links.related` of relationships |
 | `query_time`             | datetime | Time when query function was called | \-                  |
 | `request_url`            | str      | URL of the API request              | \-                  |
 
@@ -98,7 +101,7 @@ Data attributes:
 | `severity`              | str      | Severity of the issue               | `severity`          |
 | `text`                  | str      | Text of the message                 | `text`              |
 | `code`                  | str      | Code of the breached rule           | `code`              |
-| `filing_api_id`         | str      | Same as `filing.api_id`             | `filing_api_id`     |
+| `filing_api_id`         | str      | Same as `filing.api_id`             | Filing resource `id` |
 | `filing`                | Filing   | Reference to `Filing` object        | `filing`            |
 | `calc_computed_sum`     | float    | Computed sum of calcInconsistency   | *derived*           |
 | `calc_reported_sum`     | float    | Reported sum of calcInconsistency   | *derived*           |

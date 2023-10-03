@@ -91,7 +91,7 @@ class TestFundamentalOperation:
 class TestParam_filters_single:
     """
     Test parameter `filters` using single filters.
-    
+
     Single filter is a literal value for filter, unlike multifilter
     (iterable of literals) or date filter (ISO date string or date
     object).

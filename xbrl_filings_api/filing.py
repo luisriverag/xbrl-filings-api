@@ -198,7 +198,8 @@ class Filing(APIResource):
         The original field name in the API is ``processed``.
         """
 
-        self.entity_api_id: Union[str, None] = self._json.get(self.ENTITY_API_ID)
+        self.entity_api_id: Union[str, None] = self._json.get(
+            self.ENTITY_API_ID)
         """`api_id` of Entity object."""
 
         self.entity: Union[Entity, None] = None
@@ -292,7 +293,8 @@ class Filing(APIResource):
         self.xhtml_download_path: Union[str, None] = None
         """Local path where `xhtml_url` was downloaded."""
 
-        self.package_sha256: Union[str, None] = self._json.get(self.PACKAGE_SHA256)
+        self.package_sha256: Union[str, None] = self._json.get(
+            self.PACKAGE_SHA256)
         """
         The SHA-256 hash of the report package file.
 
@@ -509,7 +511,8 @@ class Filing(APIResource):
             return None
 
         found_msgs = set()
-        msgs_relfrags: Union[list, None] = self._json.get(self.VALIDATION_MESSAGES)
+        msgs_relfrags: Union[list, None] = self._json.get(
+            self.VALIDATION_MESSAGES)
         if msgs_relfrags:
             for rel_api_id in (mf['id'] for mf in msgs_relfrags):
                 for vmsg in message_iter:

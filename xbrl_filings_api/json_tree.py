@@ -213,7 +213,8 @@ class _JSONTree:
             upaths[self.class_name].add('.'.join(comps))
 
     def _parse_value(
-            self, key_value: str, parse_type: Union[_ParseType, None], key_path: str
+            self, key_value: str, parse_type: Union[_ParseType, None],
+            key_path: str
             ) -> Union[datetime, date, str, None]:
         """Parse string value of `key_path` based on `parse_type`."""
         if parse_type == _ParseType.DATETIME:
