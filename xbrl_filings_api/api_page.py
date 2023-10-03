@@ -31,7 +31,7 @@ class _APIPage(APIObject):
     api_first_page_url : str or None
     api_last_page_url : str or None
     jsonapi_version : str or None
-    request_time : datetime
+    query_time : datetime
     request_url : str
     """
 

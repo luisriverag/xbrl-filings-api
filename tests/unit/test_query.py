@@ -4,6 +4,9 @@
 #
 # SPDX-License-Identifier: MIT
 
+# Ignore quote type as file includes SQL statements.
+# ruff: noqa: Q000
+
 import os
 import sqlite3
 from datetime import datetime, timezone
@@ -86,7 +89,13 @@ class TestFundamentalOperation:
 
 
 class TestParam_filters_single:
-    """Test parameter `filters` using single filters."""
+    """
+    Test parameter `filters` using single filters.
+    
+    Single filter is a literal value for filter, unlike multifilter
+    (iterable of literals) or date filter (ISO date string or date
+    object).
+    """
 
     def test_get_filings_filing_index(s, asml22en_response):
         """Requested filing index is returned."""

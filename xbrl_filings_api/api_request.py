@@ -13,4 +13,4 @@ class _APIRequest:
     """Metadata on a single request of an API query."""
 
     url: str
-    time: datetime
+    query_time: datetime

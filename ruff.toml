@@ -121,6 +121,5 @@ max-doc-length = 72
 # __about__.py does not have a docstring
 "__about__.py" = ["D100"]
 # Tests allow mixed case names (N801), have shortened 'self' (N805), may leave
-# parameters/fixtures unused (ARG002) and decorators unparenthesised (PT023),
-# tests have SQL strings with double quotes (Q000)
-"test_*" = ["N801", "N805", "ARG002", "PT023", "Q000"]
+# parameters/fixtures unused (ARG002) and decorators unparenthesised (PT023)
+"test_*" = ["N801", "N805", "ARG002", "PT023"]

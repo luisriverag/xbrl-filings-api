@@ -19,7 +19,7 @@ class APIObject:
 
     Attributes
     ----------
-    request_time : datetime
+    query_time : datetime
     request_url : str
     """
 
@@ -42,8 +42,17 @@ class APIObject:
 
         The timezone is chosen according to option `utc_time`.
         """
-        self.request_time = api_request.time
+        self.query_time = api_request.query_time
+        """
+        Time when the query function was called.
+        
+        The same moment may have multiple different objects with
+        different `request_url` values due to paging. This time is not
+        the time of receiving the actual request (page) from the API.
+        """
+
         self.request_url = api_request.url
+        """URL requested from the API."""
 
     def __str__(self) -> str:
         """Return string representation of the object."""

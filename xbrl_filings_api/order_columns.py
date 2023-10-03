@@ -24,9 +24,9 @@ def order_columns(cols: Iterable[str]) -> list[str]:
             order = 21
         elif col.endswith('_url'):
             order = 22
-        if col.endswith('request_time'):
+        if col == 'query_time':
             order = 40
-        if col.endswith('request_url'):
+        if col == 'request_url':
             order = 41
 
         # Filing objects

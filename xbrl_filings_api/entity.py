@@ -24,7 +24,7 @@ class Entity(APIResource):
     name: Union[str, None]
     filings: set of Filing
     api_entity_filings_url: Union[str, None]
-    request_time : datetime
+    query_time : datetime
     request_url : str
     """
 

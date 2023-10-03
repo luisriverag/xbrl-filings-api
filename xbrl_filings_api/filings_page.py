@@ -32,7 +32,7 @@ class FilingsPage(_APIPage):
 
     Attributes
     ----------
-    request_time : datetime
+    query_time : datetime
     query_filing_count : int or None
     filing_list: list of Filing
     entity_list : list of Entity or None
@@ -153,7 +153,7 @@ class FilingsPage(_APIPage):
                 ] = entity_iter, message_iter # type: ignore
             return Filing(
                 res_frag,
-                _APIRequest(self.request_url, self.request_time),
+                _APIRequest(self.request_url, self.query_time),
                 *iters
                 )
 

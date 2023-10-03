@@ -53,7 +53,7 @@ class Filing(APIResource):
     package_url : str or None
     viewer_url : str or None
     xhtml_url : str or None
-    request_time : datetime
+    query_time : datetime
     request_url : str
     json_download_path : str or None
     package_download_path : str or None
@@ -102,7 +102,7 @@ class Filing(APIResource):
 
         self.filing_index: Union[str, None] = self._json.get(self.FILING_INDEX)
         """
-        The filing index.
+        Database identifier for the filing.
 
         The index is structured as:
           1. LEI identifier

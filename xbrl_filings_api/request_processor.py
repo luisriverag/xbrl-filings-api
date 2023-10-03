@@ -97,7 +97,7 @@ def generate_pages(
 
     params_list = _get_params_list_on_filters(params, filters)
 
-    request_time = _get_request_time()
+    query_time = _get_query_time()
 
     received_size = 0
     for query_params in params_list:
@@ -105,7 +105,7 @@ def generate_pages(
         req_params: Union[dict[str, str], None] = query_params
         while next_url:
             page_json, api_request = _retrieve_page_json(
-                next_url, req_params, request_time)
+                next_url, req_params, query_time)
 
             page = FilingsPage(
                 page_json, api_request, flags, received_api_ids, res_colls)
@@ -279,14 +279,14 @@ def _get_sort_query_param(sort: Sequence[str]) -> str:
     return qparam
 
 
-def _get_request_time() -> datetime:
+def _get_query_time() -> datetime:
     tz = UTC if options.utc_time else None
-    request_time = datetime.now(tz)
-    return request_time
+    query_time = datetime.now(tz)
+    return query_time
 
 
 def _retrieve_page_json(
-        url: str, params: Union[dict, None], request_time: datetime
+        url: str, params: Union[dict, None], query_time: datetime
         ) -> tuple[dict, _APIRequest]:
     """
     Execute an API request and return the deserialized JSON object.
@@ -307,7 +307,7 @@ def _retrieve_page_json(
         timeout=options.timeout_sec
         )
     stats.page_counter += 1
-    api_request = _APIRequest(res.url, request_time)
+    api_request = _APIRequest(res.url, query_time)
 
     if res.status_code == 200:  # noqa: PLR2004
         logger.info('  > Success')

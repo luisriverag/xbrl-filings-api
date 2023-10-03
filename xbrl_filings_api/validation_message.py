@@ -52,7 +52,7 @@ class ValidationMessage(APIResource):
     calc_unreported_items : str or None
     duplicate_greater : float or None
     duplicate_lesser : float or None
-    request_time : datetime
+    query_time : datetime
     request_url : str
     """
 

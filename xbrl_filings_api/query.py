@@ -18,10 +18,6 @@ You will find the list of valid filtering attributes in list
 `FILING_QUERY_ATTRS`. Please note that derived attributes such as
 `reporting_date` or `language` may not be used for filtering.
 
-.. note::
-    As of July 2023, attributes ending with ``_count`` and ``_url``
-    could not be used.
-
 To filter only the filings reported in Finland, you may use the
 following parameter::
 

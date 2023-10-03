@@ -28,7 +28,7 @@ class APIResource(APIObject):
     Attributes
     ----------
     api_id : str or None
-    request_time : datetime
+    query_time : datetime
     request_url : str
     """
 
@@ -55,7 +55,7 @@ class APIResource(APIObject):
             json_frag = {}
             api_request = _APIRequest('', datetime.now(tz=UTC))
         if api_request is None:
-            raise ValueError()
+            raise ValueError('Parameter api_request not given')
 
         super().__init__(
             json_frag=json_frag,
