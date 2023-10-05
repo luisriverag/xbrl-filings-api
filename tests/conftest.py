@@ -26,10 +26,10 @@ def _get_absolute_path(set_id):
 
 
 @pytest.fixture
-def creditsuisse21en_response():
+def creditsuisse21en_by_id_response():
     """Credit Suisse 2021 English AFR filing by `api_id`."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('creditsuisse21en'))
+        rsps._add_from_file(_get_absolute_path('creditsuisse21en_by_id'))
         yield rsps
 
 

@@ -43,33 +43,33 @@ Access to `entity` requires flag `GET_ENTITY` and to
 
 Data attributes:
 
-| Attribute name          | Type     | Description                         | JSON:API field name | Query   |
-| ----------------------- | -------- | ----------------------------------- | ------------------- | ------- |
-| `api_id`                | str      | JSON:API identifier                 | Resource `id`       | **X**   |
-| `country`               | str      | Country of entity                   | `country`           | **X**   |
-| `filing_index`          | str      | Database identifier                 | `fxo_id`            | **X**   |
-| `language`              | str      | Language from `package_url`         | *derived*           |         |
-| `last_end_date`         | date     | Last reported data date             | `period_end`        | **X**   |
-| `reporting_date`        | date     | Financial period end from `package_url` | *derived*       |         |
-| `error_count`           | str      | Count of validation errors          | `error_count`       | (**X**) |
-| `inconsistency_count`   | str      | Count of validation inconsistencies | `inconsistency_count` | (**X**) |
-| `warning_count`         | str      | Count of validation warnings        | `warning_count`     | (**X**) |
-| `added_time`            | datetime | Time when added to `filings.xbrl.org` | `date_added`      | **X**   |
-| `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | `processed`  | **X**   |
-| `entity_api_id`         | str      | Same as `entity.api_id`             | Entity resource `id` |        |
-| `entity`                | Entity   | Reference to `Entity` object        | \-                  |         |
-| `validation_messages`   | set of ValidationMessage | Validation messages | \-                  |         |
-| `json_url`              | str      | xBRL-JSON download URL              | `json_url`          | (**X**) |
-| `package_url`           | str      | ESEF report package download URL    | `package_url`       | (**X**) |
-| `viewer_url`            | str      | Inline XBRL viewer URL              | `viewer_url`        | (**X**) |
-| `xhtml_url`             | str      | Inline XBRL report download URL     | `report_url`        | (**X**) |
-| `query_time`            | datetime | Time when query function was called | \-                  |         |
-| `request_url`           | str      | URL of the API request              | \-                  |         |
-| `json_download_path`    | str      | Path where `json_url` was downloaded | \-                 |         |
-| `package_download_path` | str      | Path where `package_url` was downloaded | \-              |         |
-| `viewer_download_path`  | str      | Path where `viewer_url` was downloaded | \-               |         |
-| `xhtml_download_path`   | str      | Path where `xhtml_url` was downloaded | \-                |         |
-| `package_sha256`        | str      | SHA-256 hash of `package_url` file  | `sha256             | **X**   |
+| Attribute name          | Type     | Description                         | Query   | JSON:API field name   |
+| ----------------------- | -------- | ----------------------------------- | ------- | --------------------- |
+| `api_id`                | str      | JSON:API identifier                 | **X**   | Resource `id`         |
+| `country`               | str      | Country of entity                   | **X**   | `country`             |
+| `filing_index`          | str      | Database identifier                 | **X**   | `fxo_id`              |
+| `language`              | str      | Language from `package_url`         |         | *derived*             |
+| `last_end_date`         | date     | Last reported data date             | **X**   | `period_end`          |
+| `reporting_date`        | date     | Financial period end from `package_url` |     | *derived*             |
+| `error_count`           | str      | Count of validation errors          | (**X**) | `error_count`         |
+| `inconsistency_count`   | str      | Count of validation inconsistencies | (**X**) | `inconsistency_count` |
+| `warning_count`         | str      | Count of validation warnings        | (**X**) | `warning_count`       |
+| `added_time`            | datetime | Time when added to `filings.xbrl.org` | **X** | `date_added  `        |
+| `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | **X** | `processed`      |
+| `entity_api_id`         | str      | Same as `entity.api_id`             |         | Entity resource `id`  |
+| `entity`                | Entity   | Reference to `Entity` object        |         | \-                    |
+| `validation_messages`   | set of ValidationMessage | Validation messages |         | \-                    |
+| `json_url`              | str      | xBRL-JSON download URL              | (**X**) | `json_url`            |
+| `package_url`           | str      | ESEF report package download URL    | (**X**) | `package_url`         |
+| `viewer_url`            | str      | Inline XBRL viewer URL              | (**X**) | `viewer_url`          |
+| `xhtml_url`             | str      | Inline XBRL report download URL     | (**X**) | `report_url`          |
+| `query_time`            | datetime | Time when query function was called |         | \-                    |
+| `request_url`           | str      | URL of the API request              |         | \-                    |
+| `json_download_path`    | str      | Path where `json_url` was downloaded |        | \-                    |
+| `package_download_path` | str      | Path where `package_url` was downloaded |     | \-                    |
+| `viewer_download_path`  | str      | Path where `viewer_url` was downloaded |      | \-                    |
+| `xhtml_download_path`   | str      | Path where `xhtml_url` was downloaded |       | \-                    |
+| `package_sha256`        | str      | SHA-256 hash of `package_url` file  |  **X**  |`sha256`               |
 
 > **Warning**
 > As of October 2023, attributes ending with `_count` and `_url` could

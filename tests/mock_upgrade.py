@@ -23,7 +23,7 @@ import requests
 from responses import _recorder
 
 MOCK_URL_SET_IDS = (
-    'creditsuisse21en',
+    'creditsuisse21en_by_id',
     'asml22en',
     'asml22en_entities',
     'asml22en_vmessages',
@@ -59,8 +59,8 @@ def _ensure_dir_exists():
     Path(some_path).parent.mkdir(parents=True, exist_ok=True)
 
 
-@_recorder.record(file_path=set_paths['creditsuisse21en'])
-def _fetch_creditsuisse21en():
+@_recorder.record(file_path=set_paths['creditsuisse21en_by_id'])
+def _fetch_creditsuisse21en_by_id():
     """Credit Suisse 2021 English AFR filing by `api_id`."""
     _ = requests.get(
         url=entry_point_url,

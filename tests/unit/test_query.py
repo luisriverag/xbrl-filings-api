@@ -98,7 +98,7 @@ class TestParam_filters_single:
     object).
     """
 
-    def test_get_filings_api_id(s, creditsuisse21en_response):
+    def test_get_filings_api_id(s, creditsuisse21en_by_id_response):
         """Requested `api_id` is returned."""
         creditsuisse21en_api_id = '162'
         fs = query.get_filings(
@@ -140,6 +140,21 @@ class TestParam_filters_single:
                 flags=GET_ONLY_FILINGS
                 )
         assert 'Bad filter value' in exc_info.value.detail
+
+    def test_get_filings_last_end_date_str(s, filter_last_end_date_response):
+        """Requested `last_end_date` as str is returned."""
+        date_str = ''
+        fs = query.get_filings(
+            filters={
+                'last_end_date': date_str
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert len(fs) == 1, 'One filing is returned'
+        asml22 = next(iter(fs), None)
+        assert asml22.filing_index == date_str
 
     @pytest.mark.xfail(
         reason=(

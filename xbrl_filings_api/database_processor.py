@@ -16,6 +16,7 @@ from typing import Union
 
 from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.constants import ResourceLiteralType
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
@@ -219,10 +220,11 @@ def _insert_data(
     cur = con.cursor()
     for table_name in table_schema:
         cols = table_schema[table_name]
-        records = [
-            [getattr(item, col) for col in cols]
-            for item in data_objs[table_name]
-            ]
+        records: list[tuple[ResourceLiteralType, ...]] = []
+        print(f'{len(data_objs[table_name]) = }, {table_name=}')
+        for item in data_objs[table_name]:
+            col_data = tuple(getattr(item, col) for col in cols)
+            records.append(col_data)
         colsql = '\n  ' + ',\n  '.join(cols) + '\n  '
         phs = ', '.join(['?'] * len(cols))
         _exec(
@@ -236,12 +238,12 @@ def _insert_data(
 def _exec(
         cur: sqlite3.Cursor,
         sql: str,
-        data: Union[list[list[str]], None] = None
+        data: Union[Iterable[Iterable[str]], None] = None
         ) -> None:
     data_len = f' <count: {len(data)}>' if data else ''
     logger.debug(sql + ';' + data_len)
 
-    if data:
+    if data is not None:
         cur.executemany(sql, data)
     else:
         cur.execute(sql)
