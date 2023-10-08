@@ -113,3 +113,8 @@ Data attributes:
 | `duplicate_lesser`      | float    | Lesser one of duplicated facts      | *derived*           |
 | `query_time`            | datetime | Time when query function was called | \-                  |
 | `request_url`           | str      | URL of the API request              | \-                  |
+
+Derived attributes beginning ``calc_`` are only available for validation
+messages with `code` "xbrl.5.2.5.2:calcInconsistency" and the ones
+beginning ``duplicate_`` for `code` "message:tech_duplicated_facts1".
+They are parsed out from the `text` of the message.
