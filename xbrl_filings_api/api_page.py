@@ -4,12 +4,16 @@
 #
 # SPDX-License-Identifier: MIT
 
+import logging
+import urllib
 from dataclasses import dataclass
 from typing import Union
 
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.enums import _ParseType
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -84,6 +88,13 @@ class _APIPage(APIObject):
         self.jsonapi_version: Union[str, None] = self._json.get(
             'jsonapi.version')
         """Version of the JSON:API specification of base API."""
+
+        pr_count = len(self._data) if self._data else '0'
+        logger.debug(
+            f'APIPage "{urllib.parse.unquote(self.request_url)}": '
+            f'{pr_count} filings (of {self._data_count}), '
+            f'{len(self._included_resources)} included subresources'
+            )
 
     def _get_included_resources(self) -> list[_IncludedResource]:
         """Construct `_IncludedResource` objects from `included` key."""

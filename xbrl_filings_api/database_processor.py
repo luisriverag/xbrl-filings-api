@@ -221,7 +221,7 @@ def _insert_data(
     for table_name in table_schema:
         cols = table_schema[table_name]
         records: list[tuple[ResourceLiteralType, ...]] = []
-        print(f'{len(data_objs[table_name]) = }, {table_name=}')
+        logger.info(f'Got {len(data_objs[table_name])} of {table_name}')
         for item in data_objs[table_name]:
             col_data = tuple(getattr(item, col) for col in cols)
             records.append(col_data)

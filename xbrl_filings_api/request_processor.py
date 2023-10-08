@@ -107,11 +107,12 @@ def generate_pages(
 
             page = FilingsPage(
                 page_json, api_request, flags, received_api_ids, res_colls)
-            if len(page.filing_list) == 0:
+            filing_count = len(page.filing_list)
+            if filing_count == 0:
                 break
             next_url = page.api_next_page_url
 
-            received_size += len(page.filing_list)
+            received_size += filing_count
             if received_size > max_size:
                 page.filing_list = page.filing_list[:max_size - received_size]
 
@@ -295,22 +296,24 @@ def _retrieve_page_json(
     HTTPStatusError
     requests.ConnectionError
     """
+    req_i = stats.page_counter + 1
     furl = url
     if params and len(params) > 0:
         furl += '?' + '&'.join([f'{key}={val}' for key, val in params.items()])
-    logger.info(f'GET {urllib.parse.unquote(furl)}')
+    furl = urllib.parse.unquote(furl)
+    logger.info(f'GET Req#{req_i} {furl}')
 
     res = requests.get(
         url, params, headers={'Content-Type': 'application/vnd.api+json'},
         timeout=options.timeout_sec
         )
-    stats.page_counter += 1
+    stats.page_counter = req_i
     api_request = _APIRequest(res.url, query_time)
 
     if res.status_code == 200:  # noqa: PLR2004
-        logger.info('  > Success')
+        logger.info(f'Success for Req#{req_i}')
     else:
-        logger.info(f'  > STATUS {res.status_code} {res.reason}')
+        logger.error(f'Error with Req#{req_i}, status {res.status_code} {res.reason}')
 
     json_frag = res.json()
     if json_frag.get('errors'):
