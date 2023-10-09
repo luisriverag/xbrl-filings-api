@@ -313,7 +313,8 @@ def _retrieve_page_json(
     if res.status_code == 200:  # noqa: PLR2004
         logger.info(f'Success for Req#{req_i}')
     else:
-        logger.error(f'Error with Req#{req_i}, status {res.status_code} {res.reason}')
+        logger.error(
+            f'Error with Req#{req_i}, status {res.status_code} {res.reason}')
 
     json_frag = res.json()
     if json_frag.get('errors'):

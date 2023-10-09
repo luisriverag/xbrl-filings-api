@@ -9,7 +9,7 @@
 
 import os
 import sqlite3
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import pytest
 import requests
@@ -131,7 +131,7 @@ class TestParam_filters_single:
     def test_get_filings_language(s, filter_language_response):
         """Filter `language` raises an `APIError`."""
         with pytest.raises(APIError) as exc_info:
-            fs = query.get_filings(
+            _ = query.get_filings(
                 filters={
                     'language': 'fi'
                     },
@@ -143,7 +143,7 @@ class TestParam_filters_single:
 
     def test_get_filings_last_end_date_str(s, filter_last_end_date_response):
         """Requested `last_end_date` as str is returned."""
-        date_str = ''
+        date_str = '2021-02-28'
         fs = query.get_filings(
             filters={
                 'last_end_date': date_str
@@ -153,8 +153,9 @@ class TestParam_filters_single:
             flags=GET_ONLY_FILINGS
             )
         assert len(fs) == 1, 'One filing is returned'
-        asml22 = next(iter(fs), None)
-        assert asml22.filing_index == date_str
+        agrana20 = next(iter(fs), None)
+        expected_date = date(*[int(pt) for pt in date_str.split('-')])
+        assert agrana20.last_end_date == expected_date
 
     @pytest.mark.xfail(
         reason=(

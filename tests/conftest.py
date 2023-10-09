@@ -74,6 +74,14 @@ def filter_language_response():
 
 
 @pytest.fixture
+def filter_last_end_date_response():
+    """Filter by last_end_date '2021-02-28'."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_absolute_path('filter_last_end_date'))
+        yield rsps
+
+
+@pytest.fixture
 def filter_error_count_response():
     """Filter by error_count value 1."""
     with responses.RequestsMock() as rsps:

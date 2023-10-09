@@ -9,7 +9,7 @@ import re
 import urllib.parse
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime
-from pathlib import PurePath
+from pathlib import PurePath, PurePosixPath
 from typing import ClassVar, Union
 
 from xbrl_filings_api import download_specs_construct, downloader
@@ -80,6 +80,19 @@ class Filing(APIResource):
     PACKAGE_SHA256 = 'attributes.sha256'
 
     VALID_DOWNLOAD_FORMATS: ClassVar[set[str]] = {'json', 'package', 'xhtml'}
+    _NOT_NUM_RE = re.compile(r'\D', re.ASCII)
+    _DATE_RE = re.compile(
+        pattern=r'''
+            \b
+            (\d{4})                # year part
+            -
+            (0[1-9]|1[012])        # month part
+            -
+            (0[1-9]|[12]\d|3[01])  # day part of date
+            \b
+        ''',
+        flags=re.VERBOSE | re.ASCII
+        )
 
     def __init__(
             self,
@@ -153,6 +166,10 @@ class Filing(APIResource):
         in the report (even if there is only one fact reported for this
         date), it is unreliable regarding filing mistakes and and
         future-bound facts.
+
+        Extracts a valid YYYY-MM-DD date in `package_url` URL stem
+        (filename). If multiple dates exist in stem, selects the last
+        one.
         """
 
         self.error_count: Union[str, None] = self._json.get(self.ERROR_COUNT)
@@ -411,7 +428,11 @@ class Filing(APIResource):
                     f'{result.file}_download_path',
                     result.path
                     )
-        excs = [result.err for result in results]
+        excs = [
+            result.err
+            for result in results
+            if isinstance(result.err, Exception)
+            ]
         if excs:
             raise excs[0]
 
@@ -534,8 +555,8 @@ class Filing(APIResource):
         if not stem:
             return None
 
-        stem = stem.replace('_', '-')
-        last_part = stem.split('-')[-1]
+        normstem = stem.replace('_', '-')
+        last_part = normstem.split('-')[-1]
         part_len = len(last_part)
         is_bad_length = part_len < 2 or part_len > 3  # noqa: PLR2004
         if is_bad_length or not last_part.isalpha():
@@ -548,24 +569,49 @@ class Filing(APIResource):
             return LANG_CODE_TRANSFORM.get(last_part)
 
     def _derive_reporting_date(self) -> Union[date, None]:
+        out_dt = self.last_end_date
+
         stem = self._get_package_url_stem()
         if not stem:
-            return self.last_end_date
+            return out_dt
 
-        stem = stem.replace('_', '-')
-        mt = re.search(r'(^|\D)(\d{4}-\d{1,2}-\d{1,2})($|\D)', stem)
-        if mt:
-            year, month, day = mt[2].split('-')
-            return date(int(year), int(month), int(day))
-        return self.last_end_date
+        normstem = self._NOT_NUM_RE.sub('-', stem)
+        mlist = self._DATE_RE.findall(normstem)
+        if mlist:
+            year, month, day = mlist[-1]
+            try:
+                try_dt = date(int(year), int(month), int(day))
+            except ValueError:
+                # Bad date e.g. 2000-02-31
+                pass
+            else:
+                out_dt = try_dt
+        return out_dt
 
     def _get_package_url_stem(self) -> Union[str, None]:
-        url_path = urllib.parse.urlparse(self.package_url).path
-        if not url_path.strip():
+        presult = None
+        try:
+            presult = urllib.parse.urlparse(self.package_url)
+        except ValueError:
+            pass
+        if not isinstance(presult, urllib.parse.ParseResult):
             return None
-        if isinstance(url_path, bytes):
-            url_path = url_path.decode('utf-8')
-        file_stem = PurePath(url_path).stem
-        if not file_stem.strip():
+
+        url_path = None
+        if isinstance(presult.path, str) and presult.path.strip():
+            url_path = presult.path
+        if url_path is None:
             return None
-        return file_stem
+
+        file_stem = None
+        try:
+            urlpath = PurePosixPath(url_path)
+        except ValueError:
+            pass
+        else:
+            file_stem = urlpath.stem
+
+        if isinstance(file_stem, str) and file_stem.strip():
+            return file_stem
+        else:
+            return None

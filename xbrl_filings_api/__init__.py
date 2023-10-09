@@ -25,7 +25,7 @@ Filing
     Filing objects are returned by the API. This is the primary resource
     class.
 FilingSet
-    Return set of filings returned by the query functions.
+    Set of filings returned by the query functions.
 FilingsPage
     An API page which contains predefined number of filings and other
     related resources.

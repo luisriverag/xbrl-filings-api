@@ -115,6 +115,7 @@ Data attributes:
 | `request_url`           | str      | URL of the API request              | \-                  |
 
 Derived attributes beginning ``calc_`` are only available for validation
-messages with `code` "xbrl.5.2.5.2:calcInconsistency" and the ones
-beginning ``duplicate_`` for `code` "message:tech_duplicated_facts1".
-They are parsed out from the `text` of the message.
+messages with `code` "xbrl.5.2.5.2:calcInconsistency". The ones
+beginning ``duplicate_`` are available for `code`
+"message:tech_duplicated_facts1" if the values are numeric. They are
+parsed out from the `text` of the message.

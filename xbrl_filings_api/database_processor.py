@@ -9,7 +9,7 @@
 
 import logging
 import sqlite3
-from collections.abc import Iterable
+from collections.abc import Collection, Iterable
 from datetime import datetime
 from pathlib import Path
 from typing import Union
@@ -42,7 +42,7 @@ CurrentSchemaType = dict[str, list[str]]
 def sets_to_sqlite(
         flags: ScopeFlag,
         ppath: Path,
-        data_objs: dict[str, Iterable[APIResource]],
+        data_objs: dict[str, Collection[APIResource]],
         *,
         update: bool
         ) -> None:
@@ -215,7 +215,7 @@ def _get_col_defs(cols: list[str]) -> list[tuple[str, str]]:
 
 def _insert_data(
         table_schema: CurrentSchemaType,
-        data_objs: dict[str, Iterable[APIResource]],
+        data_objs: dict[str, Collection[APIResource]],
         con: sqlite3.Connection):
     cur = con.cursor()
     for table_name in table_schema:
@@ -238,7 +238,7 @@ def _insert_data(
 def _exec(
         cur: sqlite3.Cursor,
         sql: str,
-        data: Union[Iterable[Iterable[str]], None] = None
+        data: Union[Collection[Collection[ResourceLiteralType]], None] = None
         ) -> None:
     data_len = f' <count: {len(data)}>' if data else ''
     logger.debug(sql + ';' + data_len)

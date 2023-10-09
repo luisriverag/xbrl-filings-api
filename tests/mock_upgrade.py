@@ -22,6 +22,7 @@ from types import FunctionType
 import requests
 from responses import _recorder
 
+# Define mock URLs to be downloaded
 MOCK_URL_SET_IDS = (
     'creditsuisse21en_by_id',
     'asml22en',
@@ -29,6 +30,7 @@ MOCK_URL_SET_IDS = (
     'asml22en_vmessages',
     'asml22en_ent_vmsg',
     'filter_language',
+    'filter_last_end_date',
     'filter_error_count',
     'finnish_jan22',
     'oldest3_fi',
@@ -36,6 +38,7 @@ MOCK_URL_SET_IDS = (
     'multipage',
     # 'download',
     )
+
 MOCK_URL_DIR_NAME = 'mock_responses'
 entry_point_url = 'https://filings.xbrl.org/api/filings'
 
@@ -145,6 +148,20 @@ def _fetch_filter_language():
         params={
             'page[size]': 1,
             'filter[language]': 'fi',
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['filter_last_end_date'])
+def _fetch_filter_last_end_date():
+    """Filter by last_end_date '2021-02-28'."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[period_end]': '2021-02-28', # last_end_date
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
@@ -264,6 +281,14 @@ def _fetch_multipage():
 #         )
 
 
+def _delete_removed_mocks():
+    some_path = next(iter(set_paths.values()))
+    for filepath in Path(some_path).parent.iterdir():
+        if filepath.stem not in MOCK_URL_SET_IDS:
+            filepath.unlink()
+            print(f'Deleted removed mock in file "{filepath.name}"')
+
+
 if __name__ == '__main__':
     _ensure_dir_exists()
 
@@ -273,8 +298,10 @@ if __name__ == '__main__':
         if name.startswith('_fetch_') and isinstance(val, FunctionType):
             val()
 
+    _delete_removed_mocks()
+
     print(
-        'Mock upgrade finished.\n'
+        'Mock upgrade finished\n'
         f'Folder path: {mock_dir_path}'
         f'\n  - ' + '\n  - '.join(MOCK_URL_SET_IDS)
         )

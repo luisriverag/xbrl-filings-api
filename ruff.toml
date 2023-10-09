@@ -85,8 +85,10 @@ ignore = [
     # Do not ask to create circular imports (from package root instead of a
     # module in package)
     "PLR0402",
-    # Do not enforce empty parentheses after `pytest.fixture` decorator
+    # Ignore empty parentheses after `pytest.fixture` decorator
     "PT001",
+    # Ignore multiline quote checks (docstring: double, other: single)
+    "Q001",
 ]
 unfixable = [
     # Don't touch unused imports

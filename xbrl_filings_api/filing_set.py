@@ -9,7 +9,7 @@ This is an extended set type with certain added attributes.
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import AsyncIterator, Iterable, Mapping
+from collections.abc import AsyncIterator, Collection, Iterable, Mapping
 from pathlib import Path, PurePath
 from typing import Optional, Union
 
@@ -45,11 +45,11 @@ class FilingSet(set[Filing]):
     columns : list of str
     """
 
-    def __init__(
-            self,
-            filings: Iterable[Filing]
-            ) -> None:
-        super().__init__(filings)
+    def __init__(self, filings: Optional[Iterable[Filing]] = None) -> None:
+        if filings is None:
+            super().__init__()
+        else:
+            super().__init__(filings)
         self.entities = ResourceCollection(self, 'entity', Entity)
         self.validation_messages = ResourceCollection(
             self, 'validation_messages', ValidationMessage)
@@ -299,9 +299,9 @@ class FilingSet(set[Filing]):
 
     def _get_data_sets(
             self, flags: ScopeFlag
-            ) -> tuple[dict[str, Iterable[APIResource]], ScopeFlag]:
+            ) -> tuple[dict[str, Collection[APIResource]], ScopeFlag]:
         """Get sets of data objects and disable flags for empty sets."""
-        data_objs: dict[str, Iterable[APIResource]] = {'Filing': self}
+        data_objs: dict[str, Collection[APIResource]] = {'Filing': self}
         subresources = [
             (Entity, self.entities),
             (ValidationMessage, self.validation_messages)

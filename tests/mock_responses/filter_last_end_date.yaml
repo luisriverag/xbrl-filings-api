@@ -1,0 +1,18 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"data": [{"type": "filing", "attributes": {"sha256": "e7d7884fba75432289441410f6ff5b3b71bc9e99505a858baf0dc86b2121d483",
+      "report_url": "/5299006C0EVA5LAYOR30/2021-02-28/ESEF/AT/0/agranabeteiligungsag-2021-02-28/reports/agranabeteiligungsag-2021-02-28.xhtml",
+      "processed": "2023-01-18 11:03:08.388936", "viewer_url": "/5299006C0EVA5LAYOR30/2021-02-28/ESEF/AT/0/agranabeteiligungsag-2021-02-28/reports/ixbrlviewer.html",
+      "country": "AT", "error_count": 0, "warning_count": 1, "period_end": "2021-02-28",
+      "inconsistency_count": 0, "package_url": "/5299006C0EVA5LAYOR30/2021-02-28/ESEF/AT/0/agranabeteiligungsag-2021-02-28.zip",
+      "json_url": "/5299006C0EVA5LAYOR30/2021-02-28/ESEF/AT/0/agranabeteiligungsag-2021-02-28.json",
+      "date_added": "2022-01-18 00:00:00", "fxo_id": "5299006C0EVA5LAYOR30-2021-02-28-ESEF-AT-0"},
+      "id": "3803", "relationships": {"entity": {"links": {"related": "/api/entities/5299006C0EVA5LAYOR30"}},
+      "validation_messages": {"links": {"related": "/api/filings/3803/validation_messages"}}},
+      "links": {"self": "/api/filings/3803"}}], "links": {"self": "https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&filter%5Bperiod_end%5D=2021-02-28"},
+      "meta": {"count": 1}, "jsonapi": {"version": "1.0"}}'
+    content_type: text/plain
+    method: GET
+    status: 200
+    url: https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&filter%5Bperiod_end%5D=2021-02-28

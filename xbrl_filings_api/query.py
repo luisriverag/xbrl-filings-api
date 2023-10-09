@@ -134,7 +134,7 @@ def get_filings(
     if isinstance(sort, str):
         sort = [sort]
 
-    filings = FilingSet({})
+    filings = FilingSet()
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
@@ -239,7 +239,7 @@ def to_sqlite(
     if isinstance(sort, str):
         sort = [sort]
 
-    filings = FilingSet({})
+    filings = FilingSet()
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
@@ -248,12 +248,16 @@ def to_sqlite(
     page_gen = request_processor.generate_pages(
         filters, sort, max_size, flags, add_api_params, res_colls)
     for page in page_gen:
-        FilingSet(page.filing_list).to_sqlite(
+        page_filings = FilingSet(page.filing_list)
+        page_filings.to_sqlite(
             path=path,
             update=update,
             flags=flags
             )
-        filings.update(page.filing_list)
+        filings.update(page_filings)
+        # After database creation, next pages are always added to
+        # existing db
+        update = True
 
 
 def filing_page_iter(
@@ -298,7 +302,7 @@ def filing_page_iter(
     if isinstance(sort, str):
         sort = [sort]
 
-    filings = FilingSet({})
+    filings = FilingSet()
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
