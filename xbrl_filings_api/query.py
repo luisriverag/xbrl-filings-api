@@ -270,6 +270,10 @@ def filing_page_iter(
     """
     Iterate API query results page by page.
 
+    Subresources such as `Entity` are only delivered once even is
+    subsequent pages contain filings that share the same entity as
+    earlier pages.
+
     Parameters
     ----------
     filters : mapping of str: {any, iterable of any}, optional

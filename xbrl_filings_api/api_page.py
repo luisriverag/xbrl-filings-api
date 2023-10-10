@@ -90,7 +90,7 @@ class _APIPage(APIObject):
         """Version of the JSON:API specification of base API."""
 
         pr_count = len(self._data) if self._data else '0'
-        logger.debug(
+        logger.info(
             f'APIPage "{urllib.parse.unquote(self.request_url)}": '
             f'{pr_count} filings (of {self._data_count}), '
             f'{len(self._included_resources)} included subresources'

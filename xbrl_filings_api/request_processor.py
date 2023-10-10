@@ -72,9 +72,10 @@ def generate_pages(
 
     page_size = options.max_page_size
     # NO_LIMIT is int(0)
-    if max_size < NO_LIMIT:
-        page_size = max_size
-    elif max_size > NO_LIMIT:
+    if max_size < 0:
+        msg = 'Parameter "max_size" may not be negative'
+        raise ValueError(msg)
+    elif max_size > 0:
         if max_size < page_size:
             page_size = max_size
     params['page[size]'] = str(page_size)
@@ -113,16 +114,34 @@ def generate_pages(
             next_url = page.api_next_page_url
 
             received_size += filing_count
-            if received_size > max_size:
-                page.filing_list = page.filing_list[:max_size - received_size]
+            if max_size != NO_LIMIT and received_size > max_size:
+                del_count = received_size - max_size
+                _remove_excess_resources(page, del_count)
 
             yield page
 
             if not next_url or received_size >= max_size:
+                # Query exhausted
                 break
             req_params = None
-        if received_size >= max_size:
+
+        if max_size != NO_LIMIT and received_size >= max_size:
+            # Limit of `max_size` is exhausted before full multiquery/
+            # short date query
             break
+
+
+def _remove_excess_resources(page: FilingsPage, del_count: int):
+    """Delete api resources beyond `max_size` on last page."""
+    for filing in page.filing_list[-del_count:]:
+        if filing.entity and page.entity_list:
+            filing.entity.filings.remove(filing)
+            if len(filing.entity.filings) == 0:
+                page.entity_list.remove(filing.entity)
+        if filing.validation_messages and page.validation_message_list:
+            for vmessage in filing.validation_messages:
+                page.validation_message_list.remove(vmessage)
+    page.filing_list = page.filing_list[:-del_count]
 
 
 def _get_params_list_on_filters(
