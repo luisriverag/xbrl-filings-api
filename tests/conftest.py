@@ -82,10 +82,42 @@ def filter_last_end_date_response():
 
 
 @pytest.fixture
+def filter_last_end_date_dt_response():
+    """Filter by last_end_date '2021-02-28'."""
+    with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+        rsps._add_from_file(_get_absolute_path('filter_last_end_date'))
+        yield rsps
+
+
+@pytest.fixture
 def filter_error_count_response():
     """Filter by error_count value 1."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_absolute_path('filter_error_count'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_added_time_response():
+    """Filter by added_time value '2021-09-23 00:00:00'."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_absolute_path('filter_added_time'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_package_url_response():
+    """Filter by package_url of Kone 2022 filing."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_absolute_path('filter_package_url'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_package_sha256_response():
+    """Filter by package_sha256 of Kone 2022 filing."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_absolute_path('filter_package_sha256'))
         yield rsps
 
 

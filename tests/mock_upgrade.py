@@ -32,6 +32,9 @@ MOCK_URL_SET_IDS = (
     'filter_language',
     'filter_last_end_date',
     'filter_error_count',
+    'filter_added_time',
+    'filter_package_url',
+    'filter_package_sha256',
     'finnish_jan22',
     'oldest3_fi',
     'sort_two_fields',
@@ -176,6 +179,54 @@ def _fetch_filter_error_count():
         params={
             'page[size]': 1,
             'filter[error_count]': 1
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['filter_added_time'])
+def _fetch_filter_added_time():
+    """Filter by added_time value '2021-09-23 00:00:00'."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[date_added]': '2021-09-23 00:00:00' # added_time
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['filter_package_url'])
+def _fetch_filter_package_url():
+    """Filter by package_url of Kone 2022 filing."""
+    filter_url = (
+        '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/'
+        '2138001CNF45JP5XZK38-2022-12-31-EN.zip'
+        )
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[package_url]': filter_url
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=set_paths['filter_package_sha256'])
+def _fetch_filter_package_sha256():
+    """Filter by package_sha256 of Kone 2022 filing."""
+    filter_sha = (
+        'e489a512976f55792c31026457e86c9176d258431f9ed645451caff9e4ef5f80')
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 1,
+            'filter[sha256]': filter_sha # package_sha256
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT

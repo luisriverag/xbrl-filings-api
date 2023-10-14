@@ -156,12 +156,20 @@ def _get_params_list_on_filters(
     for fld, val in filters.items():
         if fld.endswith('_date'):
             # Turn literal into a list of a string
+            msg = 'Not possible to filter date field by datetime'
             if (not isinstance(val, Iterable)
                     or isinstance(val, str)):
-                date_filters[fld] = [str(val)]
+                if isinstance(val, datetime):
+                    raise ValueError(msg)
+                date_filters[fld] = [_filter_to_str(val)]
             # Normalize iterables into lists of strings
             else:
-                date_filters[fld] = [str(item) for item in val]
+                multidate = []
+                for item in val:
+                    if isinstance(val, datetime):
+                        raise ValueError(msg)
+                    multidate.append(_filter_to_str(item))
+                date_filters[fld] = multidate
 
     multifilters: dict[str, list[str]] = {}
     for fld, iterb in filters.items():
@@ -169,11 +177,11 @@ def _get_params_list_on_filters(
             and isinstance(iterb, Iterable)
             and not isinstance(iterb, str)):
             # Normalize multifilter values to list of strings
-            multifilters[fld] = [str(val) for val in iterb]
+            multifilters[fld] = [_filter_to_str(val) for val in iterb]
 
     # Normalise single filters into strings
     single_filters: dict[str, str] = {
-        fld: str(val)
+        fld: _filter_to_str(val)
         for fld, val in filters.items()
         if fld not in date_filters
         and fld not in multifilters
@@ -188,6 +196,15 @@ def _get_params_list_on_filters(
         return _expand_params_on_multifilters(params, multifilters)
     else:
         return [params]
+
+
+def _filter_to_str(val):
+    if isinstance(val, datetime):
+        return val.astimezone(UTC).strftime('%Y-%m-%d %H:%M:%S')
+    elif isinstance(val, date):
+        return val.strftime('%Y-%m-%d')
+    else:
+        return str(val)
 
 
 def _resolve_date_filters(

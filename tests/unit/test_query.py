@@ -8,8 +8,9 @@
 # ruff: noqa: Q000
 
 import os
+import re
 import sqlite3
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 import requests
@@ -109,8 +110,8 @@ class TestParam_filters_single:
             max_size=1,
             flags=GET_ONLY_FILINGS
             )
-        assert len(fs) == 1, 'One filing is returned'
         creditsuisse21 = next(iter(fs), None)
+        assert isinstance(creditsuisse21, Filing)
         assert creditsuisse21.api_id == creditsuisse21en_api_id
 
     def test_get_filings_filing_index(s, asml22en_response):
@@ -124,8 +125,8 @@ class TestParam_filters_single:
             max_size=1,
             flags=GET_ONLY_FILINGS
             )
-        assert len(fs) == 1, 'One filing is returned'
         asml22 = next(iter(fs), None)
+        assert isinstance(asml22, Filing)
         assert asml22.filing_index == asml22_fxo
 
     def test_get_filings_language(s, filter_language_response):
@@ -142,7 +143,7 @@ class TestParam_filters_single:
         assert 'Bad filter value' in exc_info.value.detail
 
     def test_get_filings_last_end_date_str(s, filter_last_end_date_response):
-        """Requested `last_end_date` as str is returned."""
+        """Querying `last_end_date` as str returns filing(s)."""
         date_str = '2021-02-28'
         fs = query.get_filings(
             filters={
@@ -152,10 +153,42 @@ class TestParam_filters_single:
             max_size=1,
             flags=GET_ONLY_FILINGS
             )
-        assert len(fs) == 1, 'One filing is returned'
         agrana20 = next(iter(fs), None)
+        assert isinstance(agrana20, Filing)
         expected_date = date(*[int(pt) for pt in date_str.split('-')])
         assert agrana20.last_end_date == expected_date
+
+    def test_get_filings_last_end_date_obj(s, filter_last_end_date_response):
+        """Querying `last_end_date` as date returns filing(s)."""
+        date_obj = date(2021, 2, 28)
+        fs = query.get_filings(
+            filters={
+                'last_end_date': date_obj
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        agrana20 = next(iter(fs), None)
+        assert isinstance(agrana20, Filing)
+        assert agrana20.last_end_date == date_obj
+
+    def test_get_filings_last_end_date_datetime(
+            s, filter_last_end_date_dt_response):
+        """Querying `last_end_date` as datetime raises ValueError."""
+        dt_obj = datetime(2021, 2, 28, tzinfo=UTC)
+        with pytest.raises(
+            expected_exception=ValueError,
+            match=r'Not possible to filter date field by datetime'
+            ):
+            _ = query.get_filings(
+                filters={
+                    'last_end_date': dt_obj
+                    },
+                sort=None,
+                max_size=1,
+                flags=GET_ONLY_FILINGS
+                )
 
     @pytest.mark.xfail(
         reason=(
@@ -173,19 +206,96 @@ class TestParam_filters_single:
             max_size=1,
             flags=GET_ONLY_FILINGS
             )
-        assert len(fs) == 1, 'At least one filing exists'
+        filing = next(iter(fs), None)
+        assert isinstance(filing, Filing), 'At least one filing exists'
 
-    # def test_get_filings_added_time(s, filter_added_time_response):
-    #     """Filter `added_time` raises an `APIError`."""
-    #     fs = query.get_filings(
-    #         filters={
-    #             'added_time': 1/0
-    #             },
-    #         sort=None,
-    #         max_size=1,
-    #         flags=GET_ONLY_FILINGS
-    #         )
-    #     assert len(fs) == 1, 'At least one filing exists'
+    def test_get_filings_added_time_str(s, filter_added_time_response):
+        """Querying `added_time` as str returns filing(s)."""
+        time_str = '2021-09-23 00:00:00'
+        fs = query.get_filings(
+            filters={
+                'added_time': time_str
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        vtbbank20 = next(iter(fs), None)
+        assert isinstance(vtbbank20, Filing)
+        dt_parts = [int(pt) for pt in re.split(r'[\- :]', time_str)]
+        dt_obj = datetime(*dt_parts, tzinfo=UTC)
+        assert vtbbank20.added_time == dt_obj
+
+    def test_get_filings_added_time_datetime_utc(s, filter_added_time_response):
+        """Querying `added_time` as UTC datetime returns filing(s)."""
+        dt_obj = datetime(2021, 9, 23, 0, 0, 0, tzinfo=UTC)
+        fs = query.get_filings(
+            filters={
+                'added_time': dt_obj
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        vtbbank20 = next(iter(fs), None)
+        assert isinstance(vtbbank20, Filing)
+        assert vtbbank20.added_time == dt_obj
+
+    def test_get_filings_added_time_datetime_eest(s, filter_added_time_response):
+        """Querying `added_time` as EEST datetime returns filing(s)."""
+        eest_tz = timezone(timedelta(hours=+3), 'EEST')
+        dt_obj = datetime(2021, 9, 23, 3, 0, 0, tzinfo=eest_tz)
+        fs = query.get_filings(
+            filters={
+                'added_time': dt_obj
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        vtbbank20 = next(iter(fs), None)
+        assert isinstance(vtbbank20, Filing)
+        expected_dt = datetime(2021, 9, 23, 0, 0, 0, tzinfo=UTC)
+        assert vtbbank20.added_time == expected_dt
+
+    @pytest.mark.xfail(
+        reason=(
+            'Filtering by "_url" attributes is not supported by the '
+            'API.'
+            ),
+        raises=APIError)
+    def test_get_filings_package_url(s, filter_package_url_response):
+        """Filtering by `package_url` return one filing."""
+        filter_url = (
+            '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/'
+            '2138001CNF45JP5XZK38-2022-12-31-EN.zip'
+            )
+        fs = query.get_filings(
+            filters={
+                'package_url': filter_url
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        kone22en = next(iter(fs), None)
+        assert isinstance(kone22en, Filing)
+
+    def test_get_filings_package_sha256(s, filter_package_sha256_response):
+        """Querying `package_sha256` returns filing(s)."""
+        filter_sha = (
+            'e489a512976f55792c31026457e86c9176d258431f9ed645451caff9e4ef5f80')
+        fs = query.get_filings(
+            filters={
+                'package_sha256': filter_sha
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        kone22en = next(iter(fs), None)
+        assert isinstance(kone22en, Filing)
+        assert kone22en.package_sha256 == filter_sha
 
     def test_2_filters_country_enddate(s, finnish_jan22_response):
         """Filters `country` and `last_end_date` return 2 ."""
