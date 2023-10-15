@@ -207,7 +207,8 @@ class TestParam_filters_single:
             flags=GET_ONLY_FILINGS
             )
         filing = next(iter(fs), None)
-        assert isinstance(filing, Filing), 'At least one filing exists'
+        assert isinstance(filing, Filing)
+        assert filing.error_count == 1
 
     def test_get_filings_added_time_str(s, filter_added_time_response):
         """Querying `added_time` as str returns filing(s)."""
@@ -280,6 +281,7 @@ class TestParam_filters_single:
             )
         kone22en = next(iter(fs), None)
         assert isinstance(kone22en, Filing)
+        assert kone22en.package_url.endswith(filter_url)
 
     def test_get_filings_package_sha256(s, filter_package_sha256_response):
         """Querying `package_sha256` returns filing(s)."""
