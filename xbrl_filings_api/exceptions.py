@@ -123,3 +123,7 @@ class DatabaseSchemaUnmatchError(FilingsAPIError):
         self.path = path
         """Path for the database file."""
         super().__init__()
+
+
+class FilterNotSupportedWarning(FilingsAPIWarning):
+    """Used filter is not supported but can be used."""

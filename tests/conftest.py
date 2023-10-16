@@ -106,6 +106,14 @@ def filter_added_time_response():
 
 
 @pytest.fixture
+def filter_added_time_date_response():
+    """Filter by added_time value '2021-09-23 00:00:00'."""
+    with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+        rsps._add_from_file(_get_absolute_path('filter_added_time'))
+        yield rsps
+
+
+@pytest.fixture
 def filter_package_url_response():
     """Filter by package_url of Kone 2022 filing."""
     with responses.RequestsMock() as rsps:

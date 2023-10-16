@@ -26,7 +26,9 @@ from xbrl_filings_api import (
     ValidationMessage,
     options,
     query,
+    time_formats,
 )
+from xbrl_filings_api.exceptions import FilterNotSupportedWarning
 
 UTC = timezone.utc
 
@@ -49,12 +51,13 @@ class TestFundamentalOperation:
         assert isinstance(asml22, Filing), 'Filing is returned'
 
     @pytest.mark.sqlite
-    def test_to_sqlite(s, asml22en_response, tmp_path):
+    def test_to_sqlite(s, asml22en_response, tmp_path, monkeypatch):
         """Requested filing is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
-        tmp_db = tmp_path / 'temp.db'
+        db_path = tmp_path / 'test_to_sqlite.db'
         query.to_sqlite(
-            path=tmp_db,
+            path=db_path,
             update=False,
             filters={
                 'filing_index': asml22_fxo
@@ -63,13 +66,14 @@ class TestFundamentalOperation:
             max_size=1,
             flags=GET_ONLY_FILINGS
             )
-        assert os.access(tmp_db, os.F_OK), 'Database file is created'
-        con = sqlite3.connect(tmp_db)
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
             "SELECT COUNT(*) FROM Filing "
             "WHERE filing_index = ?",
-            (asml22_fxo,))
+            (asml22_fxo,)
+            )
         assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
 
     @pytest.mark.paging
@@ -114,6 +118,33 @@ class TestParam_filters_single:
         assert isinstance(creditsuisse21, Filing)
         assert creditsuisse21.api_id == creditsuisse21en_api_id
 
+    @pytest.mark.sqlite
+    def test_to_sqlite_api_id(
+        s, creditsuisse21en_by_id_response, tmp_path, monkeypatch):
+        """Requested `api_id` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        creditsuisse21en_api_id = '162'
+        db_path = tmp_path / 'test_to_sqlite_api_id.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'api_id': creditsuisse21en_api_id
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE api_id = ?",
+            (creditsuisse21en_api_id,)
+            )
+        assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
+
     def test_get_filings_filing_index(s, asml22en_response):
         """Requested `filing_index` is returned."""
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
@@ -129,18 +160,66 @@ class TestParam_filters_single:
         assert isinstance(asml22, Filing)
         assert asml22.filing_index == asml22_fxo
 
+    @pytest.mark.sqlite
+    def test_to_sqlite_filing_index(s, asml22en_response, tmp_path, monkeypatch):
+        """Requested `filing_index` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+        db_path = tmp_path / 'test_to_sqlite_filing_index.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'filing_index': asml22_fxo
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE filing_index = ?",
+            (asml22_fxo,)
+            )
+        assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
+
     def test_get_filings_language(s, filter_language_response):
         """Filter `language` raises an `APIError`."""
         with pytest.raises(APIError) as exc_info:
-            _ = query.get_filings(
-                filters={
-                    'language': 'fi'
-                    },
-                sort=None,
-                max_size=1,
-                flags=GET_ONLY_FILINGS
-                )
+            with pytest.warns(FilterNotSupportedWarning):
+                _ = query.get_filings(
+                    filters={
+                        'language': 'fi'
+                        },
+                    sort=None,
+                    max_size=1,
+                    flags=GET_ONLY_FILINGS
+                    )
         assert 'Bad filter value' in exc_info.value.detail
+
+    @pytest.mark.sqlite
+    def test_to_sqlite_language(
+        s, filter_language_response, tmp_path, monkeypatch):
+        """Filter `language` raises an `APIError`."""
+        monkeypatch.setattr(options, 'views', None)
+        db_path = tmp_path / 'test_to_sqlite_language.db'
+        with pytest.raises(APIError) as exc_info:
+            with pytest.warns(FilterNotSupportedWarning):
+                query.to_sqlite(
+                    path=db_path,
+                    update=False,
+                    filters={
+                        'language': 'fi'
+                        },
+                    sort=None,
+                    max_size=1,
+                    flags=GET_ONLY_FILINGS
+                    )
+        assert 'Bad filter value' in exc_info.value.detail
+        assert not os.access(db_path, os.F_OK), 'Database file is not created'
 
     def test_get_filings_last_end_date_str(s, filter_last_end_date_response):
         """Querying `last_end_date` as str returns filing(s)."""
@@ -158,6 +237,34 @@ class TestParam_filters_single:
         expected_date = date(*[int(pt) for pt in date_str.split('-')])
         assert agrana20.last_end_date == expected_date
 
+    @pytest.mark.sqlite
+    def test_to_sqlite_last_end_date_str(
+            s, filter_last_end_date_response, tmp_path, monkeypatch):
+        """Requested `last_end_date` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        date_str = '2021-02-28'
+        db_path = tmp_path / 'test_to_sqlite_last_end_date.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'last_end_date': date_str
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE last_end_date = ?",
+            (date_str,)
+            )
+        count_num = cur.fetchone()[0]
+        assert count_num == 1, 'Inserted requested filing(s)'
+
     def test_get_filings_last_end_date_obj(s, filter_last_end_date_response):
         """Querying `last_end_date` as date returns filing(s)."""
         date_obj = date(2021, 2, 28)
@@ -173,15 +280,65 @@ class TestParam_filters_single:
         assert isinstance(agrana20, Filing)
         assert agrana20.last_end_date == date_obj
 
+    @pytest.mark.sqlite
+    def test_to_sqlite_last_end_date_obj(
+            s, filter_last_end_date_response, tmp_path, monkeypatch):
+        """Requested `last_end_date` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        date_obj = date(2021, 2, 28)
+        db_path = tmp_path / 'test_to_sqlite_last_end_date.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'last_end_date': date_obj
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE last_end_date = ?",
+            (date_obj.strftime('%Y-%m-%d'),)
+            )
+        count_num = cur.fetchone()[0]
+        assert count_num == 1, 'Inserted requested filing(s)'
+
     def test_get_filings_last_end_date_datetime(
             s, filter_last_end_date_dt_response):
         """Querying `last_end_date` as datetime raises ValueError."""
         dt_obj = datetime(2021, 2, 28, tzinfo=UTC)
         with pytest.raises(
             expected_exception=ValueError,
-            match=r'Not possible to filter date field by datetime'
+            match=r'Not possible to filter date field "\w+" by datetime'
             ):
             _ = query.get_filings(
+                filters={
+                    'last_end_date': dt_obj
+                    },
+                sort=None,
+                max_size=1,
+                flags=GET_ONLY_FILINGS
+                )
+
+    @pytest.mark.sqlite
+    def test_to_sqlite_last_end_date_datetime(
+            s, filter_last_end_date_dt_response, tmp_path, monkeypatch):
+        """Requested `last_end_date` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        dt_obj = datetime(2021, 2, 28, tzinfo=UTC)
+        db_path = tmp_path / 'test_to_sqlite_last_end_date.db'
+        with pytest.raises(
+            expected_exception=ValueError,
+            match=r'Not possible to filter date field "\w+" by datetime'
+            ):
+            query.to_sqlite(
+                path=db_path,
+                update=False,
                 filters={
                     'last_end_date': dt_obj
                     },
@@ -210,9 +367,46 @@ class TestParam_filters_single:
         assert isinstance(filing, Filing)
         assert filing.error_count == 1
 
-    def test_get_filings_added_time_str(s, filter_added_time_response):
+    @pytest.mark.xfail(
+        reason=(
+            'Filtering by "_count" attributes is not supported by the '
+            'API.'
+            ),
+        raises=APIError)
+    @pytest.mark.sqlite
+    def test_to_sqlite_error_count(
+            s, filter_error_count_response, tmp_path, monkeypatch):
+        """Requested `error_count` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        db_path = tmp_path / 'test_to_sqlite_error_count.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'error_count': 1
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE error_count = ?",
+            (1,)
+            )
+        count_num = cur.fetchone()[0]
+        assert count_num == 1, 'Inserted requested filing(s)'
+
+    def test_get_filings_added_time_str(
+            s, filter_added_time_response, monkeypatch):
         """Querying `added_time` as str returns filing(s)."""
-        time_str = '2021-09-23 00:00:00'
+        monkeypatch.setattr(options, 'time_accuracy', 'min')
+        monkeypatch.setattr(options, 'utc_time', False)
+        time_as_local = datetime(2021, 9, 23, 0, 0, tzinfo=UTC).astimezone()
+        time_str = time_as_local.strftime('%Y-%m-%d %H:%M')
         fs = query.get_filings(
             filters={
                 'added_time': time_str
@@ -223,12 +417,44 @@ class TestParam_filters_single:
             )
         vtbbank20 = next(iter(fs), None)
         assert isinstance(vtbbank20, Filing)
-        dt_parts = [int(pt) for pt in re.split(r'[\- :]', time_str)]
-        dt_obj = datetime(*dt_parts, tzinfo=UTC)
-        assert vtbbank20.added_time == dt_obj
+        assert vtbbank20.added_time == time_as_local
 
-    def test_get_filings_added_time_datetime_utc(s, filter_added_time_response):
+    @pytest.mark.sqlite
+    def test_to_sqlite_added_time_str(
+            s, filter_added_time_response, tmp_path, monkeypatch):
+        """Requested `added_time` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        monkeypatch.setattr(options, 'time_accuracy', 'min')
+        monkeypatch.setattr(options, 'utc_time', False)
+        time_as_local = datetime(2021, 9, 23, 0, 0, tzinfo=UTC).astimezone()
+        time_str = time_as_local.strftime('%Y-%m-%d %H:%M')
+        db_path = tmp_path / 'test_to_sqlite_added_time_str.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'added_time': time_str
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE added_time = ?",
+            (time_str,)
+            )
+        count_num = cur.fetchone()[0]
+        assert count_num == 1, 'Inserted requested filing(s)'
+
+    def test_get_filings_added_time_datetime_utc(
+            s, filter_added_time_response, monkeypatch):
         """Querying `added_time` as UTC datetime returns filing(s)."""
+        monkeypatch.setattr(options, 'time_accuracy', 'min')
+        monkeypatch.setattr(options, 'utc_time', False)
         dt_obj = datetime(2021, 9, 23, 0, 0, 0, tzinfo=UTC)
         fs = query.get_filings(
             filters={
@@ -240,10 +466,46 @@ class TestParam_filters_single:
             )
         vtbbank20 = next(iter(fs), None)
         assert isinstance(vtbbank20, Filing)
-        assert vtbbank20.added_time == dt_obj
+        dt_min_accurate = dt_obj.replace(second=0)
+        assert vtbbank20.added_time == dt_min_accurate
 
-    def test_get_filings_added_time_datetime_eest(s, filter_added_time_response):
+    @pytest.mark.sqlite
+    def test_to_sqlite_added_time_utc(
+            s, filter_added_time_response, tmp_path, monkeypatch):
+        """Requested `added_time` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        monkeypatch.setattr(options, 'time_accuracy', 'min')
+        monkeypatch.setattr(options, 'utc_time', False)
+        dt_obj = datetime(2021, 9, 23, 0, 0, 0, tzinfo=UTC)
+        db_path = tmp_path / 'test_to_sqlite_added_time_utc.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'added_time': dt_obj
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        # Even though queried with UTC timezone datetime, date is saved
+        # in local timezone because of `options.utc_time` = False
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE added_time = ?",
+            (dt_obj.astimezone().strftime('%Y-%m-%d %H:%M'),)
+            )
+        count_num = cur.fetchone()[0]
+        assert count_num == 1, 'Inserted requested filing(s)'
+
+    def test_get_filings_added_time_datetime_eest(
+            s, filter_added_time_response, monkeypatch):
         """Querying `added_time` as EEST datetime returns filing(s)."""
+        monkeypatch.setattr(options, 'time_accuracy', 'min')
+        monkeypatch.setattr(options, 'utc_time', False)
         eest_tz = timezone(timedelta(hours=+3), 'EEST')
         dt_obj = datetime(2021, 9, 23, 3, 0, 0, tzinfo=eest_tz)
         fs = query.get_filings(
@@ -256,8 +518,78 @@ class TestParam_filters_single:
             )
         vtbbank20 = next(iter(fs), None)
         assert isinstance(vtbbank20, Filing)
-        expected_dt = datetime(2021, 9, 23, 0, 0, 0, tzinfo=UTC)
-        assert vtbbank20.added_time == expected_dt
+        dt_min_accurate = dt_obj.replace(second=0)
+        assert vtbbank20.added_time == dt_min_accurate
+
+    @pytest.mark.sqlite
+    def test_to_sqlite_added_time_eest(
+            s, filter_added_time_response, tmp_path, monkeypatch):
+        """Requested `added_time` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        monkeypatch.setattr(options, 'time_accuracy', 'min')
+        monkeypatch.setattr(options, 'utc_time', False)
+        eest_tz = timezone(timedelta(hours=+3), 'EEST')
+        dt_obj = datetime(2021, 9, 23, 3, 0, 0, tzinfo=eest_tz)
+        db_path = tmp_path / 'test_to_sqlite_added_time_eest.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'added_time': dt_obj
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE added_time = ?",
+            (dt_obj.astimezone().strftime('%Y-%m-%d %H:%M'),)
+            )
+        count_num = cur.fetchone()[0]
+        assert count_num == 1, 'Inserted requested filing(s)'
+
+    def test_get_filings_added_time_date(s, filter_added_time_date_response):
+        """Querying `added_time` as date raises ValueError."""
+        date_obj = date(2021, 9, 23)
+        with pytest.raises(
+            expected_exception=ValueError,
+            match=r'Not possible to filter datetime field "\w+" by date'
+            ):
+            _ = query.get_filings(
+                filters={
+                    'added_time': date_obj
+                    },
+                sort=None,
+                max_size=1,
+                flags=GET_ONLY_FILINGS
+                )
+
+    @pytest.mark.sqlite
+    def test_to_sqlite_added_time_date(
+            s, filter_added_time_date_response, tmp_path, monkeypatch):
+        """Querying `added_time` as date for database raises ValueError."""
+        monkeypatch.setattr(options, 'views', None)
+        date_obj = date(2021, 9, 23)
+        db_path = tmp_path / 'test_to_sqlite_added_time_date.db'
+        with pytest.raises(
+            expected_exception=ValueError,
+            match=r'Not possible to filter datetime field "\w+" by date'
+            ):
+            query.to_sqlite(
+                path=db_path,
+                update=False,
+                filters={
+                    'added_time': date_obj
+                    },
+                sort=None,
+                max_size=1,
+                flags=GET_ONLY_FILINGS
+                )
+        assert not os.access(db_path, os.F_OK), 'Database file is not created'
 
     @pytest.mark.xfail(
         reason=(
@@ -283,6 +615,43 @@ class TestParam_filters_single:
         assert isinstance(kone22en, Filing)
         assert kone22en.package_url.endswith(filter_url)
 
+    @pytest.mark.xfail(
+        reason=(
+            'Filtering by "_url" attributes is not supported by the '
+            'API.'
+            ),
+        raises=APIError)
+    @pytest.mark.sqlite
+    def test_to_sqlite_package_url(
+            s, filter_package_url_response, tmp_path, monkeypatch):
+        """Requested `package_url` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        filter_url = (
+            '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/'
+            '2138001CNF45JP5XZK38-2022-12-31-EN.zip'
+            )
+        db_path = tmp_path / 'test_to_sqlite_package_url.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'package_url': filter_url
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE package_url LIKE '%?'",
+            (1,)
+            )
+        count_num = cur.fetchone()[0]
+        assert count_num == 1, 'Inserted requested filing(s)'
+
     def test_get_filings_package_sha256(s, filter_package_sha256_response):
         """Querying `package_sha256` returns filing(s)."""
         filter_sha = (
@@ -299,8 +668,37 @@ class TestParam_filters_single:
         assert isinstance(kone22en, Filing)
         assert kone22en.package_sha256 == filter_sha
 
-    def test_2_filters_country_enddate(s, finnish_jan22_response):
-        """Filters `country` and `last_end_date` return 2 ."""
+    @pytest.mark.sqlite
+    def test_to_sqlite_package_sha256(
+            s, filter_package_sha256_response, tmp_path, monkeypatch):
+        """Requested `package_sha256` is inserted into a database."""
+        monkeypatch.setattr(options, 'views', None)
+        filter_sha = (
+            'e489a512976f55792c31026457e86c9176d258431f9ed645451caff9e4ef5f80')
+        db_path = tmp_path / 'test_to_sqlite_package_sha256.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'package_sha256': filter_sha
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM Filing "
+            "WHERE package_sha256 = ?",
+            (filter_sha,)
+            )
+        count_num = cur.fetchone()[0]
+        assert count_num == 1, 'Inserted requested filing(s)'
+
+    def test_get_filings_2filters(s, finnish_jan22_response):
+        """Filters `country` and `last_end_date` return 2 filings."""
         fs = query.get_filings(
             filters={
                 'country': 'FI',
@@ -312,12 +710,81 @@ class TestParam_filters_single:
             )
         assert len(fs) == 2, 'Two reports issued in Finland for Jan 2022.'
         fxo_set = {filing.filing_index for filing in fs}
-        puuilo22_fxo = '743700UJUT6FWHBXPR69-2022-01-31-ESEF-FI-0'
-        assert puuilo22_fxo in fxo_set, 'Puuilo Oyj 2022-01-31'
-        hlre22_fxo = '743700UNWAM0XWPHXP50-2022-01-31-ESEF-FI-0'
-        assert hlre22_fxo in fxo_set, 'HLRE Holding Oyj 2022-01-31'
+        assert len(fxo_set) == 2, 'Filings are unique'
 
-    # to_sqlite
+    @pytest.mark.sqlite
+    def test_to_sqlite_2filters(s, finnish_jan22_response, tmp_path, monkeypatch):
+        """Filters `country` and `last_end_date` insert 2 filings to db."""
+        monkeypatch.setattr(options, 'views', None)
+        db_path = tmp_path / 'test_to_sqlite_2filters.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'country': 'FI',
+                'last_end_date': '2022-01-31'
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT filing_index FROM Filing "
+            "WHERE country = ? AND last_end_date = ?",
+            ('FI', '2022-01-31')
+            )
+        fxo_a = cur.fetchone()[0]
+        fxo_b = cur.fetchone()[0]
+        assert fxo_a != fxo_b, 'Filings are unique'
+        assert cur.fetchone() is None, 'Two filings inserted'
+
+    def test_get_filings_2filters_date(s, finnish_jan22_response):
+        """Filters `country` and `last_end_date` as date work."""
+        fs = query.get_filings(
+            filters={
+                'country': 'FI',
+                'last_end_date': date(2022, 1, 31)
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        assert len(fs) == 2, 'Two reports issued in Finland for Jan 2022.'
+        fxo_set = {filing.filing_index for filing in fs}
+        assert len(fxo_set) == 2, 'Filings are unique'
+
+    @pytest.mark.sqlite
+    def test_to_sqlite_2filters_date(s, finnish_jan22_response, tmp_path, monkeypatch):
+        """Filters `country` and `last_end_date` as date insert to db."""
+        monkeypatch.setattr(options, 'views', None)
+        db_path = tmp_path / 'test_to_sqlite_2filters_date.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'country': 'FI',
+                'last_end_date': date(2022, 1, 31)
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT filing_index FROM Filing "
+            "WHERE country = ? AND last_end_date = ?",
+            ('FI', '2022-01-31')
+            )
+        fxo_a = cur.fetchone()[0]
+        fxo_b = cur.fetchone()[0]
+        assert fxo_a != fxo_b, 'Filings are unique'
+        assert cur.fetchone() is None, 'Two filings inserted'
+
     # filing_page_iter
 
 

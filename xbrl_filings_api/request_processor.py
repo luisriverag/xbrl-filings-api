@@ -7,6 +7,7 @@
 import itertools
 import logging
 import urllib.parse
+import warnings
 from collections.abc import Generator, Iterable, Mapping, Sequence
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Literal, Union
@@ -23,11 +24,15 @@ from xbrl_filings_api.enums import (
     GET_VALIDATION_MESSAGES,
     ScopeFlag,
 )
-from xbrl_filings_api.exceptions import HTTPStatusError
+from xbrl_filings_api.exceptions import (
+    FilterNotSupportedWarning,
+    HTTPStatusError,
+)
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
+from xbrl_filings_api.time_formats import time_formats
 
 UTC = timezone.utc
 logger = logging.getLogger(__name__)
@@ -144,6 +149,22 @@ def _remove_excess_resources(page: FilingsPage, del_count: int):
     page.filing_list = page.filing_list[:-del_count]
 
 
+def _raise_for_none_filters(
+        filters: Mapping[str, Union[Any, Iterable[Any]]]):
+    nonemsg = 'Value None is not allowed for filters, field "{}"{}'
+    for fld, val in filters.items():
+        if isinstance(val, Iterable) and not isinstance(val, str):
+            # Multifilter
+            for multifilter_i, single_filter in enumerate(val):
+                if single_filter is None:
+                    msg = nonemsg.format(fld, _get_mf_index_str(multifilter_i))
+                    raise ValueError(msg)
+        elif val is None:
+            # Single filter
+            msg = nonemsg.format(fld, '')
+            raise ValueError(msg)
+
+
 def _get_params_list_on_filters(
         params: dict[str, str],
         filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None]
@@ -151,135 +172,49 @@ def _get_params_list_on_filters(
     """Append filter keys to `params` dict."""
     if not filters:
         return [params]
+    _raise_for_none_filters(filters)
 
-    date_filters: dict[str, list[str]] = {}
-    for fld, val in filters.items():
-        if fld.endswith('_date'):
-            # Turn literal into a list of a string
-            msg = 'Not possible to filter date field by datetime'
-            if (not isinstance(val, Iterable)
-                    or isinstance(val, str)):
-                if isinstance(val, datetime):
-                    raise ValueError(msg)
-                date_filters[fld] = [_filter_to_str(val)]
-            # Normalize iterables into lists of strings
-            else:
-                multidate = []
-                for item in val:
-                    if isinstance(val, datetime):
-                        raise ValueError(msg)
-                    multidate.append(_filter_to_str(item))
-                date_filters[fld] = multidate
+    # Filters differentiated by their type from field name ending
+    # fgroup[group_name][field_name] = [str_value1, str_value2, ...]
+    fgroup: dict[str, dict[str, list[str]]] = {}
 
-    multifilters: dict[str, list[str]] = {}
-    for fld, iterb in filters.items():
-        if (fld not in date_filters
-            and isinstance(iterb, Iterable)
-            and not isinstance(iterb, str)):
-            # Normalize multifilter values to list of strings
-            multifilters[fld] = [_filter_to_str(val) for val in iterb]
+    # Classify filter values and normalize them as list of strings into
+    # `fgroup`
+    for field_name, filter_value in filters.items():
+        _classify_filter(fgroup, field_name, filter_value)
 
-    # Normalise single filters into strings
-    single_filters: dict[str, str] = {
-        fld: _filter_to_str(val)
-        for fld, val in filters.items()
-        if fld not in date_filters
-        and fld not in multifilters
-        }
+    _expand_short_date_filters(fgroup)
 
-    if date_filters:
-        _resolve_date_filters(date_filters, multifilters, single_filters)
+    # Extract single filters from `fgroup`
+    single_filters: dict[str, str] = {}
+    fgroup_del = {}
+    for group_name in fgroup:
+        for field_name, val_list in fgroup[group_name].items():
+            if len(val_list) == 1:
+                single_filters[field_name] = val_list[0]
+                if group_name not in fgroup_del:
+                    fgroup_del[group_name] = []
+                fgroup_del[group_name].append(field_name)
+
+    # Exclude single filters from `fgroup` leaving only multifilters
+    for group_name in fgroup_del:
+        for field_name in fgroup_del[group_name]:
+            del fgroup[group_name][field_name]
+            if len(fgroup[group_name]) == 0:
+                del fgroup[group_name]
 
     params |= _filters_to_query_params(single_filters)
 
-    if multifilters:
-        return _expand_params_on_multifilters(params, multifilters)
+    # If there are multifilters left in `fgroup`, expand them to
+    # multiple groups of parameters for many queries
+    if fgroup:
+        params_lists = _expand_params_on_multifilters(params, fgroup)
+        for pset_i, pset in enumerate(params_lists):
+            logger.info(f'Parameter set #{pset_i+1}: {pset}')
+        return params_lists
     else:
+        logger.info(f'Parameter set: {params}')
         return [params]
-
-
-def _filter_to_str(val):
-    if isinstance(val, datetime):
-        return val.astimezone(UTC).strftime('%Y-%m-%d %H:%M:%S')
-    elif isinstance(val, date):
-        return val.strftime('%Y-%m-%d')
-    else:
-        return str(val)
-
-
-def _resolve_date_filters(
-        date_filters: dict[str, list[str]],
-        multifilters: dict[str, list[str]],
-        single_filters: dict[str, str]
-        ) -> None:
-    """Resolve `date_filters` into filter dicts."""
-    if options.year_filter_months[1] <= options.year_filter_months[0]:
-        msg = (
-            'The option year_filter_months stop (2nd item) is before '
-            'or equal to start (1st item)'
-            )
-        raise ValueError(msg)
-
-    for field_name, filter_list in date_filters.items():
-        resolved: list[str] = []
-        for date_filter in filter_list:
-            nums = [int(num) for num in date_filter.split('-')]
-
-            if len(nums) == 1:
-                year = nums[0]
-                start_part, stop_part = options.year_filter_months
-                req_year, req_month = year+start_part[0], start_part[1]
-                stop_year, stop_month = year+stop_part[0], stop_part[1]
-
-                mf_values = []
-                while (req_year, req_month) < (stop_year, stop_month):
-                    month_end = _get_month_end(req_year, req_month)
-                    mf_values.append(month_end.strftime('%Y-%m-%d'))
-
-                    req_month += 1
-                    if req_month > 12:  # noqa: PLR2004
-                        req_year, req_month = req_year+1, 1
-                resolved.extend(mf_values)
-
-            if len(nums) == 2:  # noqa: PLR2004
-                year, month = nums
-                month_end = _get_month_end(year, month)
-                resolved.append(month_end.strftime('%Y-%m-%d'))
-            else:
-                resolved.append(date_filter)
-        if len(resolved) == 1:
-            single_filters[field_name] = resolved[0]
-        else:
-            multifilters[field_name] = resolved
-
-
-def _expand_params_on_multifilters(
-        params: dict[str, str],
-        multifilters: dict[str, list[str]]
-        ) -> list[dict[str, str]]:
-    """
-    Return lists of request params based on expanded multifilters.
-
-    A Cartesian product will be taked from multifilters and these sets
-    of filters will be appended to the list of static params to form
-    complete param sets for multiple API requests.
-    """
-    params_append_list = [
-        dict(zip(multifilters.keys(), values))
-        for values in itertools.product(*multifilters.values())
-        ]
-    rp_list = []
-    for params_append in params_append_list:
-        req_params = params.copy()
-        req_params |= _filters_to_query_params(params_append)
-        rp_list.append(req_params)
-    return rp_list
-
-
-def _get_month_end(year: int, month: int) -> date:
-    next_month = date(year, month, 28) + timedelta(days=4)
-    last_day = next_month - timedelta(days=next_month.day)
-    return last_day
 
 
 def _filters_to_query_params(
@@ -289,12 +224,213 @@ def _filters_to_query_params(
     qparams = {}
     for field_name, value in single_filters.items():
         try:
-            filter_name = api_attribute_map[field_name]
+            supported_name = api_attribute_map[field_name]
         except KeyError:
+            msg = (
+                f'Field name "{field_name}" is not supported but can be used '
+                'to filter'
+                )
+            warnings.warn(msg, FilterNotSupportedWarning, stacklevel=1)
             qparams[f'filter[{field_name}]'] = value
         else:
-            qparams[f'filter[{filter_name}]'] = value
+            qparams[f'filter[{supported_name}]'] = value
     return qparams
+
+
+def _classify_filter(
+        fgroup: dict[str, dict[str, list[str]]], field_name: str,
+        filter_value: object) -> None:
+    """Classify a filter, normalize and process it as strings."""
+    group_name = 'other'
+    if field_name.endswith('_date'):
+        group_name = 'date'
+    if field_name.endswith('_time'):
+        group_name = 'time'
+
+    vlist: list[str]
+    if (isinstance(filter_value, Iterable)
+        and not isinstance(filter_value, str)):
+        # Multifilter value
+        vlist = []
+        for multifilter_i, single_filter in enumerate(filter_value):
+            vlist.append(
+                _process_single_filter_value(
+                    field_name, single_filter, group_name, multifilter_i))
+    else:
+        # Single filter value
+        vlist = [
+            _process_single_filter_value(
+                field_name, filter_value, group_name, None)]
+
+    if group_name not in fgroup:
+        fgroup[group_name] = {}
+    fgroup[group_name][field_name] = vlist
+
+
+def _process_single_filter_value(
+        field_name: str, val: object, group_name: str,
+        multifilter_i: Union[int, None]
+        ) -> str:
+    """Process non-iterable filter value according to type."""
+    if group_name == 'date':
+        return _process_date_filter(field_name, val, multifilter_i)
+    if group_name == 'time':
+        return _process_time_filter(field_name, val, multifilter_i)
+    else:
+        return str(val)
+
+
+def _process_date_filter(
+        field_name: str, val: object, multifilter_i: Union[int, None]
+        ) -> str:
+    """Raise for datetime value, convert to string."""
+    if isinstance(val, datetime):
+        msg = (
+            f'Not possible to filter date field "{field_name}" by datetime'
+            + _get_mf_index_str(multifilter_i)
+            )
+        raise ValueError(msg)
+    processed_val = str(val)
+    return processed_val
+
+
+def _process_time_filter(
+        field_name: str, val: object, multifilter_i: Union[int, None]
+        ) -> str:
+    """Raise for bad time filter and convert string to UTC timezone."""
+    istime = isinstance(val, datetime)
+    if isinstance(val, date) and not istime:
+        # Value is a simple date object without time information
+        msg = (
+            f'Not possible to filter datetime field "{field_name}" by date'
+            + _get_mf_index_str(multifilter_i)
+            )
+        raise ValueError(msg)
+
+    proc_dt: datetime
+    if istime:
+        proc_dt = val.astimezone(UTC) # type: ignore
+    else:
+        val_str = str(val)
+        tz = UTC if options.utc_time else None
+        for dtparse in reversed(time_formats.values()):
+            try_dt: Union[datetime, None] = None
+            try:
+                try_dt = datetime.strptime(val_str, dtparse).astimezone(tz)
+            except ValueError:
+                pass
+            if isinstance(try_dt, datetime):
+                proc_dt = try_dt
+                break
+        else:
+            msg = (
+                'Not possible to parse datetime in filter field '
+                f'"{field_name}" string "{val_str}"'
+                + _get_mf_index_str(multifilter_i)
+                )
+            raise ValueError(msg)
+        proc_dt = proc_dt.astimezone(UTC)
+    return proc_dt.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def _get_mf_index_str(multifilter_i: Union[int, None]) -> str:
+    """Get multifilter index string for ValueError."""
+    if multifilter_i is None:
+        return ''
+    else:
+        return f', multifilter index {multifilter_i}'
+
+
+def _expand_short_date_filters(
+        fgroup: dict[str, dict[str, list[str]]]
+        ) -> None:
+    """Expand year-only and year-month-only dates as multifilters."""
+    if 'date' not in fgroup:
+        return
+
+    if options.year_filter_months[1] <= options.year_filter_months[0]:
+        msg = (
+            'The option year_filter_months stop (2nd item) is before '
+            'or equal to start (1st item)'
+            )
+        raise ValueError(msg)
+
+    for field_name, date_list in fgroup['date'].items():
+        resolved: list[str] = []
+        for pos, date_filter in enumerate(date_list):
+            nums = [int(num) for num in date_filter.split('-')]
+            if len(nums) > 3: # noqa: PLR2004
+                multifilter_i = pos if len(date_list) > 1 else None
+                msg = (
+                    f'Date in filter field "{field_name}" is not a valid date '
+                    f'or short date, value: "{date_filter}"'
+                    + _get_mf_index_str(multifilter_i)
+                    )
+                raise ValueError(msg)
+
+            # Short date for (financial) year expanded according to
+            # month closings in `options.year_filter_months`
+            if len(nums) == 1:
+                year = nums[0]
+                start_part, stop_part = options.year_filter_months
+                req_year, req_month = year+start_part[0], start_part[1]
+                stop_year, stop_month = year+stop_part[0], stop_part[1]
+
+                month_closings = []
+                while (req_year, req_month) < (stop_year, stop_month):
+                    month_end = _get_month_end(req_year, req_month)
+                    month_closings.append(month_end.strftime('%Y-%m-%d'))
+
+                    req_month += 1
+                    if req_month > 12:  # noqa: PLR2004
+                        req_year, req_month = req_year+1, 1
+                resolved.extend(month_closings)
+
+            # Short date for month closing
+            elif len(nums) == 2:  # noqa: PLR2004
+                year, month = nums
+                month_end = _get_month_end(year, month)
+                resolved.append(month_end.strftime('%Y-%m-%d'))
+            else:
+                resolved.append(date_filter)
+        fgroup['date'][field_name] = resolved
+
+
+def _expand_params_on_multifilters(
+        params: dict[str, str],
+        fgroup: dict[str, dict[str, list[str]]]
+        ) -> list[dict[str, str]]:
+    """
+    Return lists of request params based on expanded multifilters.
+
+    A Cartesian product will be taked from multifilters and these sets
+    of filters will be appended to the list of static params to form
+    complete param sets for multiple API requests.
+    """
+    multifilters: dict[str, list[str]] = {}
+    if 'other' in fgroup:
+        multifilters |= fgroup['other']
+    if 'time' in fgroup:
+        multifilters |= fgroup['time']
+    if 'date' in fgroup:
+        multifilters |= fgroup['date']
+
+    params_append_list = [
+        dict(zip(multifilters.keys(), values))
+        for values in itertools.product(*multifilters.values())
+        ]
+    request_param_list: list[dict[str, str]] = []
+    for params_append in params_append_list:
+        req_params = params.copy()
+        req_params |= _filters_to_query_params(params_append)
+        request_param_list.append(req_params)
+    return request_param_list
+
+
+def _get_month_end(year: int, month: int) -> date:
+    next_month = date(year, month, 28) + timedelta(days=4)
+    last_day = next_month - timedelta(days=next_month.day)
+    return last_day
 
 
 def _get_sort_query_param(sort: Sequence[str]) -> str:
