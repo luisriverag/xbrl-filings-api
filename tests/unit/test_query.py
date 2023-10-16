@@ -8,7 +8,6 @@
 # ruff: noqa: Q000
 
 import os
-import re
 import sqlite3
 from datetime import date, datetime, timedelta, timezone
 
@@ -26,11 +25,15 @@ from xbrl_filings_api import (
     ValidationMessage,
     options,
     query,
-    time_formats,
 )
 from xbrl_filings_api.exceptions import FilterNotSupportedWarning
 
 UTC = timezone.utc
+
+
+def _sql_total_count_is(expected_count, cur):
+    cur.execute("SELECT COUNT(*) FROM Filing")
+    return cur.fetchone()[0] == expected_count
 
 
 class TestFundamentalOperation:
@@ -70,11 +73,11 @@ class TestFundamentalOperation:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE filing_index = ?",
+            "SELECT COUNT(*) FROM Filing WHERE filing_index = ?",
             (asml22_fxo,)
             )
         assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
+        assert _sql_total_count_is(1, cur)
 
     @pytest.mark.paging
     def test_filing_page_iter(s, asml22en_response):
@@ -139,11 +142,11 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE api_id = ?",
+            "SELECT COUNT(*) FROM Filing WHERE api_id = ?",
             (creditsuisse21en_api_id,)
             )
         assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_filing_index(s, asml22en_response):
         """Requested `filing_index` is returned."""
@@ -180,11 +183,11 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE filing_index = ?",
+            "SELECT COUNT(*) FROM Filing WHERE filing_index = ?",
             (asml22_fxo,)
             )
         assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_language(s, filter_language_response):
         """Filter `language` raises an `APIError`."""
@@ -258,12 +261,12 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE last_end_date = ?",
+            "SELECT COUNT(*) FROM Filing WHERE last_end_date = ?",
             (date_str,)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_last_end_date_obj(s, filter_last_end_date_response):
         """Querying `last_end_date` as date returns filing(s)."""
@@ -301,12 +304,12 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE last_end_date = ?",
+            "SELECT COUNT(*) FROM Filing WHERE last_end_date = ?",
             (date_obj.strftime('%Y-%m-%d'),)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_last_end_date_datetime(
             s, filter_last_end_date_dt_response):
@@ -393,12 +396,12 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE error_count = ?",
+            "SELECT COUNT(*) FROM Filing WHERE error_count = ?",
             (1,)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_added_time_str(
             s, filter_added_time_response, monkeypatch):
@@ -443,12 +446,12 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE added_time = ?",
+            "SELECT COUNT(*) FROM Filing WHERE added_time = ?",
             (time_str,)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_added_time_datetime_utc(
             s, filter_added_time_response, monkeypatch):
@@ -494,12 +497,12 @@ class TestParam_filters_single:
         # Even though queried with UTC timezone datetime, date is saved
         # in local timezone because of `options.utc_time` = False
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE added_time = ?",
+            "SELECT COUNT(*) FROM Filing WHERE added_time = ?",
             (dt_obj.astimezone().strftime('%Y-%m-%d %H:%M'),)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_added_time_datetime_eest(
             s, filter_added_time_response, monkeypatch):
@@ -545,12 +548,12 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE added_time = ?",
+            "SELECT COUNT(*) FROM Filing WHERE added_time = ?",
             (dt_obj.astimezone().strftime('%Y-%m-%d %H:%M'),)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_added_time_date(s, filter_added_time_date_response):
         """Querying `added_time` as date raises ValueError."""
@@ -645,12 +648,12 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE package_url LIKE '%?'",
+            "SELECT COUNT(*) FROM Filing WHERE package_url LIKE '%?'",
             (1,)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_package_sha256(s, filter_package_sha256_response):
         """Querying `package_sha256` returns filing(s)."""
@@ -690,12 +693,12 @@ class TestParam_filters_single:
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM Filing "
-            "WHERE package_sha256 = ?",
+            "SELECT COUNT(*) FROM Filing WHERE package_sha256 = ?",
             (filter_sha,)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
+        assert _sql_total_count_is(1, cur)
 
     def test_get_filings_2filters(s, finnish_jan22_response):
         """Filters `country` and `last_end_date` return 2 filings."""
@@ -740,6 +743,7 @@ class TestParam_filters_single:
         fxo_b = cur.fetchone()[0]
         assert fxo_a != fxo_b, 'Filings are unique'
         assert cur.fetchone() is None, 'Two filings inserted'
+        assert _sql_total_count_is(2, cur)
 
     def test_get_filings_2filters_date(s, finnish_jan22_response):
         """Filters `country` and `last_end_date` as date work."""
@@ -784,6 +788,7 @@ class TestParam_filters_single:
         fxo_b = cur.fetchone()[0]
         assert fxo_a != fxo_b, 'Filings are unique'
         assert cur.fetchone() is None, 'Two filings inserted'
+        assert _sql_total_count_is(2, cur)
 
     # filing_page_iter
 
