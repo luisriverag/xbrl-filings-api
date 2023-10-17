@@ -51,9 +51,9 @@ Data attributes:
 | `language`              | str      | Language from `package_url`         |         | *derived*             |
 | `last_end_date`         | date     | Last reported data date             | **X**   | `period_end`          |
 | `reporting_date`        | date     | Financial period end from `package_url` |     | *derived*             |
-| `error_count`           | str      | Count of validation errors          | (**X**) | `error_count`         |
-| `inconsistency_count`   | str      | Count of validation inconsistencies | (**X**) | `inconsistency_count` |
-| `warning_count`         | str      | Count of validation warnings        | (**X**) | `warning_count`       |
+| `error_count`           | int      | Count of validation errors          | (**X**) | `error_count`         |
+| `inconsistency_count`   | int      | Count of validation inconsistencies | (**X**) | `inconsistency_count` |
+| `warning_count`         | int      | Count of validation warnings        | (**X**) | `warning_count`       |
 | `added_time`            | datetime | Time when added to `filings.xbrl.org` | **X** | `date_added  `        |
 | `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | **X** | `processed`      |
 | `entity_api_id`         | str      | Same as `entity.api_id`             |         | Entity resource `id`  |
