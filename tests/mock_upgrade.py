@@ -39,6 +39,7 @@ MOCK_URL_SET_IDS = (
     'oldest3_fi',
     'sort_two_fields',
     'multipage',
+    'api_id_multifilter',
     # 'download',
     )
 
@@ -320,6 +321,21 @@ def _fetch_multipage():
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
+
+
+@_recorder.record(file_path=set_paths['api_id_multifilter'])
+def _fetch_api_id_multifilter():
+    """Get 4 Shell filings for 2021 and 2022."""
+    for api_id in ('1134', '1135', '4496', '4529'):
+        _ = requests.get(
+            url=entry_point_url,
+            params={
+                'page[size]': 4,
+                'filter[id]': api_id
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
 
 
 # @_recorder.record(file_path=set_paths['download'])

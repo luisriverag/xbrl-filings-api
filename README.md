@@ -57,8 +57,6 @@ Data attributes:
 | `added_time`            | datetime | Time when added to `filings.xbrl.org` | **X** | `date_added  `        |
 | `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | **X** | `processed`      |
 | `entity_api_id`         | str      | Same as `entity.api_id`             |         | Entity resource `id`  |
-| `entity`                | Entity   | Reference to `Entity` object        |         | \-                    |
-| `validation_messages`   | set of ValidationMessage | Validation messages |         | \-                    |
 | `json_url`              | str      | xBRL-JSON download URL              | (**X**) | `json_url`            |
 | `package_url`           | str      | ESEF report package download URL    | (**X**) | `package_url`         |
 | `viewer_url`            | str      | Inline XBRL viewer URL              | (**X**) | `viewer_url`          |
@@ -75,6 +73,13 @@ Data attributes:
 > As of October 2023, attributes ending with `_count` and `_url` could
 > not be used for filtering or sorting queries.
 
+Object references:
+
+| Attribute name        | Type                     | Required flag for access  |
+| --------------------- | ------------------------ | ------------------------- |
+| `entity`              | Entity                   | `GET_ENTITY`              |
+| `validation_messages` | set of ValidationMessage | `GET_VALIDATION_MESSAGES` |
+
 
 ### Entity
 
@@ -85,10 +90,15 @@ Data attributes:
 | `api_id`                 | str      | JSON:API identifier                 | Resource `id`       |
 | `identifier`             | str      | Identifier of entity (LEI code)     | `identifier`        |
 | `name`                   | str      | Name                                | `name`              |
-| `filings`                | set of Filing | Filings of the entity in current query | \-                  |
 | `api_entity_filings_url` | str      | JSON:API query for full list of `filings` | `filings.links.related` of relationships |
 | `query_time`             | datetime | Time when query function was called | \-                  |
 | `request_url`            | str      | URL of the API request              | \-                  |
+
+Object references:
+
+| Attribute name | Type          |
+| -------------- | --------------|
+| `filings`      | set of Filing |
 
 
 ### ValidationMessage
@@ -102,7 +112,6 @@ Data attributes:
 | `text`                  | str      | Text of the message                 | `text`              |
 | `code`                  | str      | Code of the breached rule           | `code`              |
 | `filing_api_id`         | str      | Same as `filing.api_id`             | Filing resource `id` |
-| `filing`                | Filing   | Reference to `Filing` object        | `filing`            |
 | `calc_computed_sum`     | float    | Computed sum of calcInconsistency   | *derived*           |
 | `calc_reported_sum`     | float    | Reported sum of calcInconsistency   | *derived*           |
 | `calc_context_id`       | str      | Context ID of calcInconsistency     | *derived*           |
@@ -119,3 +128,9 @@ messages with `code` "xbrl.5.2.5.2:calcInconsistency". The ones
 beginning ``duplicate_`` are available for `code`
 "message:tech_duplicated_facts1" if the values are numeric. They are
 parsed out from the `text` of the message.
+
+Object references:
+
+| Attribute name | Type          |
+| -------------- | --------------|
+| `filing`       | Filing        |

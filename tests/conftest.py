@@ -174,3 +174,11 @@ def multipage_xfail_response():
     with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
         rsps._add_from_file(_get_absolute_path('multipage'))
         yield rsps
+
+
+@pytest.fixture
+def api_id_multifilter_response():
+    """Get 4 Shell filings for 2021 and 2022."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_absolute_path('api_id_multifilter'))
+        yield rsps

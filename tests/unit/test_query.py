@@ -790,11 +790,26 @@ class TestParam_filters_single:
         assert cur.fetchone() is None, 'Two filings inserted'
         assert _sql_total_count_is(2, cur)
 
-    # filing_page_iter
-
 
 class TestParam_filters_multifilters:
     """Test parameter `filters` using multifilters."""
+
+    def test_get_filings_api_id(s, api_id_multifilter_response):
+        """Requested `api_id` is returned."""
+        shell_api_ids = ('1134', '1135', '4496', '4529')
+        fs = query.get_filings(
+            filters={
+                'api_id': shell_api_ids
+                },
+            sort=None,
+            max_size=4,
+            flags=GET_ONLY_FILINGS
+            )
+        received_api_ids = [filing.api_id for filing in fs]
+        for api_id in shell_api_ids:
+            assert api_id in received_api_ids, 'Requested api_id available'
+            received_api_ids.remove(api_id)
+        assert len(received_api_ids) == 0, 'No extra ids received'
 
 
     # to_sqlite
