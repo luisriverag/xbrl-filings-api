@@ -20,7 +20,8 @@ MOCK_URL_DIR_NAME = 'mock_responses'
 mock_dir_path = Path(__file__).parent / MOCK_URL_DIR_NAME
 
 
-def _get_absolute_path(set_id):
+def _get_path(set_id):
+    """Get absolute file path of the mock URL collection file."""
     file_path = mock_dir_path / f'{set_id}.yaml'
     return str(file_path)
 
@@ -29,7 +30,7 @@ def _get_absolute_path(set_id):
 def creditsuisse21en_by_id_response():
     """Credit Suisse 2021 English AFR filing by `api_id`."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('creditsuisse21en_by_id'))
+        rsps._add_from_file(_get_path('creditsuisse21en_by_id'))
         yield rsps
 
 
@@ -37,7 +38,7 @@ def creditsuisse21en_by_id_response():
 def asml22en_response():
     """ASML Holding 2022 English AFR filing."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('asml22en'))
+        rsps._add_from_file(_get_path('asml22en'))
         yield rsps
 
 
@@ -45,7 +46,7 @@ def asml22en_response():
 def asml22en_entities_response():
     """ASML Holding 2022 English AFR filing with entity."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('asml22en_entities'))
+        rsps._add_from_file(_get_path('asml22en_entities'))
         yield rsps
 
 
@@ -53,7 +54,7 @@ def asml22en_entities_response():
 def asml22en_vmessages_response():
     """ASML Holding 2022 English AFR filing with validation messages."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('asml22en_vmessages'))
+        rsps._add_from_file(_get_path('asml22en_vmessages'))
         yield rsps
 
 
@@ -61,7 +62,7 @@ def asml22en_vmessages_response():
 def asml22en_ent_vmsg_response():
     """ASML Holding 2022 English AFR filing with entities and v-messages."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('asml22en_ent_vmsg'))
+        rsps._add_from_file(_get_path('asml22en_ent_vmsg'))
         yield rsps
 
 
@@ -69,7 +70,7 @@ def asml22en_ent_vmsg_response():
 def filter_language_response():
     """Filter by language 'fi'."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('filter_language'))
+        rsps._add_from_file(_get_path('filter_language'))
         yield rsps
 
 
@@ -77,7 +78,7 @@ def filter_language_response():
 def filter_last_end_date_response():
     """Filter by last_end_date '2021-02-28'."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('filter_last_end_date'))
+        rsps._add_from_file(_get_path('filter_last_end_date'))
         yield rsps
 
 
@@ -85,7 +86,7 @@ def filter_last_end_date_response():
 def filter_last_end_date_dt_response():
     """Filter by last_end_date '2021-02-28'."""
     with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
-        rsps._add_from_file(_get_absolute_path('filter_last_end_date'))
+        rsps._add_from_file(_get_path('filter_last_end_date'))
         yield rsps
 
 
@@ -93,7 +94,7 @@ def filter_last_end_date_dt_response():
 def filter_error_count_response():
     """Filter by error_count value 1."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('filter_error_count'))
+        rsps._add_from_file(_get_path('filter_error_count'))
         yield rsps
 
 
@@ -101,7 +102,7 @@ def filter_error_count_response():
 def filter_added_time_response():
     """Filter by added_time value '2021-09-23 00:00:00'."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('filter_added_time'))
+        rsps._add_from_file(_get_path('filter_added_time'))
         yield rsps
 
 
@@ -109,7 +110,7 @@ def filter_added_time_response():
 def filter_added_time_date_response():
     """Filter by added_time value '2021-09-23 00:00:00'."""
     with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
-        rsps._add_from_file(_get_absolute_path('filter_added_time'))
+        rsps._add_from_file(_get_path('filter_added_time'))
         yield rsps
 
 
@@ -117,7 +118,7 @@ def filter_added_time_date_response():
 def filter_package_url_response():
     """Filter by package_url of Kone 2022 filing."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('filter_package_url'))
+        rsps._add_from_file(_get_path('filter_package_url'))
         yield rsps
 
 
@@ -125,7 +126,7 @@ def filter_package_url_response():
 def filter_package_sha256_response():
     """Filter by package_sha256 of Kone 2022 filing."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('filter_package_sha256'))
+        rsps._add_from_file(_get_path('filter_package_sha256'))
         yield rsps
 
 
@@ -133,7 +134,7 @@ def filter_package_sha256_response():
 def finnish_jan22_response():
     """Finnish AFR filings with reporting period ending in Jan 2022."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('finnish_jan22'))
+        rsps._add_from_file(_get_path('finnish_jan22'))
         yield rsps
 
 
@@ -141,7 +142,7 @@ def finnish_jan22_response():
 def oldest3_fi_response():
     """Oldest 3 AFR filings reported in Finland."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('oldest3_fi'))
+        rsps._add_from_file(_get_path('oldest3_fi'))
         yield rsps
 
 
@@ -156,7 +157,7 @@ def sort_two_fields_response():
         ``test_query::Test_get_filings::test_sort_two_fields``.
     """
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('sort_two_fields'))
+        rsps._add_from_file(_get_path('sort_two_fields'))
         yield rsps
 
 
@@ -164,7 +165,7 @@ def sort_two_fields_response():
 def multipage_response():
     """Get 3 pages (2pc) of oldest Swedish filings."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('multipage'))
+        rsps._add_from_file(_get_path('multipage'))
         yield rsps
 
 
@@ -172,7 +173,7 @@ def multipage_response():
 def multipage_xfail_response():
     """Get 3 pages (2pc) of oldest Swedish filings."""
     with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
-        rsps._add_from_file(_get_absolute_path('multipage'))
+        rsps._add_from_file(_get_path('multipage'))
         yield rsps
 
 
@@ -180,5 +181,5 @@ def multipage_xfail_response():
 def api_id_multifilter_response():
     """Get 4 Shell filings for 2021 and 2022."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_absolute_path('api_id_multifilter'))
+        rsps._add_from_file(_get_path('api_id_multifilter'))
         yield rsps
