@@ -16,32 +16,12 @@ The fetched URLs will be saved to YAML files in directory
 #
 # SPDX-License-Identifier: MIT
 
+import argparse
 from pathlib import Path
 from types import FunctionType
 
 import requests
 from responses import _recorder
-
-# Define mock URLs to be downloaded
-MOCK_URL_SET_IDS = (
-    'creditsuisse21en_by_id',
-    'asml22en',
-    'asml22en_entities',
-    'asml22en_vmessages',
-    'asml22en_ent_vmsg',
-    'filter_language',
-    'filter_last_end_date',
-    'filter_error_count',
-    'filter_added_time',
-    'filter_package_url',
-    'filter_package_sha256',
-    'finnish_jan22',
-    'oldest3_fi',
-    'sort_two_fields',
-    'multipage',
-    'api_id_multifilter',
-    # 'download',
-    )
 
 MOCK_URL_DIR_NAME = 'mock_responses'
 entry_point_url = 'https://filings.xbrl.org/api/filings'
@@ -53,20 +33,131 @@ JSON_API_HEADERS = {
 REQUEST_TIMEOUT = 30.0
 
 
-def _get_absolute_path(set_id):
-    file_path = mock_dir_path / f'{set_id}.yaml'
+def main():
+    """Run the command line interface."""
+    parser = argparse.ArgumentParser(
+        description=(
+            'Script for updating mock URL collections for tests in '
+            f'folder "{MOCK_URL_DIR_NAME}".'
+            ),
+        epilog=(
+            'If no flags are given, default behavior is to upgrade all '
+            'mock URL collections.'
+            )
+        )
+
+    parser.add_argument(
+        '-l', '--list', action='store_true',
+        help='list all mocks defined in this module'
+        )
+    parser.add_argument(
+        '-n', '--new', action='store_true',
+        help='upgrade only new, unfetched mock URL collections'
+        )
+    clargs = parser.parse_args()
+
+    if clargs.list:
+        _list_mock_urls()
+    elif clargs.new:
+        _upgrade_unfetched_mock_urls()
+    else:
+        _upgrade_all_mock_urls()
+
+
+def _upgrade_all_mock_urls():
+    # Ensure directory exists
+    mock_dir_path.mkdir(parents=True, exist_ok=True)
+
+    # Run recorder functions
+    func_dict = _get_fetch_functions()
+    print(f'\nUpgrading all {len(func_dict)} mock URL collections\n')
+    for name, func in func_dict.items():
+        print(f'> {name}')
+        func()
+
+    _delete_removed_mocks(func_dict)
+
+    print(
+        '\nAll mocks upgraded\n\n'
+        f'Folder path: {mock_dir_path}'
+        )
+
+
+def _upgrade_unfetched_mock_urls():
+    # Ensure directory exists
+    mock_dir_path.mkdir(parents=True, exist_ok=True)
+
+    # Run recorder functions for unfetched collections
+    func_dict = _get_fetch_functions()
+    new_mocks = _get_unfetched_mocks(func_dict)
+    print(f'\nUpgrading {len(new_mocks)} unfetched mock URL collection(s)\n')
+    for name in new_mocks:
+        print(f'> {name}')
+        func_obj = func_dict[name]
+        func_obj()
+
+    _delete_removed_mocks(func_dict)
+
+    print(
+        f'\nFetched {len(new_mocks)} new mock(s) of total {len(func_dict)}\n\n'
+        f'Folder path: {mock_dir_path}'
+        )
+
+
+def _list_mock_urls():
+    func_dict = _get_fetch_functions()
+    print(f'\nFound {len(func_dict)} mock URL collections:\n')
+    new_mocks = _get_unfetched_mocks(func_dict)
+    for mock_name in func_dict.keys():
+        print(mock_name, end='')
+        if mock_name in new_mocks:
+            print(' (unfetched)')
+        else:
+            print()
+
+
+def _delete_removed_mocks(func_dict):
+    mock_names = set(func_dict.keys())
+    deleted_files = []
+    for filepath in mock_dir_path.iterdir():
+        if filepath.stem not in mock_names:
+            filepath.unlink()
+            deleted_files.append(filepath.name)
+    if deleted_files:
+        print('\nDeleted removed mocks in following files:\n')
+        for filename in deleted_files:
+            print(filename)
+
+
+def _get_fetch_functions():
+    """Get a dictionary of mock_name: function."""
+    func_dict = {}
+    gitems = globals().copy()
+    for name, val in gitems.items():
+        if name.startswith('_fetch_') and isinstance(val, FunctionType):
+            func_dict[name[7:]] = val
+    return func_dict
+
+
+def _get_unfetched_mocks(func_dict):
+    new_mocks = []
+    for mock_name in func_dict.keys():
+        mock_path = mock_dir_path / f'{mock_name}.yaml'
+        if not mock_path.is_file():
+            new_mocks.append(mock_name)
+    return new_mocks
+
+
+def _get_path(mock_name):
+    """Get absolute file path of the mock URL collection file."""
+    file_path = mock_dir_path / f'{mock_name}.yaml'
     return str(file_path)
 
 
-set_paths = {set_id: _get_absolute_path(set_id) for set_id in MOCK_URL_SET_IDS}
+###################### DEFINE MOCK URL COLLECTIONS #####################
 
 
-def _ensure_dir_exists():
-    some_path = next(iter(set_paths.values()))
-    Path(some_path).parent.mkdir(parents=True, exist_ok=True)
-
-
-@_recorder.record(file_path=set_paths['creditsuisse21en_by_id'])
+@_recorder.record(file_path=_get_path('creditsuisse21en_by_id'))
 def _fetch_creditsuisse21en_by_id():
     """Credit Suisse 2021 English AFR filing by `api_id`."""
     _ = requests.get(
@@ -81,7 +172,7 @@ def _fetch_creditsuisse21en_by_id():
         )
 
 
-@_recorder.record(file_path=set_paths['asml22en'])
+@_recorder.record(file_path=_get_path('asml22en'))
 def _fetch_asml22en():
     """ASML Holding 2022 English AFR filing."""
     _ = requests.get(
@@ -96,7 +187,7 @@ def _fetch_asml22en():
         )
 
 
-@_recorder.record(file_path=set_paths['asml22en_entities'])
+@_recorder.record(file_path=_get_path('asml22en_entities'))
 def _fetch_asml22en_entities():
     """ASML Holding 2022 English AFR filing with entity."""
     _ = requests.get(
@@ -112,7 +203,7 @@ def _fetch_asml22en_entities():
         )
 
 
-@_recorder.record(file_path=set_paths['asml22en_vmessages'])
+@_recorder.record(file_path=_get_path('asml22en_vmessages'))
 def _fetch_asml22en_vmessages():
     """ASML Holding 2022 English AFR filing with validation messages."""
     _ = requests.get(
@@ -128,7 +219,7 @@ def _fetch_asml22en_vmessages():
         )
 
 
-@_recorder.record(file_path=set_paths['asml22en_ent_vmsg'])
+@_recorder.record(file_path=_get_path('asml22en_ent_vmsg'))
 def _fetch_asml22en_ent_vmsg():
     """ASML Holding 2022 English AFR filing with entities and v-messages."""
     _ = requests.get(
@@ -144,7 +235,7 @@ def _fetch_asml22en_ent_vmsg():
         )
 
 
-@_recorder.record(file_path=set_paths['filter_language'])
+@_recorder.record(file_path=_get_path('filter_language'))
 def _fetch_filter_language():
     """Filter by language 'fi'."""
     _ = requests.get(
@@ -158,7 +249,7 @@ def _fetch_filter_language():
         )
 
 
-@_recorder.record(file_path=set_paths['filter_last_end_date'])
+@_recorder.record(file_path=_get_path('filter_last_end_date'))
 def _fetch_filter_last_end_date():
     """Filter by last_end_date '2021-02-28'."""
     _ = requests.get(
@@ -172,7 +263,7 @@ def _fetch_filter_last_end_date():
         )
 
 
-@_recorder.record(file_path=set_paths['filter_error_count'])
+@_recorder.record(file_path=_get_path('filter_error_count'))
 def _fetch_filter_error_count():
     """Filter by error_count value 1."""
     _ = requests.get(
@@ -186,7 +277,7 @@ def _fetch_filter_error_count():
         )
 
 
-@_recorder.record(file_path=set_paths['filter_added_time'])
+@_recorder.record(file_path=_get_path('filter_added_time'))
 def _fetch_filter_added_time():
     """Filter by added_time value '2021-09-23 00:00:00'."""
     _ = requests.get(
@@ -200,7 +291,7 @@ def _fetch_filter_added_time():
         )
 
 
-@_recorder.record(file_path=set_paths['filter_package_url'])
+@_recorder.record(file_path=_get_path('filter_package_url'))
 def _fetch_filter_package_url():
     """Filter by package_url of Kone 2022 filing."""
     filter_url = (
@@ -218,7 +309,7 @@ def _fetch_filter_package_url():
         )
 
 
-@_recorder.record(file_path=set_paths['filter_package_sha256'])
+@_recorder.record(file_path=_get_path('filter_package_sha256'))
 def _fetch_filter_package_sha256():
     """Filter by package_sha256 of Kone 2022 filing."""
     filter_sha = (
@@ -234,7 +325,7 @@ def _fetch_filter_package_sha256():
         )
 
 
-@_recorder.record(file_path=set_paths['finnish_jan22'])
+@_recorder.record(file_path=_get_path('finnish_jan22'))
 def _fetch_finnish_jan22():
     """Finnish AFR filings with reporting period ending in Jan 2022."""
     _ = requests.get(
@@ -249,7 +340,7 @@ def _fetch_finnish_jan22():
         )
 
 
-@_recorder.record(file_path=set_paths['oldest3_fi'])
+@_recorder.record(file_path=_get_path('oldest3_fi'))
 def _fetch_oldest3_fi():
     """Oldest 3 AFR filings reported in Finland."""
     _ = requests.get(
@@ -264,7 +355,7 @@ def _fetch_oldest3_fi():
         )
 
 
-@_recorder.record(file_path=set_paths['sort_two_fields'])
+@_recorder.record(file_path=_get_path('sort_two_fields'))
 def _fetch_sort_two_fields():
     """
     Sort Finnish filings by `last_end_date` and `added_time`.
@@ -286,7 +377,7 @@ def _fetch_sort_two_fields():
         )
 
 
-@_recorder.record(file_path=set_paths['multipage'])
+@_recorder.record(file_path=_get_path('multipage'))
 def _fetch_multipage():
     """Get 3 pages (2pc) of oldest Swedish filings."""
     _ = requests.get(
@@ -323,7 +414,7 @@ def _fetch_multipage():
         )
 
 
-@_recorder.record(file_path=set_paths['api_id_multifilter'])
+@_recorder.record(file_path=_get_path('api_id_multifilter'))
 def _fetch_api_id_multifilter():
     """Get 4 Shell filings for 2021 and 2022."""
     for api_id in ('1134', '1135', '4496', '4529'):
@@ -338,40 +429,8 @@ def _fetch_api_id_multifilter():
             )
 
 
-# @_recorder.record(file_path=set_paths['download'])
-# def _fetch_download():
-#     """Record mock URLs to file."""
-#     _ = requests.get(
-#         url="",
-#         stream=True,
-#         timeout=REQUEST_TIMEOUT
-#         )
-
-
-def _delete_removed_mocks():
-    some_path = next(iter(set_paths.values()))
-    for filepath in Path(some_path).parent.iterdir():
-        if filepath.stem not in MOCK_URL_SET_IDS:
-            filepath.unlink()
-            print(f'Deleted removed mock in file "{filepath.name}"')
-
-
 if __name__ == '__main__':
-    _ensure_dir_exists()
-
-    # Run recorder functions
-    gitems = globals().copy()
-    for name, val in gitems.items():
-        if name.startswith('_fetch_') and isinstance(val, FunctionType):
-            val()
-
-    _delete_removed_mocks()
-
-    print(
-        'Mock upgrade finished\n'
-        f'Folder path: {mock_dir_path}'
-        f'\n  - ' + '\n  - '.join(MOCK_URL_SET_IDS)
-        )
+    main()
 else:
     msg = 'This module must be run as a script.'
     raise NotImplementedError(msg)
