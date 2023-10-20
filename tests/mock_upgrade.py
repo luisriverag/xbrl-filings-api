@@ -417,11 +417,11 @@ def _fetch_multipage():
 @_recorder.record(file_path=_get_path('api_id_multifilter'))
 def _fetch_api_id_multifilter():
     """Get 4 Shell filings for 2021 and 2022."""
-    for api_id in ('1134', '1135', '4496', '4529'):
+    for id_i, api_id in enumerate(('1134', '1135', '4496', '4529')):
         _ = requests.get(
             url=entry_point_url,
             params={
-                'page[size]': 4,
+                'page[size]': 4 - id_i,
                 'filter[id]': api_id
                 },
             headers=JSON_API_HEADERS,

@@ -83,7 +83,7 @@ def generate_pages(
     elif max_size > 0:
         if max_size < page_size:
             page_size = max_size
-    params['page[size]'] = str(page_size)
+    params['page[size]'] = page_size
 
     include_flags = []
     if GET_ONLY_FILINGS not in flags:
@@ -100,11 +100,12 @@ def generate_pages(
         params.update(add_api_params)
 
     params_list = _get_params_list_on_filters(params, filters)
+    params_list_len = len(params_list)
 
     query_time = _get_query_time()
 
     received_size = 0
-    for query_params in params_list:
+    for qparam_i, query_params in enumerate(params_list):
         next_url: Union[str, None] = options.entry_point_url
         req_params: Union[dict[str, str], None] = query_params
         while next_url:
@@ -134,6 +135,10 @@ def generate_pages(
             # Limit of `max_size` is exhausted before full multiquery/
             # short date query
             break
+
+        # Lower requested count of filings for further requests
+        for update_i in range(qparam_i + 1, params_list_len):
+            params_list[update_i]['page[size]'] -= filing_count
 
 
 def _remove_excess_resources(page: FilingsPage, del_count: int):
