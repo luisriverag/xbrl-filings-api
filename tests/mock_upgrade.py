@@ -429,6 +429,53 @@ def _fetch_api_id_multifilter():
             )
 
 
+@_recorder.record(file_path=_get_path('country_multifilter'))
+def _fetch_country_multifilter():
+    """Get three filings for the first country `FI`."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 3,
+            'filter[country]': 'FI'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
+@_recorder.record(file_path=_get_path('filing_index_multifilter'))
+def _fetch_filing_index_multifilter():
+    """Get three filings for the first country `FI`."""
+    fxo_codes = (
+        '21380068P1DRHMJ8KU70-2021-12-31-ESEF-GB-0',
+        '21380068P1DRHMJ8KU70-2021-12-31-ESEF-NL-0'
+        )
+    for fxo_i, fxo in enumerate(fxo_codes):
+        _ = requests.get(
+            url=entry_point_url,
+            params={
+                'page[size]': 2 - fxo_i,
+                'filter[fxo_id]': fxo # filing_index
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+
+
+@_recorder.record(file_path=_get_path('reporting_date_multifilter'))
+def _fetch_reporting_date_multifilter():
+    """Return an error for filtering with `reporting_date`."""
+    _ = requests.get(
+        url=entry_point_url,
+        params={
+            'page[size]': 3,
+            'filter[reporting_date]': '2020-12-31'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+
+
 if __name__ == '__main__':
     main()
 else:

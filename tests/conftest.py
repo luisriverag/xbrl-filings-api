@@ -183,3 +183,27 @@ def api_id_multifilter_response():
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('api_id_multifilter'))
         yield rsps
+
+
+@pytest.fixture
+def country_multifilter_response():
+    """Get three filings for the first country `FI`."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('country_multifilter'))
+        yield rsps
+
+
+@pytest.fixture
+def filing_index_multifilter_response():
+    """Get two filings based on `filing_index`."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('filing_index_multifilter'))
+        yield rsps
+
+
+@pytest.fixture
+def reporting_date_multifilter_response():
+    """Return an error for filtering with `reporting_date`."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('reporting_date_multifilter'))
+        yield rsps

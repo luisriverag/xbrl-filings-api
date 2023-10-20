@@ -164,7 +164,8 @@ class TestParam_filters_single:
         assert asml22.filing_index == asml22_fxo
 
     @pytest.mark.sqlite
-    def test_to_sqlite_filing_index(s, asml22en_response, tmp_path, monkeypatch):
+    def test_to_sqlite_filing_index(
+            s, asml22en_response, tmp_path, monkeypatch):
         """Requested `filing_index` is inserted into a database."""
         monkeypatch.setattr(options, 'views', None)
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
@@ -716,7 +717,8 @@ class TestParam_filters_single:
         assert len(fxo_set) == 2, 'Filings are unique'
 
     @pytest.mark.sqlite
-    def test_to_sqlite_2filters(s, finnish_jan22_response, tmp_path, monkeypatch):
+    def test_to_sqlite_2filters(
+        s, finnish_jan22_response, tmp_path, monkeypatch):
         """Filters `country` and `last_end_date` insert 2 filings to db."""
         monkeypatch.setattr(options, 'views', None)
         db_path = tmp_path / 'test_to_sqlite_2filters.db'
@@ -761,7 +763,8 @@ class TestParam_filters_single:
         assert len(fxo_set) == 2, 'Filings are unique'
 
     @pytest.mark.sqlite
-    def test_to_sqlite_2filters_date(s, finnish_jan22_response, tmp_path, monkeypatch):
+    def test_to_sqlite_2filters_date(
+        s, finnish_jan22_response, tmp_path, monkeypatch):
         """Filters `country` and `last_end_date` as date insert to db."""
         monkeypatch.setattr(options, 'views', None)
         db_path = tmp_path / 'test_to_sqlite_2filters_date.db'
@@ -795,8 +798,8 @@ class TestParam_filters_multifilters:
     """Test parameter `filters` using multifilters."""
 
     def test_get_filings_api_id(s, api_id_multifilter_response):
-        """Requested `api_id` is returned."""
-        shell_api_ids = ('1134', '1135', '4496', '4529')
+        """Requested `api_id` filings are returned."""
+        shell_api_ids = '1134', '1135', '4496', '4529'
         fs = query.get_filings(
             filters={
                 'api_id': shell_api_ids
@@ -805,11 +808,57 @@ class TestParam_filters_multifilters:
             max_size=4,
             flags=GET_ONLY_FILINGS
             )
-        received_api_ids = [filing.api_id for filing in fs]
-        for api_id in shell_api_ids:
-            assert api_id in received_api_ids, 'Requested api_id available'
-            received_api_ids.remove(api_id)
-        assert len(received_api_ids) == 0, 'No extra ids received'
+        received_api_ids = {filing.api_id for filing in fs}
+        assert received_api_ids == set(shell_api_ids)
+
+    def test_get_filings_country_only_first(s, country_multifilter_response):
+        """Requested `country` filings are returned."""
+        country_codes = ['FI', 'SE', 'NO']
+        fs = query.get_filings(
+            filters={
+                'country': country_codes
+                },
+            sort=None,
+            max_size=3,
+            flags=GET_ONLY_FILINGS
+            )
+        assert len(fs) == 3, 'Requested number of filings returned'
+        received_countries = {filing.country for filing in fs}
+        assert 'FI' in received_countries, 'Only FI available, match count'
+        assert 'SE' not in received_countries, 'Too many FI filings'
+        assert 'NO' not in received_countries, 'Too many FI filings'
+
+    def test_get_filings_filing_index(
+            s, filing_index_multifilter_response):
+        """Requested `filing_index` filings are returned."""
+        filing_index_codes = (
+            '21380068P1DRHMJ8KU70-2021-12-31-ESEF-GB-0',
+            '21380068P1DRHMJ8KU70-2021-12-31-ESEF-NL-0'
+            )
+        fs = query.get_filings(
+            filters={
+                'filing_index': filing_index_codes
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        received_countries = {filing.filing_index for filing in fs}
+        assert received_countries == set(filing_index_codes)
+
+    def test_get_filings_reporting_date(s, reporting_date_multifilter_response):
+        """Requested `reporting_date` filings are returned."""
+        dates = '2020-12-31', '2021-12-31', '2022-12-31'
+        with pytest.raises(APIError):
+            with pytest.warns(FilterNotSupportedWarning):
+                _ = query.get_filings(
+                    filters={
+                        'reporting_date': dates
+                        },
+                    sort=None,
+                    max_size=3,
+                    flags=GET_ONLY_FILINGS
+                    )
 
 
     # to_sqlite
