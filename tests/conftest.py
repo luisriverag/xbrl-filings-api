@@ -115,6 +115,14 @@ def filter_added_time_date_response():
 
 
 @pytest.fixture
+def filter_entity_api_id_response():
+    """Return error when filtering with `entity_api_id`."""
+    with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+        rsps._add_from_file(_get_path('filter_entity_api_id'))
+        yield rsps
+
+
+@pytest.fixture
 def filter_package_url_response():
     """Filter by package_url of Kone 2022 filing."""
     with responses.RequestsMock() as rsps:
@@ -206,4 +214,12 @@ def reporting_date_multifilter_response():
     """Return an error for filtering with `reporting_date`."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('reporting_date_multifilter'))
+        yield rsps
+
+
+@pytest.fixture
+def inconsistency_count_multifilter_response():
+    """Return an error for filtering with `inconsistency_count`."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('inconsistency_count_multifilter'))
         yield rsps

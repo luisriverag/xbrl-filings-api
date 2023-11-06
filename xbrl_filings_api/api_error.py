@@ -25,7 +25,7 @@ class APIError(FilingsAPIError, APIObject):
     status_text : str
     """
 
-    _str_attrs = ('title', 'detail', 'code')
+    _str_attrs = 'title', 'detail', 'code'
 
     def __init__(
             self, json_frag: dict, api_request: _APIRequest,
@@ -70,4 +70,4 @@ class APIError(FilingsAPIError, APIObject):
         """Return string representation of the error."""
         ats = [f'{att}={getattr(self, att)!r}' for att in self._str_attrs]
         ats_txt = ', '.join(ats)
-        return f'{self.__class__.__qualname__}({ats_txt})'
+        return f'{type(self).__qualname__}({ats_txt})'

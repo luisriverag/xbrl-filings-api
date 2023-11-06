@@ -192,7 +192,7 @@ class TestParam_filters_single:
 
     def test_get_filings_language(s, filter_language_response):
         """Filter `language` raises an `APIError`."""
-        with pytest.raises(APIError) as exc_info:
+        with pytest.raises(APIError, match='Bad filter value'):
             with pytest.warns(FilterNotSupportedWarning):
                 _ = query.get_filings(
                     filters={
@@ -202,7 +202,6 @@ class TestParam_filters_single:
                     max_size=1,
                     flags=GET_ONLY_FILINGS
                     )
-        assert 'Bad filter value' in exc_info.value.detail
 
     @pytest.mark.sqlite
     def test_to_sqlite_language(
@@ -210,7 +209,7 @@ class TestParam_filters_single:
         """Filter `language` raises an `APIError`."""
         monkeypatch.setattr(options, 'views', None)
         db_path = tmp_path / 'test_to_sqlite_language.db'
-        with pytest.raises(APIError) as exc_info:
+        with pytest.raises(APIError, match='Bad filter value'):
             with pytest.warns(FilterNotSupportedWarning):
                 query.to_sqlite(
                     path=db_path,
@@ -222,7 +221,6 @@ class TestParam_filters_single:
                     max_size=1,
                     flags=GET_ONLY_FILINGS
                     )
-        assert 'Bad filter value' in exc_info.value.detail
         assert not os.access(db_path, os.F_OK), 'Database file is not created'
 
     def test_get_filings_last_end_date_str(s, filter_last_end_date_response):
@@ -595,6 +593,19 @@ class TestParam_filters_single:
                 )
         assert not os.access(db_path, os.F_OK), 'Database file is not created'
 
+    def test_get_filings_entity_api_id(s, filter_entity_api_id_response):
+        """Querying `entity_api_id` raises APIError."""
+        ent_id = 1/0
+        with pytest.raises(APIError, match=r'Bad filter value'):
+            _ = query.get_filings(
+                filters={
+                    'entity_api_id': ent_id
+                    },
+                sort=None,
+                max_size=1,
+                flags=GET_ONLY_FILINGS
+                )
+
     @pytest.mark.xfail(
         reason=(
             'Filtering by "_url" attributes is not supported by the '
@@ -847,9 +858,9 @@ class TestParam_filters_multifilters:
         assert received_countries == set(filing_index_codes)
 
     def test_get_filings_reporting_date(s, reporting_date_multifilter_response):
-        """Requested `reporting_date` filings are returned."""
+        """APIError raised for filtering with `reporting_date`."""
         dates = '2020-12-31', '2021-12-31', '2022-12-31'
-        with pytest.raises(APIError):
+        with pytest.raises(APIError, match='Bad filter value'):
             with pytest.warns(FilterNotSupportedWarning):
                 _ = query.get_filings(
                     filters={
@@ -859,6 +870,27 @@ class TestParam_filters_multifilters:
                     max_size=3,
                     flags=GET_ONLY_FILINGS
                     )
+
+    @pytest.mark.xfail(
+        reason=(
+            'Filtering by "_count" attributes is not supported by the '
+            'API.'
+            ),
+        raises=APIError)
+    def test_get_filings_inconsistency_count(
+            s, inconsistency_count_multifilter_response):
+        """Requested `inconsistency_count` filings are returned."""
+        ic_counts = 1, 2
+        fs = query.get_filings(
+            filters={
+                'inconsistency_count': ic_counts
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        received_counts = tuple(filing.inconsistency_count for filing in fs)
+        assert received_counts == 1, 1
 
 
     # to_sqlite
