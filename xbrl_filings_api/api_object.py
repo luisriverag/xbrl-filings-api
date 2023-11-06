@@ -27,21 +27,13 @@ class APIObject:
             self, json_frag: dict, api_request: _APIRequest, *,
             do_not_track: bool = False
             ) -> None:
+        """Initialize `APIObject`."""
         self._json = _JSONTree(
             class_name=self.__class__.__qualname__,
             json_frag=json_frag,
             do_not_track=do_not_track
             )
-        """
-        Timezone-aware datetime when the object was fetched from the
-        API.
-
-        This time is equivalent for all objects created in a single API
-        function call even if the response contains multiple response
-        pages.
-
-        The timezone is chosen according to option `utc_time`.
-        """
+        """Object for traversing and parsing API response."""
         self.query_time = api_request.query_time
         """
         Time when the query function was called.

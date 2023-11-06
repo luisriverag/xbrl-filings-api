@@ -53,7 +53,7 @@ class APIResource(APIObject):
         if json_frag == Ellipsis:
             is_prototype = True
             json_frag = {}
-            api_request = _APIRequest('', datetime.now(tz=UTC))
+            api_request = _APIRequest('', datetime.now(UTC))
         if api_request is None:
             msg = 'Parameter api_request not given'
             raise ValueError(msg)

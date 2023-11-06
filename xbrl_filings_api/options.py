@@ -15,9 +15,6 @@ time_accuracy : {'day', 'min', 'sec', 'max'}, default 'min'
     The smallest time unit to be shown when converting times to
     strings. This includes database values. Option ``day`` shows
     only dates and ``max`` fractional seconds.
-utc_time : bool, default False
-    Use UTC timezone for all dates. Otherwise use local
-    timezone.
 year_filter_months : YearFilterMonthsType, default ((0, 8), (1, 8))
     Range of months to request when `filters` has a date
     field with only year defined. First int of inner tuples is a
@@ -48,10 +45,6 @@ max_page_size: int = 200
 time_accuracy: str = 'min'
 """String conversion of datetimes which must be a key of
 `time_formats.time_formats`.
-"""
-
-utc_time: bool = False
-"""Use UTC time zone instead of local time zone in datetimes of objects.
 """
 
 year_filter_months: YearFilterMonthsType = ((0, 8), (1, 8))

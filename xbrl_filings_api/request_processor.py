@@ -102,7 +102,7 @@ def generate_pages(
     params_list = _get_params_list_on_filters(params, filters)
     params_list_len = len(params_list)
 
-    query_time = _get_query_time()
+    query_time = datetime.now(UTC)
 
     received_size = 0
     for qparam_i, query_params in enumerate(params_list):
@@ -317,16 +317,14 @@ def _process_time_filter(
         proc_dt = val.astimezone(UTC) # type: ignore
     else:
         val_str = str(val)
-        now = datetime.now().astimezone()
-        tz = UTC if options.utc_time else now.tzinfo
         for dtparse in reversed(time_formats.values()):
             try_dt: Union[datetime, None] = None
             try:
-                try_dt = datetime.strptime(val_str, dtparse)
+                try_dt = datetime.strptime(val_str, dtparse)  # noqa: DTZ007
             except ValueError:
                 pass
             if isinstance(try_dt, datetime):
-                proc_dt = try_dt.astimezone(tz)
+                proc_dt = try_dt
                 break
         else:
             msg = (
@@ -335,7 +333,6 @@ def _process_time_filter(
                 + _get_mf_index_str(multifilter_i)
                 )
             raise ValueError(msg)
-        proc_dt = proc_dt.astimezone(UTC)
     return proc_dt.strftime('%Y-%m-%d %H:%M:%S')
 
 
@@ -454,12 +451,6 @@ def _get_sort_query_param(sort: Sequence[str]) -> str:
             qparam += '-'
         qparam += field_name
     return qparam
-
-
-def _get_query_time() -> datetime:
-    tz = UTC if options.utc_time else None
-    query_time = datetime.now(tz)
-    return query_time
 
 
 def _retrieve_page_json(

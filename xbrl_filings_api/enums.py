@@ -15,9 +15,10 @@ class _ParseType(Enum):
 
     DATETIME = auto()
     """
-    Parsed into `datetime.datetime`.
+    Parsed into timezone-aware `datetime.datetime`.
 
-    The time zone will be determined according to `options.utc_time`.
+    Timezone will be the one specified in the string or UTC, if
+    unspecified.
     """
 
     URL = auto()

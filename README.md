@@ -36,6 +36,9 @@ pip install xbrl-filings-api
 
 ## Data objects
 
+This library expects the API returning datetimes in UTC, if no timezone
+is specified (situation as of 6 Nov 2023).
+
 ### Filing
 
 Access to `entity` requires flag `GET_ENTITY` and to

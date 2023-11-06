@@ -193,12 +193,7 @@ class Filing(APIResource):
         filings.xbrl.org index.
 
         Has an arbitrary delay after the issuer actually filed the
-        report at the OAM. This library expects the dates to be returned
-        in UTC, even though they do not have a timezone specifier and no
-        documentation exists for its content.
-
-        The timezone of the datetime is chosen according to option
-        `utc_time`.
+        report at the OAM.
 
         The original field name in the API is ``date_added``.
         """
@@ -208,9 +203,6 @@ class Filing(APIResource):
         """
         Timezone-aware datetime when the filing was processed for the
         filings.xbrl.org index.
-
-        The timezone of the datetime is chosen according to option
-        `utc_time`.
 
         The original field name in the API is ``processed``.
         """

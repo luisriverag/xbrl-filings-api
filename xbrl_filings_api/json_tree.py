@@ -7,7 +7,7 @@
 import logging
 import time
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone, tzinfo
+from datetime import date, datetime, timezone
 from typing import Any, ClassVar, Optional, Union
 from urllib.parse import urljoin
 
@@ -40,7 +40,7 @@ class KeyPathRetrieveCounts:
 
 class _JSONTree:
     """
-    Reader for deeply nested deserialized JSON trees.
+    Object for traversing and parsing API response.
 
     When the required keys have been read, `close()` method must be
     called in the init methods of leaf subclasses of `APIObject`. This
@@ -109,13 +109,12 @@ class _JSONTree:
             self, key_path: str, parse_type: Optional[_ParseType] = None
             ) -> Any:
         """
-        Read a dictionary key from a deeply nested dictionary and parse
-        values to Python literals.
+        Read JSON data from dict and parse values to Python literals.
 
         Value `_ParseType.DATETIME` of `parse_type` parses ISO style UTC
         strings such as '2023-05-09 10:51:50.382633'. The return value
-        is always locale-aware and timezone is dependent on
-        `options.utc_time`.
+        is locale-aware and if the string does not specify timezone, it
+        will be on UTC.
 
         Value `_ParseType.DATE` parses naive dates and `_ParseType.URL`
         resolves relative URLs based on `options.entry_point_url`.
@@ -231,14 +230,8 @@ class _JSONTree:
                 return None
             isnaive = not isinstance(parsed_dt.tzinfo, timezone)
             if isnaive:
-                parsed_dt = parsed_dt.astimezone(UTC)
+                parsed_dt = parsed_dt.replace(tzinfo=UTC)
 
-            if not options.utc_time:
-                if isnaive:
-                    # Use the time zone of current moment (even if past
-                    # date had different dst)
-                    now = datetime.now().astimezone()
-                    parsed_dt = parsed_dt.astimezone(now.tzinfo)
             return parsed_dt
 
         elif parse_type == _ParseType.DATE:
