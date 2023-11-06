@@ -45,7 +45,9 @@ class Filing(APIResource):
     inconsistency_count : str or None
     warning_count : str or None
     added_time : datetime or None
+    added_time_str : str or None
     processed_time : datetime or None
+    processed_time_str : str or None
     entity_api_id : str or None
     entity : Entity or None
     validation_messages : set of ValidationMessage or None
@@ -198,10 +200,31 @@ class Filing(APIResource):
         The original field name in the API is ``date_added``.
         """
 
+        self.added_time_str: Union[str, None] = self._json.get(
+            self.ADDED_TIME)
+        """
+        Original timestamp when the filing was added to filings.xbrl.org
+        index.
+
+        Has an arbitrary delay after the issuer actually filed the
+        report at the OAM.
+
+        The original field name in the API is ``date_added``.
+        """
+
         self.processed_time: Union[datetime, None] = self._json.get(
             self.PROCESSED_TIME, _ParseType.DATETIME)
         """
         Timezone-aware datetime when the filing was processed for the
+        filings.xbrl.org index.
+
+        The original field name in the API is ``processed``.
+        """
+
+        self.processed_time_str: Union[str, None] = self._json.get(
+            self.PROCESSED_TIME)
+        """
+        Original timestamp when the filing was processed for the
         filings.xbrl.org index.
 
         The original field name in the API is ``processed``.

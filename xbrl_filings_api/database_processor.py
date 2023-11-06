@@ -223,8 +223,13 @@ def _insert_data(
         records: list[tuple[ResourceLiteralType, ...]] = []
         logger.debug(f'Got {len(data_objs[table_name])} of {table_name}')
         for item in data_objs[table_name]:
-            col_data = tuple(getattr(item, col) for col in cols)
-            records.append(col_data)
+            col_data = []
+            for col in cols:
+                if col.endswith('_time') and col != 'query_time':
+                    col_data.append(getattr(item, f'{col}_str'))
+                else:
+                    col_data.append(getattr(item, col))
+            records.append(tuple(col_data))
         colsql = '\n  ' + ',\n  '.join(cols) + '\n  '
         phs = ', '.join(['?'] * len(cols))
         _exec(

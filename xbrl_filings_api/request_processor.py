@@ -333,7 +333,10 @@ def _process_time_filter(
                 + _get_mf_index_str(multifilter_i)
                 )
             raise ValueError(msg)
-    return proc_dt.strftime('%Y-%m-%d %H:%M:%S')
+    fmt = '%Y-%m-%d %H:%M:%S'
+    if proc_dt.microsecond > 0:
+        fmt += '.%f'
+    return proc_dt.strftime(fmt)
 
 
 def _get_mf_index_str(multifilter_i: Union[int, None]) -> str:

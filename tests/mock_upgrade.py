@@ -236,6 +236,21 @@ def _fetch_filter_added_time():
 _addmock('filter_added_time', lax_fixture=True)
 
 
+@_recorder.record(file_path=_get_path('filter_added_time_2'))
+def _fetch_filter_added_time_2():
+    """Filter by added_time value '2023-05-09 13:27:02.676029'."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'filter[date_added]': '2023-05-09 13:27:02.676029' # added_time
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('filter_added_time_2', lax_fixture=True)
+
+
 @_recorder.record(file_path=_get_path('filter_entity_api_id'))
 def _fetch_filter_entity_api_id():
     """Return error when filtering with `entity_api_id`."""

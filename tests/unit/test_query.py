@@ -407,14 +407,8 @@ class TestParam_filters_single:
             s, filter_added_time_response, monkeypatch):
         """Querying `added_time` as str returns filing(s)."""
         monkeypatch.setattr(options, 'time_accuracy', 'min')
-        monkeypatch.setattr(options, 'utc_time', False)
-
-        # Use timezone of current moment even if dst now differs from
-        # predefined date value
-        now = datetime.now().astimezone()
-        time_as_local = datetime(2021, 9, 23, 0, 0, tzinfo=UTC).astimezone(now.tzinfo)
-
-        time_str = time_as_local.strftime('%Y-%m-%d %H:%M')
+        time_str = '2021-09-23 00:00:00'
+        time_utc = datetime(2021, 9, 23, tzinfo=UTC)
         fs = query.get_filings(
             filters={
                 'added_time': time_str
@@ -425,17 +419,35 @@ class TestParam_filters_single:
             )
         vtbbank20 = next(iter(fs), None)
         assert isinstance(vtbbank20, Filing)
-        assert vtbbank20.added_time == time_as_local
+        assert vtbbank20.added_time_str == time_str
+        assert vtbbank20.added_time == time_utc
+
+    def test_get_filings_added_time_2_str(
+            s, filter_added_time_2_response, monkeypatch):
+        """Querying `added_time` as str returns filing(s)."""
+        monkeypatch.setattr(options, 'time_accuracy', 'min')
+        time_str = '2023-05-09 13:27:02.676029'
+        time_utc = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
+        fs = query.get_filings(
+            filters={
+                'added_time': time_str
+                },
+            sort=None,
+            max_size=1,
+            flags=GET_ONLY_FILINGS
+            )
+        vtbbank20 = next(iter(fs), None)
+        assert isinstance(vtbbank20, Filing)
+        assert vtbbank20.added_time_str == time_str
+        assert vtbbank20.added_time == time_utc
 
     @pytest.mark.sqlite
-    def test_to_sqlite_added_time_str(
-            s, filter_added_time_response, tmp_path, monkeypatch):
-        """Requested `added_time` is inserted into a database."""
+    def test_to_sqlite_added_time_2_str(
+            s, filter_added_time_2_response, tmp_path, monkeypatch):
+        """Requested `added_time` as str is inserted into a database."""
         monkeypatch.setattr(options, 'views', None)
         monkeypatch.setattr(options, 'time_accuracy', 'min')
-        monkeypatch.setattr(options, 'utc_time', False)
-        time_as_local = datetime(2021, 9, 23, 0, 0, tzinfo=UTC).astimezone()
-        time_str = time_as_local.strftime('%Y-%m-%d %H:%M')
+        time_str = '2023-05-09 13:27:02.676029'
         db_path = tmp_path / 'test_to_sqlite_added_time_str.db'
         query.to_sqlite(
             path=db_path,
@@ -458,12 +470,12 @@ class TestParam_filters_single:
         assert count_num == 1, 'Inserted requested filing(s)'
         assert _sql_total_count_is(1, cur)
 
-    def test_get_filings_added_time_datetime_utc(
-            s, filter_added_time_response, monkeypatch):
-        """Querying `added_time` as UTC datetime returns filing(s)."""
+    def test_get_filings_added_time_datetime(
+            s, filter_added_time_2_response, monkeypatch):
+        """Querying `added_time` as datetime returns filing(s)."""
         monkeypatch.setattr(options, 'time_accuracy', 'min')
-        monkeypatch.setattr(options, 'utc_time', False)
-        dt_obj = datetime(2021, 9, 23, 0, 0, 0, tzinfo=UTC)
+        time_str = '2023-05-09 13:27:02.676029'
+        dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
         fs = query.get_filings(
             filters={
                 'added_time': dt_obj
@@ -474,71 +486,17 @@ class TestParam_filters_single:
             )
         vtbbank20 = next(iter(fs), None)
         assert isinstance(vtbbank20, Filing)
-        dt_min_accurate = dt_obj.replace(second=0)
-        assert vtbbank20.added_time == dt_min_accurate
+        assert vtbbank20.added_time == dt_obj
 
     @pytest.mark.sqlite
-    def test_to_sqlite_added_time_utc(
-            s, filter_added_time_response, tmp_path, monkeypatch):
-        """Requested `added_time` is inserted into a database."""
+    def test_to_sqlite_added_time_datetime(
+            s, filter_added_time_2_response, tmp_path, monkeypatch):
+        """Requested `added_time` as datetime is inserted into a database."""
         monkeypatch.setattr(options, 'views', None)
         monkeypatch.setattr(options, 'time_accuracy', 'min')
-        monkeypatch.setattr(options, 'utc_time', False)
-        dt_obj = datetime(2021, 9, 23, 0, 0, 0, tzinfo=UTC)
-        db_path = tmp_path / 'test_to_sqlite_added_time_utc.db'
-        query.to_sqlite(
-            path=db_path,
-            update=False,
-            filters={
-                'added_time': dt_obj
-                },
-            sort=None,
-            max_size=1,
-            flags=GET_ONLY_FILINGS
-            )
-        assert os.access(db_path, os.F_OK), 'Database file is created'
-        con = sqlite3.connect(db_path)
-        cur = con.cursor()
-        # Even though queried with UTC timezone datetime, date is saved
-        # in local timezone because of `options.utc_time` = False
-        cur.execute(
-            "SELECT COUNT(*) FROM Filing WHERE added_time = ?",
-            (dt_obj.astimezone().strftime('%Y-%m-%d %H:%M'),)
-            )
-        count_num = cur.fetchone()[0]
-        assert count_num == 1, 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
-
-    def test_get_filings_added_time_datetime_eest(
-            s, filter_added_time_response, monkeypatch):
-        """Querying `added_time` as EEST datetime returns filing(s)."""
-        monkeypatch.setattr(options, 'time_accuracy', 'min')
-        monkeypatch.setattr(options, 'utc_time', False)
-        eest_tz = timezone(timedelta(hours=+3), 'EEST')
-        dt_obj = datetime(2021, 9, 23, 3, 0, 0, tzinfo=eest_tz)
-        fs = query.get_filings(
-            filters={
-                'added_time': dt_obj
-                },
-            sort=None,
-            max_size=1,
-            flags=GET_ONLY_FILINGS
-            )
-        vtbbank20 = next(iter(fs), None)
-        assert isinstance(vtbbank20, Filing)
-        dt_min_accurate = dt_obj.replace(second=0)
-        assert vtbbank20.added_time == dt_min_accurate
-
-    @pytest.mark.sqlite
-    def test_to_sqlite_added_time_eest(
-            s, filter_added_time_response, tmp_path, monkeypatch):
-        """Requested `added_time` is inserted into a database."""
-        monkeypatch.setattr(options, 'views', None)
-        monkeypatch.setattr(options, 'time_accuracy', 'min')
-        monkeypatch.setattr(options, 'utc_time', False)
-        eest_tz = timezone(timedelta(hours=+3), 'EEST')
-        dt_obj = datetime(2021, 9, 23, 3, 0, 0, tzinfo=eest_tz)
-        db_path = tmp_path / 'test_to_sqlite_added_time_eest.db'
+        dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
+        time_str = '2023-05-09 13:27:02.676029'
+        db_path = tmp_path / 'test_to_sqlite_added_time.db'
         query.to_sqlite(
             path=db_path,
             update=False,
@@ -554,7 +512,7 @@ class TestParam_filters_single:
         cur = con.cursor()
         cur.execute(
             "SELECT COUNT(*) FROM Filing WHERE added_time = ?",
-            (dt_obj.astimezone().strftime('%Y-%m-%d %H:%M'),)
+            (time_str,)
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
@@ -602,15 +560,16 @@ class TestParam_filters_single:
     def test_get_filings_entity_api_id(s, filter_entity_api_id_lax_response):
         """Querying `entity_api_id` raises APIError."""
         kone_id = '2499'
-        with pytest.raises(APIError, match=r'Bad filter value'):
-            _ = query.get_filings(
-                filters={
-                    'entity_api_id': kone_id
-                    },
-                sort=None,
-                max_size=1,
-                flags=GET_ONLY_FILINGS
-                )
+        with pytest.raises(APIError, match=r'FilingSchema has no attribute'):
+            with pytest.warns(FilterNotSupportedWarning):
+                _ = query.get_filings(
+                    filters={
+                        'entity_api_id': kone_id
+                        },
+                    sort=None,
+                    max_size=1,
+                    flags=GET_ONLY_FILINGS
+                    )
 
     @pytest.mark.xfail(
         reason=(
@@ -866,7 +825,7 @@ class TestParam_filters_multifilters:
     def test_get_filings_reporting_date(s, reporting_date_multifilter_response):
         """APIError raised for filtering with `reporting_date`."""
         dates = '2020-12-31', '2021-12-31', '2022-12-31'
-        with pytest.raises(APIError, match='Bad filter value'):
+        with pytest.raises(APIError, match='FilingSchema has no attribute'):
             with pytest.warns(FilterNotSupportedWarning):
                 _ = query.get_filings(
                     filters={
@@ -916,7 +875,6 @@ class TestParam_sort:
 
     def test_sort_oldest_finnish_str(s, oldest3_fi_response, monkeypatch):
         """Sort by `added_time` for filings from Finland."""
-        monkeypatch.setattr(options, 'utc_time', True)
         fs = query.get_filings(
             filters={
                 'country': 'FI'
@@ -931,7 +889,6 @@ class TestParam_sort:
 
     def test_sort_oldest_finnish_list(s, oldest3_fi_response, monkeypatch):
         """Sort by `added_time` for filings from Finland."""
-        monkeypatch.setattr(options, 'utc_time', True)
         fs = query.get_filings(
             filters={
                 'country': 'FI'

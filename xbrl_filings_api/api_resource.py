@@ -100,6 +100,7 @@ class APIResource(APIObject):
             attr for attr in dir(resource_proto)
             if not (
                 attr.startswith('_')
+                or attr.endswith('_time_str')
                 or getattr(cls, attr, False)
                 or attr in ATTRS_ALWAYS_EXCLUDE_FROM_DATA)
             ]

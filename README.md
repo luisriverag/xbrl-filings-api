@@ -37,7 +37,8 @@ pip install xbrl-filings-api
 ## Data objects
 
 This library expects the API returning datetimes in UTC, if no timezone
-is specified (situation as of 6 Nov 2023).
+is specified (situation as of 6 Nov 2023). Original string is retained
+in attribute with '_str' ending.
 
 ### Filing
 
@@ -58,7 +59,9 @@ Data attributes:
 | `inconsistency_count`   | int      | Count of validation inconsistencies | (**X**) | `inconsistency_count` |
 | `warning_count`         | int      | Count of validation warnings        | (**X**) | `warning_count`       |
 | `added_time`            | datetime | Time when added to `filings.xbrl.org` | **X** | `date_added  `        |
+| `added_time_str`        | str      | Original of `added_time`            | **X** | `date_added  `        |
 | `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | **X** | `processed`      |
+| `processed_time_str`    | str      | Original of `processed_time`        | **X** | `processed`      |
 | `entity_api_id`         | str      | Same as `entity.api_id`             |         | Entity resource `id`  |
 | `json_url`              | str      | xBRL-JSON download URL              | (**X**) | `json_url`            |
 | `package_url`           | str      | ESEF report package download URL    | (**X**) | `package_url`         |
