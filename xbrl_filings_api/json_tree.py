@@ -7,7 +7,7 @@
 import logging
 import time
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone, tzinfo
 from typing import Any, ClassVar, Optional, Union
 from urllib.parse import urljoin
 
@@ -81,12 +81,6 @@ class _JSONTree:
         unexpected_resource_types.pop() = (type_str, origin)
     """
 
-    now = time.time()
-    dtnow = datetime.fromtimestamp(now)  # noqa: DTZ006
-    dtnowutc = datetime.utcfromtimestamp(now)  # noqa: DTZ004
-    _local_utc_offset = dtnow - dtnowutc
-    del now
-
     def __init__(
             self,
             *,
@@ -115,7 +109,16 @@ class _JSONTree:
             self, key_path: str, parse_type: Optional[_ParseType] = None
             ) -> Any:
         """
-        Read a dictionary key from a deeply nested dictionary.
+        Read a dictionary key from a deeply nested dictionary and parse
+        values to Python literals.
+
+        Value `_ParseType.DATETIME` of `parse_type` parses ISO style UTC
+        strings such as '2023-05-09 10:51:50.382633'. The return value
+        is always locale-aware and timezone is dependent on
+        `options.utc_time`.
+
+        Value `_ParseType.DATE` parses naive dates and `_ParseType.URL`
+        resolves relative URLs based on `options.entry_point_url`.
 
         Parameters
         ----------
@@ -124,11 +127,7 @@ class _JSONTree:
             serialized JSON object.
             E.g. 'relationships.validation_messages.links.related'.
         parse_type : _ParseType member, optional
-            One of the `_ParseType` Enum members. `_ParseType.DATETIME`
-            parses locale-aware ISO style UTC strings such as
-            '2023-05-09 10:51:50.382633', `_ParseType.DATE` parses naive
-            dates and `_ParseType.URL` resolves relative URLs based on
-            option `entry_point_url`.
+            One of the `_ParseType` Enum members.
         """
         if self.tree is None:
             msg = 'Cannot call get() when _JSONTree has been closed'
@@ -230,15 +229,19 @@ class _JSONTree:
                 logger.warning(msg, stacklevel=2)
             if parsed_dt is None:
                 return None
-            if options.utc_time:
-                return parsed_dt.astimezone(UTC)
-            else:
-                return (
-                    parsed_dt.astimezone()
-                    + self._local_utc_offset
-                    )
+            isnaive = not isinstance(parsed_dt.tzinfo, timezone)
+            if isnaive:
+                parsed_dt = parsed_dt.astimezone(UTC)
 
-        if parse_type == _ParseType.DATE:
+            if not options.utc_time:
+                if isnaive:
+                    # Use the time zone of current moment (even if past
+                    # date had different dst)
+                    now = datetime.now().astimezone()
+                    parsed_dt = parsed_dt.astimezone(now.tzinfo)
+            return parsed_dt
+
+        elif parse_type == _ParseType.DATE:
             parsed_date = None
             try:
                 parts = [int(part) for part in key_value.split('-')]
@@ -252,7 +255,7 @@ class _JSONTree:
                 logger.warning(msg, stacklevel=2)
             return parsed_date
 
-        if parse_type == _ParseType.URL:
+        elif parse_type == _ParseType.URL:
             parsed_url = None
             try:
                 parsed_url = urljoin(options.entry_point_url, key_value)

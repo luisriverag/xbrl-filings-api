@@ -317,15 +317,16 @@ def _process_time_filter(
         proc_dt = val.astimezone(UTC) # type: ignore
     else:
         val_str = str(val)
-        tz = UTC if options.utc_time else None
+        now = datetime.now().astimezone()
+        tz = UTC if options.utc_time else now.tzinfo
         for dtparse in reversed(time_formats.values()):
             try_dt: Union[datetime, None] = None
             try:
-                try_dt = datetime.strptime(val_str, dtparse).astimezone(tz)
+                try_dt = datetime.strptime(val_str, dtparse)
             except ValueError:
                 pass
             if isinstance(try_dt, datetime):
-                proc_dt = try_dt
+                proc_dt = try_dt.astimezone(tz)
                 break
         else:
             msg = (

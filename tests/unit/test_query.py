@@ -311,7 +311,7 @@ class TestParam_filters_single:
         assert _sql_total_count_is(1, cur)
 
     def test_get_filings_last_end_date_datetime(
-            s, filter_last_end_date_dt_response):
+            s, filter_last_end_date_lax_response):
         """Querying `last_end_date` as datetime raises ValueError."""
         dt_obj = datetime(2021, 2, 28, tzinfo=UTC)
         with pytest.raises(
@@ -329,7 +329,8 @@ class TestParam_filters_single:
 
     @pytest.mark.sqlite
     def test_to_sqlite_last_end_date_datetime(
-            s, filter_last_end_date_dt_response, tmp_path, monkeypatch):
+            s, filter_last_end_date_lax_response, tmp_path, monkeypatch
+            ):
         """Requested `last_end_date` is inserted into a database."""
         monkeypatch.setattr(options, 'views', None)
         dt_obj = datetime(2021, 2, 28, tzinfo=UTC)
@@ -407,7 +408,12 @@ class TestParam_filters_single:
         """Querying `added_time` as str returns filing(s)."""
         monkeypatch.setattr(options, 'time_accuracy', 'min')
         monkeypatch.setattr(options, 'utc_time', False)
-        time_as_local = datetime(2021, 9, 23, 0, 0, tzinfo=UTC).astimezone()
+
+        # Use timezone of current moment even if dst now differs from
+        # predefined date value
+        now = datetime.now().astimezone()
+        time_as_local = datetime(2021, 9, 23, 0, 0, tzinfo=UTC).astimezone(now.tzinfo)
+
         time_str = time_as_local.strftime('%Y-%m-%d %H:%M')
         fs = query.get_filings(
             filters={
@@ -554,7 +560,7 @@ class TestParam_filters_single:
         assert count_num == 1, 'Inserted requested filing(s)'
         assert _sql_total_count_is(1, cur)
 
-    def test_get_filings_added_time_date(s, filter_added_time_date_response):
+    def test_get_filings_added_time_date(s, filter_added_time_lax_response):
         """Querying `added_time` as date raises ValueError."""
         date_obj = date(2021, 9, 23)
         with pytest.raises(
@@ -572,7 +578,7 @@ class TestParam_filters_single:
 
     @pytest.mark.sqlite
     def test_to_sqlite_added_time_date(
-            s, filter_added_time_date_response, tmp_path, monkeypatch):
+            s, filter_added_time_lax_response, tmp_path, monkeypatch):
         """Querying `added_time` as date for database raises ValueError."""
         monkeypatch.setattr(options, 'views', None)
         date_obj = date(2021, 9, 23)
@@ -593,13 +599,13 @@ class TestParam_filters_single:
                 )
         assert not os.access(db_path, os.F_OK), 'Database file is not created'
 
-    def test_get_filings_entity_api_id(s, filter_entity_api_id_response):
+    def test_get_filings_entity_api_id(s, filter_entity_api_id_lax_response):
         """Querying `entity_api_id` raises APIError."""
-        ent_id = 1/0
+        kone_id = '2499'
         with pytest.raises(APIError, match=r'Bad filter value'):
             _ = query.get_filings(
                 filters={
-                    'entity_api_id': ent_id
+                    'entity_api_id': kone_id
                     },
                 sort=None,
                 max_size=1,
@@ -1096,7 +1102,7 @@ class TestParam_paging_single:
             ),
         raises=requests.ConnectionError
         )
-    def test_filing_page_iter(s, multipage_xfail_response, monkeypatch):
+    def test_filing_page_iter(s, multipage_lax_response, monkeypatch):
         """Requested filings are available on 3 pages."""
         monkeypatch.setattr(options, 'max_page_size', 2)
         piter = query.filing_page_iter(
