@@ -677,7 +677,8 @@ class TestParam_filters_single:
         assert count_num == 1, 'Inserted requested filing(s)'
         assert _sql_total_count_is(1, cur)
 
-    def test_get_filings_2filters(s, finnish_jan22_response):
+    def test_get_filings_2filters_country_last_end_date_str(
+            s, finnish_jan22_response):
         """Filters `country` and `last_end_date` return 2 filings."""
         fs = query.get_filings(
             filters={
@@ -693,11 +694,12 @@ class TestParam_filters_single:
         assert len(fxo_set) == 2, 'Filings are unique'
 
     @pytest.mark.sqlite
-    def test_to_sqlite_2filters(
-        s, finnish_jan22_response, tmp_path, monkeypatch):
+    def test_to_sqlite_2filters_country_last_end_date_str(
+            s, finnish_jan22_response, tmp_path, monkeypatch):
         """Filters `country` and `last_end_date` insert 2 filings to db."""
         monkeypatch.setattr(options, 'views', None)
-        db_path = tmp_path / 'test_to_sqlite_2filters.db'
+        db_path = (
+            tmp_path / 'test_to_sqlite_2filters_country_last_end_date_str.db')
         query.to_sqlite(
             path=db_path,
             update=False,
@@ -723,7 +725,7 @@ class TestParam_filters_single:
         assert cur.fetchone() is None, 'Two filings inserted'
         assert _sql_total_count_is(2, cur)
 
-    def test_get_filings_2filters_date(s, finnish_jan22_response):
+    def test_get_filings_2filters_country_last_end_date_date(s, finnish_jan22_response):
         """Filters `country` and `last_end_date` as date work."""
         fs = query.get_filings(
             filters={
@@ -739,11 +741,12 @@ class TestParam_filters_single:
         assert len(fxo_set) == 2, 'Filings are unique'
 
     @pytest.mark.sqlite
-    def test_to_sqlite_2filters_date(
+    def test_to_sqlite_2filters_country_last_end_date_date(
         s, finnish_jan22_response, tmp_path, monkeypatch):
         """Filters `country` and `last_end_date` as date insert to db."""
         monkeypatch.setattr(options, 'views', None)
-        db_path = tmp_path / 'test_to_sqlite_2filters_date.db'
+        db_path = (
+            tmp_path / 'test_to_sqlite_2filters_country_last_end_date_date.db')
         query.to_sqlite(
             path=db_path,
             update=False,
@@ -856,6 +859,33 @@ class TestParam_filters_multifilters:
             )
         received_counts = tuple(filing.inconsistency_count for filing in fs)
         assert received_counts == 1, 1
+
+    def test_get_filings_processed_time_str(
+            s, processed_time_multifilter_response):
+        """Filtering by `processed_time` as str returns 2 filings."""
+        cloetta_sv_strs = (
+            '2023-01-18 11:02:06.724768',
+            '2023-05-16 21:07:17.825836'
+            )
+        cloetta_sv_objs = (
+            datetime(2023, 1, 18, 11, 2, 6, 724768, tzinfo=UTC),
+            datetime(2023, 5, 16, 21, 7, 17, 825836, tzinfo=UTC)
+            )
+        fs = query.get_filings(
+            filters={
+                'processed_time': cloetta_sv_strs
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        received_dts = {filing.processed_time for filing in fs}
+        assert cloetta_sv_objs[0] in received_dts
+        assert cloetta_sv_objs[1] in received_dts
+        assert len(received_dts) == 2
+        received_strs = {filing.processed_time_str for filing in fs}
+        assert cloetta_sv_strs[0] in received_strs
+        assert cloetta_sv_strs[1] in received_strs
 
 
     # to_sqlite

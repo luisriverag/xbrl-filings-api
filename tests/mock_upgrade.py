@@ -477,6 +477,26 @@ def _fetch_inconsistency_count_multifilter():
 _addmock('inconsistency_count_multifilter')
 
 
+@_recorder.record(file_path=_get_path('processed_time_multifilter'))
+def _fetch_processed_time_multifilter():
+    """Get two filings filtered with `processed_time`."""
+    cloetta_sv_strs = (
+        '2023-01-18 11:02:06.724768',
+        '2023-05-16 21:07:17.825836'
+        )
+    for filter_i, filter_str in enumerate(cloetta_sv_strs):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': 2 - filter_i,
+                'filter[processed]': filter_str # processed_time
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+_addmock('processed_time_multifilter')
+
+
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 
 

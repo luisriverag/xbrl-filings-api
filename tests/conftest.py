@@ -251,3 +251,11 @@ def inconsistency_count_multifilter_response():
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('inconsistency_count_multifilter'))
         yield rsps
+
+
+@pytest.fixture
+def processed_time_multifilter_response():
+    """Get two filings filtered with `processed_time`."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('processed_time_multifilter'))
+        yield rsps
