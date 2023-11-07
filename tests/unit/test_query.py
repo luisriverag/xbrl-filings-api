@@ -31,9 +31,9 @@ from xbrl_filings_api.exceptions import FilterNotSupportedWarning
 UTC = timezone.utc
 
 
-def _sql_total_count_is(expected_count, cur):
+def _db_record_count(cur):
     cur.execute("SELECT COUNT(*) FROM Filing")
-    return cur.fetchone()[0] == expected_count
+    return cur.fetchone()[0]
 
 
 class TestFundamentalOperation:
@@ -77,7 +77,7 @@ class TestFundamentalOperation:
             (asml22_fxo,)
             )
         assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     @pytest.mark.paging
     def test_filing_page_iter(s, asml22en_response):
@@ -146,7 +146,7 @@ class TestParam_filters_single:
             (creditsuisse21en_api_id,)
             )
         assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_filing_index(s, asml22en_response):
         """Requested `filing_index` is returned."""
@@ -188,7 +188,7 @@ class TestParam_filters_single:
             (asml22_fxo,)
             )
         assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_language(s, filter_language_response):
         """Filter `language` raises an `APIError`."""
@@ -265,7 +265,7 @@ class TestParam_filters_single:
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_last_end_date_obj(s, filter_last_end_date_response):
         """Querying `last_end_date` as date returns filing(s)."""
@@ -308,7 +308,7 @@ class TestParam_filters_single:
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_last_end_date_datetime(
             s, filter_last_end_date_lax_response):
@@ -401,7 +401,7 @@ class TestParam_filters_single:
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_added_time_str(
             s, filter_added_time_response, monkeypatch):
@@ -468,7 +468,7 @@ class TestParam_filters_single:
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_added_time_datetime(
             s, filter_added_time_2_response, monkeypatch):
@@ -516,7 +516,7 @@ class TestParam_filters_single:
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_added_time_date(s, filter_added_time_lax_response):
         """Querying `added_time` as date raises ValueError."""
@@ -630,7 +630,7 @@ class TestParam_filters_single:
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_package_sha256(s, filter_package_sha256_response):
         """Querying `package_sha256` returns filing(s)."""
@@ -675,7 +675,7 @@ class TestParam_filters_single:
             )
         count_num = cur.fetchone()[0]
         assert count_num == 1, 'Inserted requested filing(s)'
-        assert _sql_total_count_is(1, cur)
+        assert _db_record_count(cur) == 1
 
     def test_get_filings_2filters_country_last_end_date_str(
             s, finnish_jan22_response):
@@ -723,7 +723,7 @@ class TestParam_filters_single:
         fxo_b = cur.fetchone()[0]
         assert fxo_a != fxo_b, 'Filings are unique'
         assert cur.fetchone() is None, 'Two filings inserted'
-        assert _sql_total_count_is(2, cur)
+        assert _db_record_count(cur) == 2
 
     def test_get_filings_2filters_country_last_end_date_date(s, finnish_jan22_response):
         """Filters `country` and `last_end_date` as date work."""
@@ -770,7 +770,7 @@ class TestParam_filters_single:
         fxo_b = cur.fetchone()[0]
         assert fxo_a != fxo_b, 'Filings are unique'
         assert cur.fetchone() is None, 'Two filings inserted'
-        assert _sql_total_count_is(2, cur)
+        assert _db_record_count(cur) == 2
 
 
 class TestParam_filters_multifilters:
@@ -790,6 +790,34 @@ class TestParam_filters_multifilters:
         received_api_ids = {filing.api_id for filing in fs}
         assert received_api_ids == set(shell_api_ids)
 
+    def test_to_sqlite_api_id(
+            s, api_id_multifilter_response, tmp_path, monkeypatch):
+        """Filtering by `api_id` inserted to db."""
+        monkeypatch.setattr(options, 'views', None)
+        shell_api_ids = '1134', '1135', '4496', '4529'
+        db_path = tmp_path / 'test_to_sqlite_api_id.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'api_id': shell_api_ids
+                },
+            sort=None,
+            max_size=4,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT api_id FROM Filing "
+            "WHERE api_id IN (?, ?, ?, ?)",
+            shell_api_ids
+            )
+        saved_ids = {row[0] for row in cur.fetchall()}
+        assert saved_ids == set(shell_api_ids)
+        assert _db_record_count(cur) == 4
+
     def test_get_filings_country_only_first(s, country_multifilter_response):
         """Requested `country` filings are returned."""
         country_codes = ['FI', 'SE', 'NO']
@@ -806,6 +834,34 @@ class TestParam_filters_multifilters:
         assert 'FI' in received_countries, 'Only FI available, match count'
         assert 'SE' not in received_countries, 'Too many FI filings'
         assert 'NO' not in received_countries, 'Too many FI filings'
+
+    def test_to_sqlite_country_only_first(
+            s, country_multifilter_response, tmp_path, monkeypatch):
+        """Filtering by `country` filings inserted to db."""
+        monkeypatch.setattr(options, 'views', None)
+        country_codes = ['FI', 'SE', 'NO']
+        db_path = tmp_path / 'test_to_sqlite_country_only_first.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'country': country_codes
+                },
+            sort=None,
+            max_size=3,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT country FROM Filing "
+            "WHERE country IN (?, ?, ?)",
+            country_codes
+            )
+        saved_countries = {row[0] for row in cur.fetchall()}
+        assert saved_countries == {'FI'}
+        assert _db_record_count(cur) == 3
 
     def test_get_filings_filing_index(
             s, filing_index_multifilter_response):
@@ -825,6 +881,37 @@ class TestParam_filters_multifilters:
         received_countries = {filing.filing_index for filing in fs}
         assert received_countries == set(filing_index_codes)
 
+    def test_to_sqlite_filing_index(
+            s, filing_index_multifilter_response, tmp_path, monkeypatch):
+        """Filtering by `filing_index` filings inserted to db."""
+        monkeypatch.setattr(options, 'views', None)
+        filing_index_codes = (
+            '21380068P1DRHMJ8KU70-2021-12-31-ESEF-GB-0',
+            '21380068P1DRHMJ8KU70-2021-12-31-ESEF-NL-0'
+            )
+        db_path = tmp_path / 'test_to_sqlite_filing_index.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'filing_index': filing_index_codes
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT filing_index FROM Filing "
+            "WHERE filing_index IN (?, ?)",
+            filing_index_codes
+            )
+        saved_fxo = {row[0] for row in cur.fetchall()}
+        assert saved_fxo == set(filing_index_codes)
+        assert _db_record_count(cur) == 2
+
     def test_get_filings_reporting_date(s, reporting_date_multifilter_response):
         """APIError raised for filtering with `reporting_date`."""
         dates = '2020-12-31', '2021-12-31', '2022-12-31'
@@ -838,6 +925,26 @@ class TestParam_filters_multifilters:
                     max_size=3,
                     flags=GET_ONLY_FILINGS
                     )
+
+    def test_to_sqlite_reporting_date(
+            s, reporting_date_multifilter_response, tmp_path, monkeypatch):
+        """Filtering by `reporting_date` raises exception."""
+        monkeypatch.setattr(options, 'views', None)
+        dates = '2020-12-31', '2021-12-31', '2022-12-31'
+        db_path = tmp_path / 'test_to_sqlite_reporting_date.db'
+        with pytest.raises(APIError, match='FilingSchema has no attribute'):
+            with pytest.warns(FilterNotSupportedWarning):
+                query.to_sqlite(
+                    path=db_path,
+                    update=False,
+                    filters={
+                        'reporting_date': dates
+                        },
+                    sort=None,
+                    max_size=3,
+                    flags=GET_ONLY_FILINGS
+                    )
+        assert not os.access(db_path, os.F_OK), 'Database file is not created'
 
     @pytest.mark.xfail(
         reason=(
@@ -859,6 +966,41 @@ class TestParam_filters_multifilters:
             )
         received_counts = tuple(filing.inconsistency_count for filing in fs)
         assert received_counts == 1, 1
+
+    @pytest.mark.xfail(
+        reason=(
+            'Filtering by "_count" attributes is not supported by the '
+            'API.'
+            ),
+        raises=APIError)
+    def test_to_sqlite_inconsistency_count(
+            s, inconsistency_count_multifilter_response, tmp_path, monkeypatch
+            ):
+        """Filtering by `inconsistency_count` filings inserted to db."""
+        monkeypatch.setattr(options, 'views', None)
+        ic_counts = 1, 2
+        db_path = tmp_path / 'test_to_sqlite_inconsistency_count.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'inconsistency_count': ic_counts
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT inconsistency_count FROM Filing "
+            "WHERE inconsistency_count IN (?, ?)",
+            ic_counts
+            )
+        saved_ic_counts = {row[0] for row in cur.fetchall()}
+        assert saved_ic_counts == set(ic_counts)
+        assert _db_record_count(cur) == 2
 
     def test_get_filings_processed_time_str(
             s, processed_time_multifilter_response):
@@ -886,6 +1028,38 @@ class TestParam_filters_multifilters:
         received_strs = {filing.processed_time_str for filing in fs}
         assert cloetta_sv_strs[0] in received_strs
         assert cloetta_sv_strs[1] in received_strs
+
+    def test_to_sqlite_processed_time_str(
+            s, processed_time_multifilter_response, tmp_path, monkeypatch
+            ):
+        """Filtering by `processed_time` filings inserted to db."""
+        monkeypatch.setattr(options, 'views', None)
+        cloetta_sv_strs = (
+            '2023-01-18 11:02:06.724768',
+            '2023-05-16 21:07:17.825836'
+            )
+        db_path = tmp_path / 'test_to_sqlite_processed_time_str.db'
+        query.to_sqlite(
+            path=db_path,
+            update=False,
+            filters={
+                'processed_time': cloetta_sv_strs
+                },
+            sort=None,
+            max_size=2,
+            flags=GET_ONLY_FILINGS
+            )
+        assert os.access(db_path, os.F_OK), 'Database file is created'
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        cur.execute(
+            "SELECT processed_time FROM Filing "
+            "WHERE processed_time IN (?, ?)",
+            cloetta_sv_strs
+            )
+        saved_proc_times = {row[0] for row in cur.fetchall()}
+        assert saved_proc_times == set(cloetta_sv_strs)
+        assert _db_record_count(cur) == 2
 
 
     # to_sqlite

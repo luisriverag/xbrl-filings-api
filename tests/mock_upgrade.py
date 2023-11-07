@@ -69,8 +69,8 @@ class _URLMock:
     The lax version of the fixture adds parameter
     ``assert_all_requests_are_fired=False`` to initiation of
     `responses.RequestsMock`. These fixtures are used when the test
-    function should throw and not necessarily initiate a `requests`
-    URL request.
+    function should raise (other than APIError) and not necessarily
+    initiate all of the URL request.
     """
     isfetch: bool = True
     """Should this mock be fetched."""
