@@ -348,7 +348,7 @@ def _fetch_sort_two_fields():
     .. warning::
 
         Volatile with ``mock_upgrade.py`` run. See test
-        ``test_query::Test_get_filings::test_sort_two_fields``.
+        ``test_query_sort::test_sort_two_fields``.
     """
     _ = requests.get(
         url=ENTRY_POINT_URL,
