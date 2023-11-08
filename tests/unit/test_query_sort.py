@@ -1,4 +1,4 @@
-"""Define tests for query functions."""
+"""Define tests for sorting in query functions."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -13,12 +13,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from xbrl_filings_api import (
-    GET_ONLY_FILINGS,
-    options,
-    query,
-)
-from xbrl_filings_api.exceptions import FilterNotSupportedWarning
+import xbrl_filings_api as xf
 
 UTC = timezone.utc
 
@@ -30,13 +25,13 @@ def _db_record_count(cur):
 
 def test_sort_oldest_finnish_str(oldest3_fi_response, monkeypatch):
     """Sort by `added_time` for filings from Finland."""
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'country': 'FI'
             },
         sort='added_time',
         max_size=3,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     date_max = datetime(2021, 5, 18, 0, 0, 1, tzinfo=UTC)
     for f in fs:
@@ -45,13 +40,13 @@ def test_sort_oldest_finnish_str(oldest3_fi_response, monkeypatch):
 
 def test_sort_oldest_finnish_list(oldest3_fi_response, monkeypatch):
     """Sort by `added_time` for filings from Finland."""
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'country': 'FI'
             },
         sort=['added_time'],
         max_size=3,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     date_max = datetime(2021, 5, 18, 0, 0, 1, tzinfo=UTC)
     for f in fs:
@@ -69,13 +64,13 @@ def test_sort_two_fields(sort_two_fields_response):
         filings or introduction of older reports using other
         accounting principles/XBRL taxonomies may break it.
     """
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'country': 'FI'
             },
         sort=['last_end_date', 'processed_time'],
         max_size=2,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) == 2, 'Two filings were requested'
     filing_indexes = {f.filing_index for f in fs}

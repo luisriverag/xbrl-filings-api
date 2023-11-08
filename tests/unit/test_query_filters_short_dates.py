@@ -1,9 +1,4 @@
-"""
-Define tests for single filters of query functions.
-
-Single filter is a literal value for filter, unlike multifilter
-(iterable of literals) or date filter (ISO date string or date object).
-"""
+"""Define tests for short date filters of query functions."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -18,14 +13,7 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from xbrl_filings_api import (
-    GET_ONLY_FILINGS,
-    APIError,
-    Filing,
-    options,
-    query,
-)
-from xbrl_filings_api.exceptions import FilterNotSupportedWarning
+import xbrl_filings_api as xf
 
 UTC = timezone.utc
 

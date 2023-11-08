@@ -1,10 +1,10 @@
-"""Define tests for ``."""
+"""Define tests for `Entity`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.entity import Entity
+import xbrl_filings_api as xf
 
-# Entity
-# Entity.__repr__
+# xf.Entity
+# xf.Entity.__repr__

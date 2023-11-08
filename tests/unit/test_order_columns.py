@@ -1,9 +1,9 @@
-"""Define tests for ``."""
+"""Define tests for `order_columns`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api import order_columns
+import xbrl_filings_api as xf
 
-# order_columns.order_columns
+# xf.order_columns

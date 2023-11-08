@@ -1,10 +1,10 @@
-"""Define tests for ``."""
+"""Define tests for `download_specs_construct`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api import download_specs_construct
+import xbrl_filings_api as xf
 
-# download_specs_construct.construct
-# download_specs_construct._get_filing_download_specs
+# xf.download_specs_construct.construct
+# xf.download_specs_construct._get_filing_download_specs

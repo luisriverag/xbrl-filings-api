@@ -1,10 +1,10 @@
-"""Define tests for ``."""
+"""Define tests for `APIObject`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.api_object import APIObject
+import xbrl_filings_api as xf
 
-# APIObject
-# APIObject.__str__
+# xf.APIObject
+# xf.APIObject.__str__

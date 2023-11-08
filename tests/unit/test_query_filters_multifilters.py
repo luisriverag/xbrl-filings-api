@@ -1,4 +1,4 @@
-"""Define tests for query functions."""
+"""Define tests for multifilters of query functions."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -13,13 +13,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from xbrl_filings_api import (
-    GET_ONLY_FILINGS,
-    APIError,
-    options,
-    query,
-)
-from xbrl_filings_api.exceptions import FilterNotSupportedWarning
+import xbrl_filings_api as xf
 
 UTC = timezone.utc
 
@@ -32,13 +26,13 @@ def _db_record_count(cur):
 def test_get_filings_api_id(api_id_multifilter_response):
     """Requested `api_id` filings are returned."""
     shell_api_ids = '1134', '1135', '4496', '4529'
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'api_id': shell_api_ids
             },
         sort=None,
         max_size=4,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     received_api_ids = {filing.api_id for filing in fs}
     assert received_api_ids == set(shell_api_ids)
@@ -47,10 +41,10 @@ def test_get_filings_api_id(api_id_multifilter_response):
 def test_to_sqlite_api_id(
         api_id_multifilter_response, tmp_path, monkeypatch):
     """Filtering by `api_id` inserted to db."""
-    monkeypatch.setattr(options, 'views', None)
+    monkeypatch.setattr(xf.options, 'views', None)
     shell_api_ids = '1134', '1135', '4496', '4529'
     db_path = tmp_path / 'test_to_sqlite_api_id.db'
-    query.to_sqlite(
+    xf.to_sqlite(
         path=db_path,
         update=False,
         filters={
@@ -58,7 +52,7 @@ def test_to_sqlite_api_id(
             },
         sort=None,
         max_size=4,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     assert os.access(db_path, os.F_OK), 'Database file is created'
     con = sqlite3.connect(db_path)
@@ -76,13 +70,13 @@ def test_to_sqlite_api_id(
 def test_get_filings_country_only_first(country_multifilter_response):
     """Requested `country` filings are returned."""
     country_codes = ['FI', 'SE', 'NO']
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'country': country_codes
             },
         sort=None,
         max_size=3,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) == 3, 'Requested number of filings returned'
     received_countries = {filing.country for filing in fs}
@@ -94,10 +88,10 @@ def test_get_filings_country_only_first(country_multifilter_response):
 def test_to_sqlite_country_only_first(
         country_multifilter_response, tmp_path, monkeypatch):
     """Filtering by `country` filings inserted to db."""
-    monkeypatch.setattr(options, 'views', None)
+    monkeypatch.setattr(xf.options, 'views', None)
     country_codes = ['FI', 'SE', 'NO']
     db_path = tmp_path / 'test_to_sqlite_country_only_first.db'
-    query.to_sqlite(
+    xf.to_sqlite(
         path=db_path,
         update=False,
         filters={
@@ -105,7 +99,7 @@ def test_to_sqlite_country_only_first(
             },
         sort=None,
         max_size=3,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     assert os.access(db_path, os.F_OK), 'Database file is created'
     con = sqlite3.connect(db_path)
@@ -127,13 +121,13 @@ def test_get_filings_filing_index(
         '21380068P1DRHMJ8KU70-2021-12-31-ESEF-GB-0',
         '21380068P1DRHMJ8KU70-2021-12-31-ESEF-NL-0'
         )
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'filing_index': filing_index_codes
             },
         sort=None,
         max_size=2,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     received_countries = {filing.filing_index for filing in fs}
     assert received_countries == set(filing_index_codes)
@@ -142,13 +136,13 @@ def test_get_filings_filing_index(
 def test_to_sqlite_filing_index(
         filing_index_multifilter_response, tmp_path, monkeypatch):
     """Filtering by `filing_index` filings inserted to db."""
-    monkeypatch.setattr(options, 'views', None)
+    monkeypatch.setattr(xf.options, 'views', None)
     filing_index_codes = (
         '21380068P1DRHMJ8KU70-2021-12-31-ESEF-GB-0',
         '21380068P1DRHMJ8KU70-2021-12-31-ESEF-NL-0'
         )
     db_path = tmp_path / 'test_to_sqlite_filing_index.db'
-    query.to_sqlite(
+    xf.to_sqlite(
         path=db_path,
         update=False,
         filters={
@@ -156,7 +150,7 @@ def test_to_sqlite_filing_index(
             },
         sort=None,
         max_size=2,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     assert os.access(db_path, os.F_OK), 'Database file is created'
     con = sqlite3.connect(db_path)
@@ -174,27 +168,27 @@ def test_to_sqlite_filing_index(
 def test_get_filings_reporting_date(reporting_date_multifilter_response):
     """APIError raised for filtering with `reporting_date`."""
     dates = '2020-12-31', '2021-12-31', '2022-12-31'
-    with pytest.raises(APIError, match='FilingSchema has no attribute'):
-        with pytest.warns(FilterNotSupportedWarning):
-            _ = query.get_filings(
+    with pytest.raises(xf.APIError, match='FilingSchema has no attribute'):
+        with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
+            _ = xf.get_filings(
                 filters={
                     'reporting_date': dates
                     },
                 sort=None,
                 max_size=3,
-                flags=GET_ONLY_FILINGS
+                flags=xf.GET_ONLY_FILINGS
                 )
 
 
 def test_to_sqlite_reporting_date(
         reporting_date_multifilter_response, tmp_path, monkeypatch):
     """Filtering by `reporting_date` raises exception."""
-    monkeypatch.setattr(options, 'views', None)
+    monkeypatch.setattr(xf.options, 'views', None)
     dates = '2020-12-31', '2021-12-31', '2022-12-31'
     db_path = tmp_path / 'test_to_sqlite_reporting_date.db'
-    with pytest.raises(APIError, match='FilingSchema has no attribute'):
-        with pytest.warns(FilterNotSupportedWarning):
-            query.to_sqlite(
+    with pytest.raises(xf.APIError, match='FilingSchema has no attribute'):
+        with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
+            xf.to_sqlite(
                 path=db_path,
                 update=False,
                 filters={
@@ -202,7 +196,7 @@ def test_to_sqlite_reporting_date(
                     },
                 sort=None,
                 max_size=3,
-                flags=GET_ONLY_FILINGS
+                flags=xf.GET_ONLY_FILINGS
                 )
     assert not os.access(db_path, os.F_OK), 'Database file is not created'
 
@@ -212,18 +206,18 @@ def test_to_sqlite_reporting_date(
         'Filtering by "_count" attributes is not supported by the '
         'API.'
         ),
-    raises=APIError)
+    raises=xf.APIError)
 def test_get_filings_inconsistency_count(
         inconsistency_count_multifilter_response):
     """Requested `inconsistency_count` filings are returned."""
     ic_counts = 1, 2
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'inconsistency_count': ic_counts
             },
         sort=None,
         max_size=2,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     received_counts = tuple(filing.inconsistency_count for filing in fs)
     assert received_counts == 1, 1
@@ -234,15 +228,15 @@ def test_get_filings_inconsistency_count(
         'Filtering by "_count" attributes is not supported by the '
         'API.'
         ),
-    raises=APIError)
+    raises=xf.APIError)
 def test_to_sqlite_inconsistency_count(
         inconsistency_count_multifilter_response, tmp_path, monkeypatch
         ):
     """Filtering by `inconsistency_count` filings inserted to db."""
-    monkeypatch.setattr(options, 'views', None)
+    monkeypatch.setattr(xf.options, 'views', None)
     ic_counts = 1, 2
     db_path = tmp_path / 'test_to_sqlite_inconsistency_count.db'
-    query.to_sqlite(
+    xf.to_sqlite(
         path=db_path,
         update=False,
         filters={
@@ -250,7 +244,7 @@ def test_to_sqlite_inconsistency_count(
             },
         sort=None,
         max_size=2,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     assert os.access(db_path, os.F_OK), 'Database file is created'
     con = sqlite3.connect(db_path)
@@ -276,13 +270,13 @@ def test_get_filings_processed_time_str(
         datetime(2023, 1, 18, 11, 2, 6, 724768, tzinfo=UTC),
         datetime(2023, 5, 16, 21, 7, 17, 825836, tzinfo=UTC)
         )
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'processed_time': cloetta_sv_strs
             },
         sort=None,
         max_size=2,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     received_dts = {filing.processed_time for filing in fs}
     assert cloetta_sv_objs[0] in received_dts
@@ -297,13 +291,13 @@ def test_to_sqlite_processed_time_str(
         processed_time_multifilter_response, tmp_path, monkeypatch
         ):
     """Filtering by `processed_time` filings inserted to db."""
-    monkeypatch.setattr(options, 'views', None)
+    monkeypatch.setattr(xf.options, 'views', None)
     cloetta_sv_strs = (
         '2023-01-18 11:02:06.724768',
         '2023-05-16 21:07:17.825836'
         )
     db_path = tmp_path / 'test_to_sqlite_processed_time_str.db'
-    query.to_sqlite(
+    xf.to_sqlite(
         path=db_path,
         update=False,
         filters={
@@ -311,7 +305,7 @@ def test_to_sqlite_processed_time_str(
             },
         sort=None,
         max_size=2,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     assert os.access(db_path, os.F_OK), 'Database file is created'
     con = sqlite3.connect(db_path)

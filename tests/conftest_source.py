@@ -1,5 +1,5 @@
 """
-Configuration of `pytest` library.
+Configure `pytest` library.
 
 EDITABLE: This file is the editable version of `conftest.py`. Script
 ``mock_upgrade.py`` must be run after editing this file (no flags, or

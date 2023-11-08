@@ -20,7 +20,6 @@ import argparse
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from types import FunctionType
 
 import requests
 from responses import _recorder

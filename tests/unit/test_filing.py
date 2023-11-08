@@ -1,17 +1,17 @@
-"""Define tests for ``."""
+"""Define tests for `Filing`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.filing import Filing
+import xbrl_filings_api as xf
 
-# Filing
-# Filing.__repr__
-# Filing.download
-# Filing.download_async_iter
-# Filing._search_entity
-# Filing._search_validation_messages
-# Filing._derive_language
-# Filing._derive_reporting_date
-# Filing._get_package_url_stem
+# xf.Filing
+# xf.Filing.__repr__
+# xf.Filing.download
+# xf.Filing.download_async_iter
+# xf.Filing._search_entity
+# xf.Filing._search_validation_messages
+# xf.Filing._derive_language
+# xf.Filing._derive_reporting_date
+# xf.Filing._get_package_url_stem

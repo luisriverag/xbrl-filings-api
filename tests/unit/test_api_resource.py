@@ -1,12 +1,12 @@
-"""Define tests for ``."""
+"""Define tests for `APIResource`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.api_resource import APIResource
+import xbrl_filings_api as xf
 
-# APIResource
-# APIResource.get_data_attributes
-# APIResource._get_unused_download_paths
-# APIResource.get_columns
+# xf.api_resource.APIResource
+# xf.api_resource.APIResource.get_data_attributes
+# xf.api_resource.APIResource._get_unused_download_paths
+# xf.api_resource.APIResource.get_columns

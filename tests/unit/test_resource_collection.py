@@ -1,15 +1,15 @@
-"""Define tests for ``."""
+"""Define tests for `ResourceCollection`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.resource_collection import ResourceCollection
+import xbrl_filings_api as xf
 
-# ResourceCollection
-# ResourceCollection.__iter__
-# ResourceCollection.__len__
-# ResourceCollection.__contains__
-# ResourceCollection.get_pandas_data
-# ResourceCollection.columns
-# ResourceCollection.exist
+# xf.ResourceCollection
+# xf.ResourceCollection.__iter__
+# xf.ResourceCollection.__len__
+# xf.ResourceCollection.__contains__
+# xf.ResourceCollection.get_pandas_data
+# xf.ResourceCollection.columns
+# xf.ResourceCollection.exist

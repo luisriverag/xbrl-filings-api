@@ -14,19 +14,7 @@ from datetime import date, datetime, timezone
 import pytest
 import requests
 
-from xbrl_filings_api import (
-    GET_ENTITY,
-    GET_ONLY_FILINGS,
-    GET_VALIDATION_MESSAGES,
-    APIError,
-    Entity,
-    Filing,
-    FilingsPage,
-    ValidationMessage,
-    options,
-    query,
-)
-from xbrl_filings_api.exceptions import FilterNotSupportedWarning
+import xbrl_filings_api as xf
 
 UTC = timezone.utc
 
@@ -47,39 +35,20 @@ def _db_record_count(cur):
     )
 def test_filing_page_iter(multipage_lax_response, monkeypatch):
     """Requested filings are available on 3 pages."""
-    monkeypatch.setattr(options, 'max_page_size', 2)
-    piter = query.filing_page_iter(
+    monkeypatch.setattr(xf.options, 'max_page_size', 2)
+    piter = xf.filing_page_iter(
         filters={
             'country': 'SE'
             },
         sort='added_time',
         max_size=5,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     page1 = next(piter, None)
-    assert isinstance(page1, FilingsPage), 'Pages are returned'
+    assert isinstance(page1, xf.FilingsPage), 'Pages are returned'
     page2 = next(piter, None)
-    assert isinstance(page2, FilingsPage), '3 pages are returned'
+    assert isinstance(page2, xf.FilingsPage), '3 pages are returned'
     page3 = next(piter, None)
-    assert isinstance(page3, FilingsPage), '3 pages are returned'
+    assert isinstance(page3, xf.FilingsPage), '3 pages are returned'
     page_none = next(piter, None)
     assert page_none is None, 'No more than 3 pages are returned'
-
-
-# def test_filing_page_iter_filings_count(s,
-        # multipage_response, monkeypatch):
-    # """Function returns correct number of filings."""
-    # monkeypatch.setattr(options, 'max_page_size', 2)
-    # piter = query.filing_page_iter(
-        # filters={
-            # 'country': 'SE'
-            # },
-        # sort='added_time',
-        # max_size=5,
-        # flags=GET_ONLY_FILINGS
-        # )
-    # for i, page in enumerate(piter):
-        # if i < 2:
-            # assert len(page.filing_list) == 2, f'Page {i+1} is full with 2 filings'
-        # elif i == 2:
-            # assert len(page.filing_list) == 1, 'Third page has one filing'

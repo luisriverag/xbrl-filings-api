@@ -1,9 +1,9 @@
-"""Define tests for ``."""
+"""Define tests for `time_formats`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.time_formats import time_formats
+import xbrl_filings_api as xf
 
-# time_formats.values()
+# xf.time_formats.values()

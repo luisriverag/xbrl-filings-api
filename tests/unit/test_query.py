@@ -1,4 +1,4 @@
-"""Define tests for query functions."""
+"""Define general tests for query functions."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -9,24 +9,11 @@
 
 import os
 import sqlite3
-from datetime import date, datetime, timezone
+from datetime import timezone
 
 import pytest
-import requests
 
-from xbrl_filings_api import (
-    GET_ENTITY,
-    GET_ONLY_FILINGS,
-    GET_VALIDATION_MESSAGES,
-    APIError,
-    Entity,
-    Filing,
-    FilingsPage,
-    ValidationMessage,
-    options,
-    query,
-)
-from xbrl_filings_api.exceptions import FilterNotSupportedWarning
+import xbrl_filings_api as xf
 
 UTC = timezone.utc
 
@@ -39,24 +26,24 @@ def _db_record_count(cur):
 def test_get_filings(asml22en_response):
     """Requested filing is returned."""
     asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
-    fs = query.get_filings(
+    fs = xf.get_filings(
         filters={
             'filing_index': asml22_fxo
             },
         sort=None,
         max_size=1,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     asml22 = next(iter(fs), None)
-    assert isinstance(asml22, Filing), 'Filing is returned'
+    assert isinstance(asml22, xf.Filing), 'Filing is returned'
 
 @pytest.mark.sqlite
 def test_to_sqlite(asml22en_response, tmp_path, monkeypatch):
     """Requested filing is inserted into a database."""
-    monkeypatch.setattr(options, 'views', None)
+    monkeypatch.setattr(xf.options, 'views', None)
     asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
     db_path = tmp_path / 'test_to_sqlite.db'
-    query.to_sqlite(
+    xf.to_sqlite(
         path=db_path,
         update=False,
         filters={
@@ -64,7 +51,7 @@ def test_to_sqlite(asml22en_response, tmp_path, monkeypatch):
             },
         sort=None,
         max_size=1,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     assert os.access(db_path, os.F_OK), 'Database file is created'
     con = sqlite3.connect(db_path)
@@ -80,15 +67,15 @@ def test_to_sqlite(asml22en_response, tmp_path, monkeypatch):
 def test_filing_page_iter(asml22en_response):
     """Requested filing is returned on a filing page."""
     asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
-    piter = query.filing_page_iter(
+    piter = xf.filing_page_iter(
         filters={
             'filing_index': asml22_fxo
             },
         sort=None,
         max_size=1,
-        flags=GET_ONLY_FILINGS
+        flags=xf.GET_ONLY_FILINGS
         )
     page = next(piter, None)
-    assert isinstance(page, FilingsPage), 'First iteration returns a page'
+    assert isinstance(page, xf.FilingsPage), 'First iteration returns a page'
     asml22 = next(iter(page.filing_list), None)
-    assert isinstance(asml22, Filing), 'Filing is returned on a page'
+    assert isinstance(asml22, xf.Filing), 'Filing is returned on a page'

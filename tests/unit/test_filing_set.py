@@ -1,15 +1,15 @@
-"""Define tests for ``."""
+"""Define tests for `FilingSet`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from xbrl_filings_api.filing_set import FilingSet
+import xbrl_filings_api as xf
 
-# FilingSet
-# FilingSet.download
-# FilingSet.download_async_iter
-# FilingSet.to_sqlite
-# FilingSet.get_pandas_data
-# FilingSet._get_data_sets
-# FilingSet.columns
+# xf.FilingSet
+# xf.FilingSet.download
+# xf.FilingSet.download_async_iter
+# xf.FilingSet.to_sqlite
+# xf.FilingSet.get_pandas_data
+# xf.FilingSet._get_data_sets
+# xf.FilingSet.columns
