@@ -16,8 +16,8 @@ the aforementioned script.
 
 from pathlib import Path
 
-import pytest  # noqa: F401
-import responses  # noqa: F401
+import pytest
+import responses
 
 MOCK_URL_DIR_NAME = 'mock_responses'
 

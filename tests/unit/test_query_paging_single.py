@@ -7,16 +7,12 @@
 # Allow unnecessary double quotes as file includes SQL statements.
 # ruff: noqa: Q000
 
-import os
 import sqlite3
-from datetime import date, datetime, timezone
 
 import pytest
 import requests
 
 import xbrl_filings_api as xf
-
-UTC = timezone.utc
 
 
 def _db_record_count(cur):

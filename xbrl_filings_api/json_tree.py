@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT
 
 import logging
-import time
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any, ClassVar, Optional, Union

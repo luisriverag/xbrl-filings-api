@@ -28,6 +28,7 @@ MOCK_URL_DIR_NAME = 'mock_responses'
 CONFTEST_SRC_PATH = 'conftest_source.py'
 CONFTEST_OUT_PATH = 'conftest.py'
 ENTRY_POINT_URL = 'https://filings.xbrl.org/api/filings'
+REQUEST_TIMEOUT = 30.0
 
 conftest_src_spath = str(Path(__file__).parent / CONFTEST_SRC_PATH)
 conftest_out_spath = str(Path(__file__).parent / CONFTEST_OUT_PATH)
@@ -35,7 +36,12 @@ mock_dir_path = Path(__file__).parent / MOCK_URL_DIR_NAME
 JSON_API_HEADERS = {
     'Content-Type': 'application/vnd.api+json'
     }
-REQUEST_TIMEOUT = 30.0
+REMOVE_UNNECESSARY_IMPORT_NOQA_MODULES = 'pytest', 'responses'
+NOQA_PATTERN = 'import {module_name}  # noqa: F401\n'
+remove_unnecessary_import_noqa_lines = tuple(
+    NOQA_PATTERN.format(module_name=module_name)
+    for module_name in REMOVE_UNNECESSARY_IMPORT_NOQA_MODULES
+    )
 
 URL_MOCK_FIXTURE_TEMPLATE = '''
 @pytest.fixture
@@ -563,7 +569,12 @@ def _upgrade_mock_urls(only_new):
                     ctout.write(NO_EDIT_DOCSTRING.lstrip() + '\n')
                     skip_until_newline = True
                 else:
-                    ctout.write(line)
+                    wline = line
+                    for noqa_line in remove_unnecessary_import_noqa_lines:
+                        if line == noqa_line:
+                            # Remove noqa part
+                            wline = wline[:-15] + '\n'
+                    ctout.write(wline)
 
         # Iterate URL mock collections, download and save request
         # contents and append conftext.py accordingly
