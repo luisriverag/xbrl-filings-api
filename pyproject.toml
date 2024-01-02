@@ -66,9 +66,10 @@ packages = ["xbrl_filings_api"]
 
 [tool.hatch.envs.default]
 dependencies = [
-    "coverage[toml]>=6.5",
+    "coverage[toml]>=7.4",
     "pytest>=7.4",
     "responses~=0.23.3", # Compatible release due to beta feature use
+    "pandas>=2.1.4",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
@@ -83,12 +84,11 @@ cov = [
 ]
 
 [[tool.hatch.envs.all.matrix]]
-python = ["3.9", "3.10", "3.11"]
+python = ["3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
-    "black>=23.7.0",
     "mypy>=1.5.1",
     "ruff>=0.0.285",
 ]
@@ -96,22 +96,11 @@ dependencies = [
 typing = "mypy --install-types --non-interactive {args:xbrl_filings_api tests}"
 style = [
     "ruff {args:.}",
-    "black --check --diff {args:.}",
-]
-fmt = [
-    "black {args:.}",
-    "ruff --fix {args:.}",
-    "style",
 ]
 all = [
     "style",
     "typing",
 ]
-
-[tool.black]
-target-version = ["py39"]
-line-length = 79
-skip-string-normalization = true
 
 [tool.coverage.run]
 source_pkgs = ["xbrl_filings_api", "tests"]
