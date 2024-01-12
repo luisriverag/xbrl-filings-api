@@ -59,9 +59,9 @@ Data attributes:
 | `inconsistency_count`   | int      | Count of validation inconsistencies | (**X**) | `inconsistency_count` |
 | `warning_count`         | int      | Count of validation warnings        | (**X**) | `warning_count`       |
 | `added_time`            | datetime | Time when added to `filings.xbrl.org` | **X** | `date_added  `        |
-| `added_time_str`        | str      | Original of `added_time`            | **X** | `date_added  `        |
+| `added_time_str`        | str      | Original of `added_time`            | **X**   | `date_added  `        |
 | `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | **X** | `processed`      |
-| `processed_time_str`    | str      | Original of `processed_time`        | **X** | `processed`      |
+| `processed_time_str`    | str      | Original of `processed_time`        | **X**   | `processed`           |
 | `entity_api_id`         | str      | Same as `entity.api_id`             |         | Entity resource `id`  |
 | `json_url`              | str      | xBRL-JSON download URL              | (**X**) | `json_url`            |
 | `package_url`           | str      | ESEF report package download URL    | (**X**) | `package_url`         |
@@ -123,7 +123,7 @@ Data attributes:
 | `calc_context_id`       | str      | Context ID of calcInconsistency     | *derived*           |
 | `calc_line_item`        | str      | Line item of calcInconsistency      | *derived*           |
 | `calc_short_role`       | str      | Short role of calcInconsistency     | *derived*           |
-| `calc_unreported_items` | str      | Unreported contibuting items of calcInconsistency | *derived* |
+| `calc_unreported_items` | str      | Unreported contributing items of calcInconsistency | *derived* |
 | `duplicate_greater`     | float    | Greater one of duplicated facts     | *derived*           |
 | `duplicate_lesser`      | float    | Lesser one of duplicated facts      | *derived*           |
 | `query_time`            | datetime | Time when query function was called | \-                  |

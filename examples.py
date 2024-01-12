@@ -6,17 +6,20 @@
 
 import asyncio
 import logging
-import os.path
 import tempfile
+from pathlib import Path
 
 import xbrl_filings_api as xf
+from xbrl_filings_api import DownloadResult
+
+# By default, log to temporary directory, such as environment variables
+# "TMPDIR" or "TEMP"
+LOGGING_DIR_PATH = Path(tempfile.gettempdir())
+LOGGING_FILE_NAME = 'xbrl-filings-api_examples.log'
 
 # Set up logging
 logging.basicConfig(
-    filename=os.path.join(
-        tempfile.gettempdir(),
-        'xbrl-filings-api_example.log'
-        ),
+    filename=str(LOGGING_DIR_PATH / LOGGING_FILE_NAME),
     encoding='utf-8',
     level=logging.DEBUG,
     format='{asctime} {levelname:3.3} {name}: {message}',
@@ -41,6 +44,7 @@ async def print_progress_async():
 
     dl_iter = filings.download_async_iter(
         ['xhtml', 'json', 'package'], save_path, max_concurrent=4)
+    result: DownloadResult
     async for result in dl_iter:
         print('\nDownloaded       ' + result.url)
         if result.path:
