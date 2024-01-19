@@ -19,6 +19,8 @@ from pathlib import Path
 import pytest
 import responses
 
+from xbrl_filings_api import FilingSet, ResourceCollection
+
 MOCK_URL_DIR_NAME = 'mock_responses'
 
 mock_dir_path = Path(__file__).parent / MOCK_URL_DIR_NAME
@@ -28,6 +30,21 @@ def _get_path(set_id):
     """Get absolute file path of the mock URL collection file."""
     file_path = mock_dir_path / f'{set_id}.yaml'
     return str(file_path)
+
+
+@pytest.fixture
+def filings() -> FilingSet:
+    """Return FilingSet."""
+    return FilingSet()
+
+
+@pytest.fixture
+def res_colls(filings) -> dict[str, ResourceCollection]:
+    """Return subresource collections for filings fixture."""
+    return {
+        'Entity': filings.entities,
+        'ValidationMessage': filings.validation_messages
+        }
 
 
 @pytest.fixture
@@ -59,6 +76,22 @@ def asml22en_vmessages_response():
     """ASML Holding 2022 English AFR filing with validation messages."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('asml22en_vmessages'))
+        yield rsps
+
+
+@pytest.fixture
+def assicurazioni21it_vmessages_response():
+    """Assicurazioni Generali 2021 Italian AFR filing with validation messages."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('assicurazioni21it_vmessages'))
+        yield rsps
+
+
+@pytest.fixture
+def tecnotree21fi_vmessages_response():
+    """Tecnotree 2021 Finnish AFR filing with validation messages."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('tecnotree21fi_vmessages'))
         yield rsps
 
 
@@ -190,7 +223,7 @@ def sort_two_fields_response():
     .. warning::
 
         Volatile with ``mock_upgrade.py`` run. See test
-        ``test_query::Test_get_filings::test_sort_two_fields``.
+        ``test_query_sort::test_sort_two_fields``.
     """
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('sort_two_fields'))

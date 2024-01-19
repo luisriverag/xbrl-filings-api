@@ -36,7 +36,7 @@ mock_dir_path = Path(__file__).parent / MOCK_URL_DIR_NAME
 JSON_API_HEADERS = {
     'Content-Type': 'application/vnd.api+json'
     }
-REMOVE_UNNECESSARY_IMPORT_NOQA_MODULES = 'pytest', 'responses'
+REMOVE_UNNECESSARY_IMPORT_NOQA_MODULES = ('responses',)
 NOQA_PATTERN = 'import {module_name}  # noqa: F401\n'
 remove_unnecessary_import_noqa_lines = tuple(
     NOQA_PATTERN.format(module_name=module_name)
@@ -162,6 +162,40 @@ def _fetch_asml22en_vmessages():
         timeout=REQUEST_TIMEOUT
         )
 _addmock('asml22en_vmessages')
+
+
+@_recorder.record(file_path=_get_path('assicurazioni21it_vmessages'))
+def _fetch_assicurazioni21it_vmessages():
+    """Assicurazioni Generali 2021 Italian AFR filing with validation messages."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'include': 'validation_messages',
+            # fxo_id = filing_index
+            'filter[fxo_id]': '549300X5UKJVE386ZB61-2021-12-31-ESEF-IT-0'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('assicurazioni21it_vmessages')
+
+
+@_recorder.record(file_path=_get_path('tecnotree21fi_vmessages'))
+def _fetch_tecnotree21fi_vmessages():
+    """Tecnotree 2021 Finnish AFR filing with validation messages."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'include': 'validation_messages',
+            # fxo_id = filing_index
+            'filter[fxo_id]': '743700MRPVYI7ASHCX38-2021-12-31-ESEF-FI-0'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('tecnotree21fi_vmessages')
 
 
 @_recorder.record(file_path=_get_path('asml22en_ent_vmsg'))

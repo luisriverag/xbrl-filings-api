@@ -49,7 +49,7 @@ class ValidationMessage(APIResource):
     calc_context_id : str or None
     calc_line_item : str or None
     calc_short_role : str or None
-    calc_unreported_items : str or None
+    calc_unreported_items : list of str or None
     duplicate_greater : float or None
     duplicate_lesser : float or None
     query_time : datetime
@@ -188,6 +188,10 @@ class ValidationMessage(APIResource):
 
         Based on attribute `text` for validation messages whose `code`
         is ``message:tech_duplicated_facts1``.
+
+        Does not include code ``formula:assertionUnsatisfied`` with
+        ``tech_duplicated_facts1`` in the beginning of the message (more
+        than 2 duplicated facts).
         """
 
         self.duplicate_lesser: Union[float, None] = None
@@ -196,6 +200,10 @@ class ValidationMessage(APIResource):
 
         Based on attribute `text` for validation messages whose `code`
         is ``message:tech_duplicated_facts1``.
+
+        Does not include code ``formula:assertionUnsatisfied`` with
+        ``tech_duplicated_facts1`` in the beginning of the message (more
+        than 2 duplicated facts).
         """
 
         if self.code == 'xbrl.5.2.5.2:calcInconsistency':
@@ -241,6 +249,10 @@ class ValidationMessage(APIResource):
         Displays `code` attribute.
         """
         return f'{self.__class__.__name__}(code={self.code!r})'
+
+    def __str__(self) -> str:
+        """Return `text` attribute value."""
+        return self.text
 
     def _derive_calc(self, re_obj: re.Pattern) -> Union[str, None]:
         mt = re_obj.search(self.text)

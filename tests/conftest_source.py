@@ -16,8 +16,10 @@ flag ``-n`` / ``--new``).
 
 from pathlib import Path
 
-import pytest  # noqa: F401
+import pytest
 import responses  # noqa: F401
+
+from xbrl_filings_api import FilingSet, ResourceCollection
 
 MOCK_URL_DIR_NAME = 'mock_responses'
 
@@ -28,3 +30,18 @@ def _get_path(set_id):
     """Get absolute file path of the mock URL collection file."""
     file_path = mock_dir_path / f'{set_id}.yaml'
     return str(file_path)
+
+
+@pytest.fixture
+def filings() -> FilingSet:
+    """Return FilingSet."""
+    return FilingSet()
+
+
+@pytest.fixture
+def res_colls(filings) -> dict[str, ResourceCollection]:
+    """Return subresource collections for filings fixture."""
+    return {
+        'Entity': filings.entities,
+        'ValidationMessage': filings.validation_messages
+        }

@@ -141,7 +141,7 @@ def get_filings(
         }
 
     page_gen = request_processor.generate_pages(
-        filters, sort, max_size, flags, add_api_params, res_colls)
+        filters, max_size, flags, res_colls, sort, add_api_params)
     for page in page_gen:
         filings.update(page.filing_list)
     return filings
@@ -246,7 +246,7 @@ def to_sqlite(
         }
 
     page_gen = request_processor.generate_pages(
-        filters, sort, max_size, flags, add_api_params, res_colls)
+        filters, max_size, flags, res_colls, sort, add_api_params)
     for page in page_gen:
         page_filings = FilingSet(page.filing_list)
         page_filings.to_sqlite(
@@ -313,5 +313,5 @@ def filing_page_iter(
         }
 
     page_gen = request_processor.generate_pages(
-        filters, sort, max_size, flags, add_api_params, res_colls)
+        filters, max_size, flags, res_colls, sort, add_api_params)
     yield from page_gen

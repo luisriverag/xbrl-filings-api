@@ -42,11 +42,11 @@ api_attribute_map: dict[str, str]
 
 def generate_pages(
         filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None],
-        sort: Union[Sequence[str], None],
         max_size: int,
         flags: ScopeFlag,
-        add_api_params: Union[Mapping, None],
-        res_colls: dict[str, ResourceCollection]
+        res_colls: dict[str, ResourceCollection],
+        sort: Union[Sequence[str], None] = None,
+        add_api_params: Union[Mapping, None] = None,
         ) -> Generator[FilingsPage, None, None]:
     """
     Generate instances of `FilingsPage` from the API.
@@ -54,11 +54,11 @@ def generate_pages(
     Parameters
     ----------
     filters : mapping of str: {any, iterable of any}, optional
-    sort: sequence of str or None
     max_size : int or NO_LIMIT
     flags : ScopeFlag
-    add_api_params : mapping, optional
     res_colls : dict of str: ResourceCollection
+    sort: sequence of str, optional
+    add_api_params : mapping, optional
 
     Yields
     ------
