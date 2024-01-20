@@ -68,7 +68,8 @@ def asml22en_positive_msg(res_colls, asml22en_vmessages_filing):
 
 
 @pytest.fixture
-def assicurazioni21it_vmessages_filing(assicurazioni21it_vmessages_response, res_colls):
+def assicurazioni21it_vmessages_filing(
+        assicurazioni21it_vmessages_response, res_colls):
     """Assicurazioni Generali 2021 Italian AFR filing."""
     page_gen = request_processor.generate_pages(
         filters={'filing_index': '549300X5UKJVE386ZB61-2021-12-31-ESEF-IT-0'},
@@ -81,7 +82,7 @@ def assicurazioni21it_vmessages_filing(assicurazioni21it_vmessages_response, res
 
 
 @pytest.fixture
-def assicurazioni21it_duplicate_str_msg(res_colls, assicurazioni21it_vmessages_filing):
+def assicurazioni21it_duplicate_str_msg(assicurazioni21it_vmessages_filing):
     """Validation message with id '104877' from `assicurazioni21it_vmessages`."""
     filing: xf.Filing = assicurazioni21it_vmessages_filing
     vmsg: xf.ValidationMessage = next(filter(
@@ -92,7 +93,8 @@ def assicurazioni21it_duplicate_str_msg(res_colls, assicurazioni21it_vmessages_f
 
 
 @pytest.fixture
-def tecnotree21fi_vmessages_filing(tecnotree21fi_vmessages_response, res_colls):
+def tecnotree21fi_vmessages_filing(
+        tecnotree21fi_vmessages_response, res_colls):
     """Tecnotree 2021 Finnish AFR filing."""
     page_gen = request_processor.generate_pages(
         filters={'filing_index': '743700MRPVYI7ASHCX38-2021-12-31-ESEF-FI-0'},
@@ -105,7 +107,7 @@ def tecnotree21fi_vmessages_filing(tecnotree21fi_vmessages_response, res_colls):
 
 
 @pytest.fixture
-def duplicate_num_msg(res_colls, tecnotree21fi_vmessages_filing):
+def tecnotree21fi_duplicate_num_msg(res_colls, tecnotree21fi_vmessages_filing):
     """Validation message with id '41766' from `tecnotree21fi_vmessages`."""
     filing: xf.Filing = tecnotree21fi_vmessages_filing
     vmsg: xf.ValidationMessage = next(filter(
@@ -115,7 +117,9 @@ def duplicate_num_msg(res_colls, tecnotree21fi_vmessages_filing):
     return vmsg
 
 
-class TestAsml22enCalcMsg:
+class TestCalcMsg:
+    """Test calcInconsistency code in ASML 2022 filing in English."""
+
     def test_repr(self, asml22en_calc_msg):
         """Test __repr__ method."""
         e_repr = "ValidationMessage(code='xbrl.5.2.5.2:calcInconsistency')"
@@ -155,15 +159,17 @@ class TestAsml22enCalcMsg:
         else:
             assert getattr(asml22en_calc_msg, attr_name) == expected
 
-    def test_nondata_attributes(self, asml22en_calc_msg):
-        """Test the non-data attributes."""
+    def test_other_attributes(self, asml22en_calc_msg):
+        """Test the meta and object reference attributes."""
         assert isinstance(asml22en_calc_msg.filing, xf.Filing)
         assert isinstance(asml22en_calc_msg.query_time, datetime)
         assert isinstance(asml22en_calc_msg.request_url, str)
         assert '://' in asml22en_calc_msg.request_url
 
 
-class TestAsml22enPositiveMsg:
+class TestPositiveMsg:
+    """Test 'message:positive' code in ASML 2022 filing in English."""
+
     def test_repr(self, asml22en_positive_msg):
         """Test __repr__ method."""
         e_repr = "ValidationMessage(code='message:positive')"
@@ -208,7 +214,9 @@ class TestAsml22enPositiveMsg:
         assert '://' in asml22en_positive_msg.request_url
 
 
-class TestAssicurazioni21itDuplicateStrMsg:
+class TestDuplicateStrMsg:
+    """Test duplicate strings in Assicurazioni 2021 filing in Italian."""
+
     def test_repr(self, assicurazioni21it_duplicate_str_msg):
         """Test __repr__ method."""
         e_repr = "ValidationMessage(code='message:tech_duplicated_facts1')"
@@ -216,7 +224,8 @@ class TestAssicurazioni21itDuplicateStrMsg:
 
     def test_str(self, assicurazioni21it_duplicate_str_msg):
         """Test __str__ method."""
-        assert str(assicurazioni21it_duplicate_str_msg) == ASSICURAZIONI21IT_DUPLICATE_STR_TEXT
+        vmsg: xf.ValidationMessage = assicurazioni21it_duplicate_str_msg
+        assert str(vmsg) == ASSICURAZIONI21IT_DUPLICATE_STR_TEXT
 
     @pytest.mark.parametrize('attr_name,expected', [
         ('api_id', '104877'),
@@ -228,7 +237,8 @@ class TestAssicurazioni21itDuplicateStrMsg:
     def test_data_attributes(
             self, assicurazioni21it_duplicate_str_msg, attr_name, expected):
         """Test non-derived data attributes."""
-        assert getattr(assicurazioni21it_duplicate_str_msg, attr_name) == expected
+        vmsg: xf.ValidationMessage = assicurazioni21it_duplicate_str_msg
+        assert getattr(vmsg, attr_name) == expected
 
     @pytest.mark.parametrize('attr_name', [
         'calc_computed_sum',
@@ -247,21 +257,25 @@ class TestAssicurazioni21itDuplicateStrMsg:
 
     def test_nondata_attributes(self, assicurazioni21it_duplicate_str_msg):
         """Test the non-data attributes."""
-        assert isinstance(assicurazioni21it_duplicate_str_msg.filing, xf.Filing)
-        assert isinstance(assicurazioni21it_duplicate_str_msg.query_time, datetime)
-        assert isinstance(assicurazioni21it_duplicate_str_msg.request_url, str)
-        assert '://' in assicurazioni21it_duplicate_str_msg.request_url
+        vmsg: xf.ValidationMessage = assicurazioni21it_duplicate_str_msg
+        assert isinstance(vmsg.filing, xf.Filing)
+        assert isinstance(vmsg.query_time, datetime)
+        assert isinstance(vmsg.request_url, str)
+        assert '://' in vmsg.request_url
 
 
-class TestTecnotree21fiDuplicateNumMsg:
-    def test_repr(self, duplicate_num_msg):
+class TestDuplicateNumMsg:
+    """Test duplicate numbers in Tecnotree 2021 filing in Finnish."""
+
+    def test_repr(self, tecnotree21fi_duplicate_num_msg):
         """Test __repr__ method."""
         e_repr = "ValidationMessage(code='message:tech_duplicated_facts1')"
-        assert repr(duplicate_num_msg) == e_repr
+        assert repr(tecnotree21fi_duplicate_num_msg) == e_repr
 
-    def test_str(self, duplicate_num_msg):
+    def test_str(self, tecnotree21fi_duplicate_num_msg):
         """Test __str__ method."""
-        assert str(duplicate_num_msg) == TECNOTREE21FI_DUPLICATE_NUM_TEXT
+        vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
+        assert str(vmsg) == TECNOTREE21FI_DUPLICATE_NUM_TEXT
 
     @pytest.mark.parametrize('attr_name,expected', [
         ('api_id', '41766'),
@@ -271,9 +285,9 @@ class TestTecnotree21fiDuplicateNumMsg:
         ('filing_api_id', '3965'),
         ])
     def test_data_attributes(
-            self, duplicate_num_msg, attr_name, expected):
+            self, tecnotree21fi_duplicate_num_msg, attr_name, expected):
         """Test non-derived data attributes."""
-        assert getattr(duplicate_num_msg, attr_name) == expected
+        assert getattr(tecnotree21fi_duplicate_num_msg, attr_name) == expected
 
     @pytest.mark.parametrize('attr_name,expected', [
         ('calc_computed_sum', None),
@@ -286,16 +300,18 @@ class TestTecnotree21fiDuplicateNumMsg:
         ('duplicate_lesser', -637000),
         ])
     def test_derived_attributes(
-            self, duplicate_num_msg, attr_name, expected):
+            self, tecnotree21fi_duplicate_num_msg, attr_name, expected):
         """Test derived attributes."""
+        vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
         if expected is None:
-            assert getattr(duplicate_num_msg, attr_name) is None
+            assert getattr(vmsg, attr_name) is None
         else:
-            assert getattr(duplicate_num_msg, attr_name) == expected
+            assert getattr(vmsg, attr_name) == expected
 
-    def test_nondata_attributes(self, duplicate_num_msg):
+    def test_nondata_attributes(self, tecnotree21fi_duplicate_num_msg):
         """Test the non-data attributes."""
-        assert isinstance(duplicate_num_msg.filing, xf.Filing)
-        assert isinstance(duplicate_num_msg.query_time, datetime)
-        assert isinstance(duplicate_num_msg.request_url, str)
-        assert '://' in duplicate_num_msg.request_url
+        vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
+        assert isinstance(vmsg.filing, xf.Filing)
+        assert isinstance(vmsg.query_time, datetime)
+        assert isinstance(vmsg.request_url, str)
+        assert '://' in vmsg.request_url
