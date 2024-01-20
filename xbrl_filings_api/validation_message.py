@@ -252,6 +252,8 @@ class ValidationMessage(APIResource):
 
     def __str__(self) -> str:
         """Return `text` attribute value."""
+        if self.text is None:
+            return ''
         return self.text
 
     def _derive_calc(self, re_obj: re.Pattern) -> Union[str, None]:

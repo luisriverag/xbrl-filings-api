@@ -46,7 +46,7 @@ class Entity(APIResource):
         """
         The identifier for entity.
 
-        For ESEF filers, this is the LEI code.
+        For ESEF filers, this should be the LEI code.
         """
 
         self.name: Union[str, None] = self._json.get(self.NAME)
@@ -69,3 +69,13 @@ class Entity(APIResource):
     def __repr__(self) -> str:
         """Return string repr of the entity."""
         return f'{self.__class__.__name__}(name={self.name!r})'
+
+    def __str__(self) -> str:
+        """Return string str of the entity."""
+        if self.name and self.identifier:
+            return f'{self.name} ({self.identifier})'
+        if self.name:
+            return self.name
+        if self.identifier:
+            return self.identifier
+        return ''
