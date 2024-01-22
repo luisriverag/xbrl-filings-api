@@ -114,6 +114,23 @@ def _fetch_creditsuisse21en_by_id():
 _addmock('creditsuisse21en_by_id')
 
 
+@_recorder.record(file_path=_get_path('creditsuisse21en_by_id_entity'))
+def _fetch_creditsuisse21en_by_id_entity():
+    """Credit Suisse 2021 English AFR filing by `api_id` and with Entity."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            # id = api_id
+            'filter[id]': '162',
+            'include': 'entity',
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('creditsuisse21en_by_id_entity')
+
+
 @_recorder.record(file_path=_get_path('asml22en'))
 def _fetch_asml22en():
     """ASML Holding 2022 English AFR filing."""

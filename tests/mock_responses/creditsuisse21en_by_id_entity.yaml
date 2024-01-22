@@ -1,0 +1,22 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"data": [{"type": "filing", "attributes": {"date_added": "2022-03-29 00:00:00",
+      "json_url": null, "processed": "2023-01-18 11:02:09.042110", "error_count":
+      1, "fxo_id": "E58DKGMJYYYJLN8C3868-2021-12-31-ESEF-LU-0", "report_url": null,
+      "sha256": "dfb4c0b66a72c6d528de834b4d4c96364fd7fdbad5843922448ffad36ae1339d",
+      "package_url": "/E58DKGMJYYYJLN8C3868/2021-12-31/ESEF/LU/0/E58DKGMJYYYJLN8C3868-2021-12-31.zip",
+      "inconsistency_count": 0, "period_end": "2021-12-31", "viewer_url": null, "country":
+      "LU", "warning_count": 0}, "id": "162", "relationships": {"entity": {"links":
+      {"related": "/api/entities/E58DKGMJYYYJLN8C3868"}, "data": {"type": "entity",
+      "id": "123"}}, "validation_messages": {"links": {"related": "/api/filings/162/validation_messages"}}},
+      "links": {"self": "/api/filings/162"}}], "links": {"self": "https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&filter%5Bid%5D=162&include=entity"},
+      "included": [{"type": "entity", "attributes": {"identifier": "E58DKGMJYYYJLN8C3868",
+      "name": "CREDIT SUISSE INTERNATIONAL"}, "relationships": {"filings": {"links":
+      {"related": "/api/entities/E58DKGMJYYYJLN8C3868/filings"}}}, "id": "123", "links":
+      {"self": "/api/entities/E58DKGMJYYYJLN8C3868"}}], "meta": {"count": 1}, "jsonapi":
+      {"version": "1.0"}}'
+    content_type: text/plain
+    method: GET
+    status: 200
+    url: https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&filter%5Bid%5D=162&include=entity

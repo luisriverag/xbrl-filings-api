@@ -8,7 +8,7 @@ import logging
 import re
 import urllib.parse
 from collections.abc import AsyncIterator, Iterable, Mapping
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath
 from typing import ClassVar, Union
 
@@ -336,9 +336,9 @@ class Filing(APIResource):
         The original field name in the API is ``sha256``.
         """
 
-        self.entity = self._search_entity(json_frag, entity_iter)
+        self.entity = self._search_entity(entity_iter, json_frag)
         self.validation_messages = (
-            self._search_validation_messages(json_frag, message_iter))
+            self._search_validation_messages(message_iter, json_frag))
 
         self._json.close()
 
@@ -355,13 +355,79 @@ class Filing(APIResource):
         """
         start = f'{self.__class__.__name__}('
         if self.entity:
+            rrepdate = f"date({self.reporting_date.strftime('%Y, %m, %d')})"
             return (
                 start + f'entity.name={self.entity.name!r}, '
-                f'reporting_date={self.reporting_date}, '
+                f'reporting_date={rrepdate}, '
                 f'language={self.language!r})'
                 )
         else:
             return start + f'filing_index={self.filing_index!r})'
+
+    def __str__(self) -> str:
+        """
+        Return filing as a string.
+
+        Text has parts `entity.name`/`filing_index`, `reporting_date`
+        and `language` (in square brackets).
+        """
+        parts = []
+        if self.entity:
+            if self.entity.name:
+                parts.append(self.entity.name)
+        if len(parts) == 0 and self.filing_index:
+            parts.append(self.filing_index)
+
+        if self.reporting_date:
+            parts.append(self._get_simple_filing_date(self.reporting_date))
+        if self.language:
+            parts.append(f'[{self.language}]')
+        return ' '.join(parts)
+
+    def _get_simple_filing_date(self, rdate: date) -> str:
+        if rdate.month == 12 and rdate.day == 31:
+            return str(rdate.year)
+        if rdate.month != (rdate + timedelta(days=1)).month:
+            return rdate.strftime('%b-%Y')
+        return str(rdate)
+
+    def _derive_language(self) -> Union[str, None]:
+        stem = self._get_package_url_stem()
+        if not stem:
+            return None
+
+        normstem = stem.replace('_', '-')
+        last_part = normstem.split('-')[-1]
+        part_len = len(last_part)
+        is_bad_length = part_len < 2 or part_len > 3  # noqa: PLR2004
+        if is_bad_length or not last_part.isalpha():
+            return None
+
+        last_part = last_part.lower()
+        if part_len == 2:  # noqa: PLR2004
+            return last_part
+        else:
+            return LANG_CODE_TRANSFORM.get(last_part)
+
+    def _derive_reporting_date(self) -> Union[date, None]:
+        out_dt = self.last_end_date
+
+        stem = self._get_package_url_stem()
+        if not stem:
+            return out_dt
+
+        normstem = self._NOT_NUM_RE.sub('-', stem)
+        mlist = self._DATE_RE.findall(normstem)
+        if mlist:
+            year, month, day = mlist[-1]
+            try:
+                try_dt = date(int(year), int(month), int(day))
+            except ValueError:
+                # Bad date e.g. 2000-02-31
+                pass
+            else:
+                out_dt = try_dt
+        return out_dt
 
     def download(
             self,
@@ -513,8 +579,9 @@ class Filing(APIResource):
             yield result
 
     def _search_entity(
-            self, json_frag: Union[dict, EllipsisType],
-            entity_iter: Union[Iterable[Entity], None]
+            self,
+            entity_iter: Union[Iterable[Entity], None],
+            json_frag: Union[dict, EllipsisType]
             ) -> Union[Entity, None]:
         """Search for an `Entity` object for the filing."""
         if json_frag == Ellipsis or entity_iter is None:
@@ -539,8 +606,9 @@ class Filing(APIResource):
         return entity
 
     def _search_validation_messages(
-            self, json_frag: Union[dict, EllipsisType],
-            message_iter: Union[Iterable[ValidationMessage], None]
+            self,
+            message_iter: Union[Iterable[ValidationMessage], None],
+            json_frag: Union[dict, EllipsisType]
             ) -> Union[set[ValidationMessage], None]:
         """Search `ValidationMessage` objects for this filing."""
         if json_frag == Ellipsis or message_iter is None:
@@ -565,51 +633,14 @@ class Filing(APIResource):
                     logger.warning(msg, stacklevel=2)
         return found_msgs
 
-    def _derive_language(self) -> Union[str, None]:
-        stem = self._get_package_url_stem()
-        if not stem:
-            return None
-
-        normstem = stem.replace('_', '-')
-        last_part = normstem.split('-')[-1]
-        part_len = len(last_part)
-        is_bad_length = part_len < 2 or part_len > 3  # noqa: PLR2004
-        if is_bad_length or not last_part.isalpha():
-            return None
-
-        last_part = last_part.lower()
-        if part_len == 2:  # noqa: PLR2004
-            return last_part
-        else:
-            return LANG_CODE_TRANSFORM.get(last_part)
-
-    def _derive_reporting_date(self) -> Union[date, None]:
-        out_dt = self.last_end_date
-
-        stem = self._get_package_url_stem()
-        if not stem:
-            return out_dt
-
-        normstem = self._NOT_NUM_RE.sub('-', stem)
-        mlist = self._DATE_RE.findall(normstem)
-        if mlist:
-            year, month, day = mlist[-1]
-            try:
-                try_dt = date(int(year), int(month), int(day))
-            except ValueError:
-                # Bad date e.g. 2000-02-31
-                pass
-            else:
-                out_dt = try_dt
-        return out_dt
-
     def _get_package_url_stem(self) -> Union[str, None]:
         presult = None
         try:
             presult = urllib.parse.urlparse(self.package_url)
         except ValueError:
             pass
-        if not isinstance(presult, urllib.parse.ParseResult):
+        if (not isinstance(presult, urllib.parse.ParseResult)
+                or ':' not in self.package_url):
             return None
 
         url_path = None

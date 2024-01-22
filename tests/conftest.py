@@ -56,6 +56,14 @@ def creditsuisse21en_by_id_response():
 
 
 @pytest.fixture
+def creditsuisse21en_by_id_entity_response():
+    """Credit Suisse 2021 English AFR filing by `api_id` and with Entity."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('creditsuisse21en_by_id_entity'))
+        yield rsps
+
+
+@pytest.fixture
 def asml22en_response():
     """ASML Holding 2022 English AFR filing."""
     with responses.RequestsMock() as rsps:
