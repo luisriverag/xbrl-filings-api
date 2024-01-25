@@ -14,8 +14,8 @@ from xbrl_filings_api.downloader.download_processor import (
     download,
     download_async,
     download_parallel,
+    download_parallel_aiter,
     download_parallel_async,
-    download_parallel_async_iter,
     validate_stem_pattern,
 )
 from xbrl_filings_api.downloader.download_result import DownloadResult

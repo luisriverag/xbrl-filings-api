@@ -143,7 +143,7 @@ class FilingSet(set[Filing]):
         if excs:
             raise excs[0]
 
-    async def download_async_iter(
+    async def download_aiter(
             self,
             files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
             to_dir: Union[str, PurePath, None] = None,
@@ -193,7 +193,7 @@ class FilingSet(set[Filing]):
                     Filing.VALID_DOWNLOAD_FORMATS,
                     check_corruption=check_corruption
                     ))
-        dliter = downloader.download_parallel_async_iter(
+        dliter = downloader.download_parallel_aiter(
             items,
             max_concurrent=max_concurrent,
             timeout=timeout

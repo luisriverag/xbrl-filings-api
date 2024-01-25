@@ -156,7 +156,7 @@ def download_parallel(
     """
     Download multiple files in parallel.
 
-    See documentation of `download_parallel_async_iter`.
+    See documentation of `download_parallel_aiter`.
 
     Parameters
     ----------
@@ -199,7 +199,7 @@ async def download_parallel_async(
         Contains information on the finished download.
     """
     results = []
-    dliter = download_parallel_async_iter(
+    dliter = download_parallel_aiter(
         items,
         max_concurrent=max_concurrent,
         timeout=timeout
@@ -209,7 +209,7 @@ async def download_parallel_async(
     return results
 
 
-async def download_parallel_async_iter(
+async def download_parallel_aiter(
         items: list[DownloadSpecs],
         *,
         max_concurrent: int,
@@ -264,7 +264,7 @@ async def _download_parallel_worker(
         resultque: asyncio.Queue[DownloadResult],
         timeout: float
         ) -> NoReturn:
-    """Coroutine worker for `download_parallel_async_iter`."""
+    """Coroutine worker for `download_parallel_aiter`."""
     while True:
         item = await dlque.get()
         result = None

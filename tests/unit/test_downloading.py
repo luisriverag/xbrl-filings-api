@@ -8,4 +8,4 @@ import xbrl_filings_api as xf
 
 
 # xf.Filing.download
-# xf.Filing.download_async_iter
+# xf.Filing.download_aiter

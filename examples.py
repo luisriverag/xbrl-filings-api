@@ -42,7 +42,7 @@ async def print_progress_async():
         max_size=3
         )
 
-    dl_iter = filings.download_async_iter(
+    dl_iter = filings.download_aiter(
         ['xhtml', 'json', 'package'], save_path, max_concurrent=4)
     result: DownloadResult
     async for result in dl_iter:
