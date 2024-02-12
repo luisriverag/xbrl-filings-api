@@ -25,12 +25,12 @@ class Test_download_async:
     """Test method `xbrl_filings_api.downloader.download_async`."""
 
     async def test_original_filename(
-            self, mock_file_url, mock_url_response, tmp_path):
-        url = mock_file_url(1)
-        e_filename = PurePosixPath(urllib.parse.urlparse(url).path).name
+            self, mock_url_response, tmp_path):
+        e_filename = 'test_original_filename.zip'
+        url = f'https://filings.xbrl.org/download_async/{e_filename}'
         path_str = None
         with responses.RequestsMock() as rsps:
-            mock_url_response(1, rsps)
+            mock_url_response(url, rsps)
             path_str = await downloader.download_async(
                 url=url,
                 to_dir=tmp_path,
@@ -45,12 +45,12 @@ class Test_download_async:
         assert save_path.name == e_filename
 
     async def test_with_filename(
-            self, mock_file_url, mock_url_response, tmp_path):
-        url = mock_file_url(1)
+            self, mock_url_response, tmp_path):
+        url = 'https://filings.xbrl.org/download_async/test_with_filename.zip'
         e_filename = 'filename.abc'
         path_str = None
         with responses.RequestsMock() as rsps:
-            mock_url_response(1, rsps)
+            mock_url_response(url, rsps)
             path_str = await downloader.download_async(
                 url=url,
                 to_dir=tmp_path,
@@ -65,13 +65,12 @@ class Test_download_async:
         assert save_path.name == e_filename
 
     async def test_stem_pattern_filename(
-            self, mock_file_url, mock_url_response, tmp_path):
-        url = mock_file_url(1)
-        ppath = PurePosixPath(urllib.parse.urlparse(url).path)
-        e_filename = ppath.stem + '_test' + ppath.suffix
+            self, mock_url_response, tmp_path):
+        url = 'https://filings.xbrl.org/download_async/test_stem_pattern_filename.zip'
+        e_filename = 'test_stem_pattern_filename' + '_test' + '.zip'
         path_str = None
         with responses.RequestsMock() as rsps:
-            mock_url_response(1, rsps)
+            mock_url_response(url, rsps)
             path_str = await downloader.download_async(
                 url=url,
                 to_dir=tmp_path,
@@ -86,16 +85,16 @@ class Test_download_async:
         assert save_path.name == e_filename
 
     async def test_sha256_success(
-            self, mock_file_url, mock_url_response, mock_response_data,
+            self, mock_url_response, mock_response_data,
             tmp_path):
-        url = mock_file_url(1)
+        url = 'https://filings.xbrl.org/download_async/test_sha256_success.zip'
         fhash = hashlib.sha256(
             string=mock_response_data.encode(encoding='utf-8'),
             usedforsecurity=False
             )
         # No CorruptDownloadError raised
         with responses.RequestsMock() as rsps:
-            mock_url_response(1, rsps)
+            mock_url_response(url, rsps)
             await downloader.download_async(
                 url=url,
                 to_dir=tmp_path,
@@ -106,11 +105,12 @@ class Test_download_async:
                 )
 
     async def test_sha256_fail(
-            self, mock_file_url, mock_url_response, tmp_path):
-        url = mock_file_url(1)
+            self, mock_url_response, tmp_path):
+        e_filename = 'test_sha256_fail.zip'
+        url = f'https://filings.xbrl.org/download_async/{e_filename}'
         e_file_sha256 = '0' * 64
         with responses.RequestsMock() as rsps:
-            mock_url_response(1, rsps)
+            mock_url_response(url, rsps)
             with pytest.raises(xf_exceptions.CorruptDownloadError):
                 await downloader.download_async(
                     url=url,
@@ -120,9 +120,92 @@ class Test_download_async:
                     sha256=e_file_sha256,
                     timeout=30
                     )
+        corrupt_path = tmp_path / f'{e_filename}.corrupt'
+        assert corrupt_path.is_file()
+        assert corrupt_path.stat().st_size > 0
+        success_path = tmp_path / e_filename
+        assert not success_path.is_file()
+
+    async def test_autocreate_dir(
+            self, mock_url_response, tmp_path):
+        e_filename = 'test_autocreate_dir.zip'
+        url = f'https://filings.xbrl.org/download_async/{e_filename}'
+        path_str = None
+        deep_path = tmp_path / 'newdir' / 'anotherdir'
+        with responses.RequestsMock() as rsps:
+            mock_url_response(url, rsps)
+            path_str = await downloader.download_async(
+                url=url,
+                to_dir=deep_path,
+                stem_pattern=None,
+                filename=None,
+                sha256=None,
+                timeout=30
+                )
+        save_path = Path(path_str)
+        e_path = deep_path / e_filename
+        assert save_path == e_path
+        assert save_path.is_file()
+        assert save_path.stat().st_size > 0
+
+    async def test_overwrite_file(
+            self, mock_url_response, tmp_path):
+        e_filename = 'test_overwrite_file.zip'
+        url = f'https://filings.xbrl.org/download_async/{e_filename}'
+
+        existing_path = tmp_path / e_filename
+        existing_size = None
+        with open(existing_path, 'wb') as f:
+            existing_size = f.write(b'\x20')
+
+        path_str = None
+        with responses.RequestsMock() as rsps:
+            mock_url_response(url, rsps)
+            path_str = await downloader.download_async(
+                url=url,
+                to_dir=tmp_path,
+                stem_pattern=None,
+                filename=None,
+                sha256=None,
+                timeout=30
+                )
+        save_path = Path(path_str)
+        assert save_path == existing_path
+        assert save_path.is_file()
+        assert save_path.stat().st_size != existing_size
+
+    async def test_filename_not_available(
+            self, mock_url_response, tmp_path):
+        url = 'https://filings.xbrl.org/'
+        path_a = path_b = None
+        with responses.RequestsMock() as rsps:
+            mock_url_response(url, rsps)
+            path_a = await downloader.download_async(
+                url=url,
+                to_dir=tmp_path,
+                stem_pattern=None,
+                filename=None,
+                sha256=None,
+                timeout=30
+                )
+            path_b = await downloader.download_async(
+                url=url,
+                to_dir=tmp_path,
+                stem_pattern=None,
+                filename=None,
+                sha256=None,
+                timeout=30
+                )
+        save_path_a = Path(path_a)
+        assert save_path_a.is_file()
+        assert save_path_a.stat().st_size > 0
+        assert save_path_a.name == 'file0001'
+        save_path_b = Path(path_b)
+        assert save_path_b.is_file()
+        assert save_path_b.stat().st_size > 0
+        assert save_path_b.name == 'file0002'
 
 
-# @pytest.mark.asyncio(scope='module')
 # class Test_download_parallel_async:
 #     async def test_download_parallel_async(self):
 #         save_path = await downloader.download_parallel_async(
@@ -138,7 +221,6 @@ class Test_download_async:
 #             timeout=30
 #             )
 
-# @pytest.mark.asyncio(scope='module')
 # class Test_download_parallel_aiter:
 #     async def test_download_parallel_aiter(self):
 #         dl_aiter = await downloader.download_parallel_aiter(

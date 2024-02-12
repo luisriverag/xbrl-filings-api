@@ -14,10 +14,10 @@ import xbrl_filings_api.downloader as downloader
 
 
 @responses.activate
-def test_download_original_filename(mock_file_url, mock_url_response, tmp_path):
-    mock_url_response(1)
-    url = mock_file_url(1)
-    e_filename = PurePosixPath(urllib.parse.urlparse(url).path).name
+def test_download_original_filename(mock_url_response, tmp_path):
+    e_filename = 'test_download_original_filename.zip'
+    url = f'https://filings.xbrl.org/files/{e_filename}'
+    mock_url_response(url)
     path_str = downloader.download(
         url=url,
         to_dir=tmp_path,
@@ -33,9 +33,9 @@ def test_download_original_filename(mock_file_url, mock_url_response, tmp_path):
 
 
 @responses.activate
-def test_download_with_filename(mock_file_url, mock_url_response, tmp_path):
-    mock_url_response(1)
-    url = mock_file_url(1)
+def test_download_with_filename(mock_url_response, tmp_path):
+    url = 'https://filings.xbrl.org/files/test_download_with_filename.zip'
+    mock_url_response(url)
     e_filename = 'filename.abc'
     path_str = downloader.download(
         url=url,
