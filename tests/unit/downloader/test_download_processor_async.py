@@ -84,10 +84,28 @@ class Test_download_async:
         assert save_path.stat().st_size > 0
         assert save_path.name == e_filename
 
+    async def test_stem_pattern_no_placeholder(
+            self, mock_url_response, tmp_path):
+        e_filename = 'test_stem_pattern_no_placeholder.zip'
+        url = f'https://filings.xbrl.org/download_async/{e_filename}'
+        e_filename = 'test_stem_pattern_filename' + '_test' + '.zip'
+        with pytest.raises(ValueError):
+            await downloader.download_async(
+                url=url,
+                to_dir=tmp_path,
+                stem_pattern='test',
+                filename=None,
+                sha256=None,
+                timeout=30
+                )
+        save_path = tmp_path / e_filename
+        assert not save_path.is_file()
+
     async def test_sha256_success(
             self, mock_url_response, mock_response_data,
             tmp_path):
-        url = 'https://filings.xbrl.org/download_async/test_sha256_success.zip'
+        e_filename = 'test_sha256_success.zip'
+        url = f'https://filings.xbrl.org/download_async/{e_filename}'
         fhash = hashlib.sha256(
             string=mock_response_data.encode(encoding='utf-8'),
             usedforsecurity=False
@@ -103,6 +121,9 @@ class Test_download_async:
                 sha256=fhash.hexdigest(),
                 timeout=30
                 )
+        save_path = tmp_path / e_filename
+        assert save_path.is_file()
+        assert save_path.stat().st_size > 0
 
     async def test_sha256_fail(
             self, mock_url_response, tmp_path):
