@@ -215,7 +215,8 @@ async def download_parallel_aiter(
         `info`.
     max_concurrent : int or None, default None
         Maximum number of simultaneous downloads allowed at any moment.
-        If None, all downloads will be started immediately.
+        If None, all downloads will be started immediately. If 1,
+        downloading will be sequential.
     timeout : float, default 30.0
         Maximum timeout for getting the initial response for a single
         download from the server in seconds.
@@ -225,26 +226,30 @@ async def download_parallel_aiter(
     DownloadResult
         Contains information on the finished download.
     """
+    itemlen = len(items)
+    if max_concurrent is None:
+        max_concurrent = itemlen
+
     dlque: asyncio.Queue[DownloadSpecs] = asyncio.Queue()
     for item in items:
         dlque.put_nowait(item)
-
     resultque: asyncio.Queue[DownloadResult] = asyncio.Queue()
+
     tasks: list[asyncio.Task] = []
-    for worker_num in range(1, min(max_concurrent, len(items)) + 1):
+    for worker_num in range(1, min(max_concurrent, itemlen) + 1):
         task = asyncio.create_task(
             _download_parallel_worker(dlque, resultque, timeout),
             name=f'worker-{worker_num}'
             )
         tasks.append(task)
 
-    for _ in range(len(items)):
+    for item_i in range(itemlen):
         result = await resultque.get()
+        if item_i == itemlen-1:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
         yield result
-
-    for task in tasks:
-        task.cancel()
-    await asyncio.gather(*tasks, return_exceptions=True)
 
 
 async def _download_parallel_worker(
