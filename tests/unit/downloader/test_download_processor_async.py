@@ -227,21 +227,6 @@ class Test_download_async:
         assert save_path_b.name == 'file0002'
 
 
-# class Test_download_parallel_async:
-#     async def test_download_parallel_async(self):
-#         save_path = await downloader.download_parallel_async(
-#             items=[DownloadSpecs(
-#                 url='str',
-#                 to_dir='str | PurePath',
-#                 stem_pattern='str | None = None',
-#                 filename='str | None = None',
-#                 sha256='str | None = None',
-#                 info='Any = None'
-#                 )],
-#             max_concurrent=1,
-#             timeout=30
-#             )
-
 # class Test_download_parallel_aiter:
 #     async def test_download_parallel_aiter(self):
 #         dl_aiter = await downloader.download_parallel_aiter(

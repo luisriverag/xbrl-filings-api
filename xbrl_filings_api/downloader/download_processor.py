@@ -151,88 +151,74 @@ async def download_async(
 
 
 def download_parallel(
-        items: list[DownloadSpecs], max_concurrent: int
+        items: list[DownloadSpecs],
+        *,
+        max_concurrent: int | None = None,
+        timeout: float = 30.0
         ) -> list[DownloadResult]:
     """
     Download multiple files in parallel.
+
+    The order of `items` is not guaranteed on the returned list.
 
     See documentation of `download_parallel_aiter`.
 
     Parameters
     ----------
     items : list of DownloadSpecs
-    max_concurrent : int
-
-    Returns
-    -------
-    list of DownloadResult
-        Contains information on the finished download.
-    """
-    return asyncio.run(download_parallel_async(items, max_concurrent))
-
-
-async def download_parallel_async(
-        items: list[DownloadSpecs],
-        max_concurrent: int,
-        timeout: float = 30.0
-        ) -> list[DownloadResult]:
-    """
-    Download multiple files in parallel.
-
-    Calls function `download_async` via parameter `items`, see
-    documentation.
-
-    Parameters
-    ----------
-    items : list of DownloadSpecs
-        Instances of `DownloadSpecs` accept the same parameters as
-        function `download_async` with an additional attribute `info`.
-    max_concurrent : int
-        Maximum number of simultaneous downloads allowed.
+    max_concurrent : int or None, default None
     timeout : float, default 30.0
-        Maximum timeout for getting an initial response from the server
-        in seconds.
 
     Returns
     -------
     list of DownloadResult
         Contains information on the finished download.
     """
-    results = []
-    dliter = download_parallel_aiter(
-        items,
-        max_concurrent=max_concurrent,
-        timeout=timeout
-        )
-    async for item in dliter:
-        results.append(item)
-    return results
+    async def _download_parallel_async(
+            items: list[DownloadSpecs],
+            max_concurrent: int | None,
+            timeout: float
+            ) -> list[DownloadResult]:
+        results = []
+        dliter = download_parallel_aiter(
+            items,
+            max_concurrent=max_concurrent,
+            timeout=timeout
+            )
+        async for item in dliter:
+            results.append(item)
+        return results
+    return asyncio.run(
+        _download_parallel_async(items, max_concurrent, timeout))
 
 
 async def download_parallel_aiter(
         items: list[DownloadSpecs],
         *,
-        max_concurrent: int,
+        max_concurrent: int | None = None,
         timeout: float = 30.0
         ) -> AsyncIterator[DownloadResult]:
     """
     Download multiple files in parallel.
 
-    Calls function `download_async` via parameter `items`, see
-    documentation.
+    As the resulting items are yielded when downloads finish, an
+    additional attribute `info` of both `DownloadSpecs` and
+    `DownloadResult` can be used to keep track of files.
+
+    Calls function `download_async` via parameter `items`.
 
     Parameters
     ----------
     items : list of DownloadSpecs
         Instances of `DownloadSpecs` accept the same parameters as
-        function `download_async` with a no-op additional attribute
-        `info` again available in `DownloadResult` objects for keeping
-        track of files.
-    max_concurrent : int
-        Maximum number of simultaneous downloads allowed.
+        function `download_async` with an additional no-op attribute
+        `info`.
+    max_concurrent : int or None, default None
+        Maximum number of simultaneous downloads allowed at any moment.
+        If None, all downloads will be started immediately.
     timeout : float, default 30.0
-        Maximum timeout for getting an initial response from the server
-        in seconds.
+        Maximum timeout for getting the initial response for a single
+        download from the server in seconds.
 
     Yields
     ------
