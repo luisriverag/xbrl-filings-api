@@ -24,7 +24,7 @@ def test_download_original_filename(mock_url_response, tmp_path):
         stem_pattern=None,
         filename=None,
         sha256=None,
-        timeout=30
+        timeout=30.0
         )
     save_path = Path(path_str)
     assert save_path.is_file()
@@ -43,7 +43,7 @@ def test_download_with_filename(mock_url_response, tmp_path):
         stem_pattern=None,
         filename=e_filename,
         sha256=None,
-        timeout=30
+        timeout=30.0
         )
     save_path = Path(path_str)
     assert save_path.is_file()
@@ -58,7 +58,7 @@ def test_download_with_filename(mock_url_response, tmp_path):
 #         stem_pattern='str | None = None',
 #         filename='str | None = None',
 #         sha256='str | None = None',
-#         timeout=30
+#         timeout=30.0
 #     )
 
 

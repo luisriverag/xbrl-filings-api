@@ -205,6 +205,10 @@ async def download_parallel_aiter(
     additional attribute `info` of both `DownloadSpecs` and
     `DownloadResult` can be used to keep track of files.
 
+    Yielded `DownloadResult` objects will not have the `path` attribute
+    value when the `sha256` check fails even though the file is in fact
+    saved with filename suffix '.corrupt'.
+
     Calls function `download_async` via parameter `items`.
 
     Parameters
