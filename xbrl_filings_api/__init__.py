@@ -80,7 +80,7 @@ from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import NO_LIMIT
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
-from xbrl_filings_api.download_info import _DownloadInfo
+from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader.download_result import DownloadResult
 from xbrl_filings_api.entity import Entity

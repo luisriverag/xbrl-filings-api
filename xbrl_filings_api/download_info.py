@@ -1,4 +1,4 @@
-"""Define `_DownloadInfo` dataclass."""
+"""Define `DownloadInfo` dataclass."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -9,7 +9,7 @@ from typing import Any
 
 
 @dataclass
-class _DownloadInfo:
+class DownloadInfo:
     """Attribute `info` for `DownloadSpecs` objects."""
 
     obj: Any

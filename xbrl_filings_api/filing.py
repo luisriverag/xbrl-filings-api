@@ -15,7 +15,7 @@ from typing import ClassVar, Union
 from xbrl_filings_api import download_specs_construct, downloader
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.download_info import _DownloadInfo
+from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import _ParseType
@@ -572,7 +572,7 @@ class Filing(APIResource):
             )
         async for result in dliter:
             if result.path:
-                res_info: _DownloadInfo = result.info
+                res_info: DownloadInfo = result.info
                 setattr(
                     res_info.obj,
                     f'{result.file}_download_path',

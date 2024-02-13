@@ -9,7 +9,7 @@ from collections.abc import Container, Iterable, Mapping
 from pathlib import PurePath
 from typing import Any, Union
 
-from xbrl_filings_api.download_info import _DownloadInfo
+from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader import DownloadSpecs
 
@@ -107,5 +107,5 @@ def _get_filing_download_specs(
         stem_pattern=stem_pattern,
         filename=filename,
         sha256=sha256,
-        info=_DownloadInfo(obj=filing, file=file)
+        info=DownloadInfo(obj=filing, file=file)
     )
