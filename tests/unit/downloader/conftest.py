@@ -1,3 +1,5 @@
+from typing import Union
+
 import pytest
 import pytest_asyncio
 import responses
@@ -12,7 +14,7 @@ def mock_response_data():
 @pytest.fixture(scope='module')
 def mock_url_response(mock_response_data):
     def _mock_url_response(
-            url: str, rsps: responses.RequestsMock | None = None):
+            url: str, rsps: Union[responses.RequestsMock, None] = None):
         nonlocal mock_response_data
         if rsps is None:
             rsps = responses

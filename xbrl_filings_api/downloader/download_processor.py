@@ -153,7 +153,7 @@ async def download_async(
 def download_parallel(
         items: list[DownloadSpecs],
         *,
-        max_concurrent: int | None = None,
+        max_concurrent: Union[int, None] = None,
         timeout: float = 30.0
         ) -> list[DownloadResult]:
     """
@@ -176,7 +176,7 @@ def download_parallel(
     """
     async def _download_parallel_async(
             items: list[DownloadSpecs],
-            max_concurrent: int | None,
+            max_concurrent: Union[int, None],
             timeout: float
             ) -> list[DownloadResult]:
         results = []
@@ -195,7 +195,7 @@ def download_parallel(
 async def download_parallel_aiter(
         items: list[DownloadSpecs],
         *,
-        max_concurrent: int | None = None,
+        max_concurrent: Union[int, None] = None,
         timeout: float = 30.0
         ) -> AsyncIterator[DownloadResult]:
     """

@@ -4,16 +4,12 @@
 #
 # SPDX-License-Identifier: MIT
 
-import asyncio
 import hashlib
-import urllib.parse
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 import pytest
-import pytest_asyncio
 import responses
 
-import xbrl_filings_api as xf
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.exceptions as xf_exceptions
 from xbrl_filings_api.downloader import DownloadSpecs
