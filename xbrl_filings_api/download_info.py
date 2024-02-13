@@ -10,7 +10,7 @@ from typing import Any
 
 @dataclass
 class _DownloadInfo:
-    """Download info class for `DownloadSpecs` objects."""
+    """Attribute `info` for `DownloadSpecs` objects."""
 
     obj: Any
     """Filing object which is used as the origin for the download."""

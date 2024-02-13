@@ -20,6 +20,7 @@ from xbrl_filings_api import (
 )
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import ResourceLiteralType
+from xbrl_filings_api.download_info import _DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
@@ -200,8 +201,9 @@ class FilingSet(set[Filing]):
             )
         async for result in dliter:
             if result.path:
+                res_info: _DownloadInfo = result.info
                 setattr(
-                    result.obj,
+                    res_info.obj,
                     f'{result.file}_download_path',
                     result.path
                     )

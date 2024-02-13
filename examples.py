@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 
 import xbrl_filings_api as xf
-from xbrl_filings_api import DownloadResult
+from xbrl_filings_api import DownloadResult, _DownloadInfo
 
 # By default, log to temporary directory, such as environment variables
 # "TMPDIR" or "TEMP"
@@ -48,7 +48,8 @@ async def print_progress_async():
     async for result in dl_iter:
         print('\nDownloaded       ' + result.url)
         if result.path:
-            pretext = f'Saved {result.file} to'
+            res_info: _DownloadInfo = result.info
+            pretext = f'Saved {res_info.file} to'
             print(f'{pretext:<16} {result.path}')
         if result.err:
             print(result.err)

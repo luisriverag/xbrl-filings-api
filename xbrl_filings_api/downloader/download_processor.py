@@ -225,7 +225,9 @@ async def download_parallel_aiter(
     ----------
     items : list of DownloadSpecs
         Instances of `DownloadSpecs` accept the same parameters as
-        function `download_async` with an additional attribute `info`.
+        function `download_async` with a no-op additional attribute
+        `info` again available in `DownloadResult` objects for keeping
+        track of files.
     max_concurrent : int
         Maximum number of simultaneous downloads allowed.
     timeout : float, default 30.0
@@ -266,7 +268,7 @@ async def _download_parallel_worker(
         ) -> NoReturn:
     """Coroutine worker for `download_parallel_aiter`."""
     while True:
-        item = await dlque.get()
+        item: DownloadSpecs = await dlque.get()
         result = None
         try:
             path = await download_async(
@@ -276,12 +278,10 @@ async def _download_parallel_worker(
                 )
         except Exception as err:
             result = DownloadResult(
-                url=item.url, err=err, obj=item.info.obj, file=item.info.file)
+                url=item.url, err=err, info=item.info)
         else:
             result = DownloadResult(
-                url=item.url, path=path, obj=item.info.obj,
-                file=item.info.file
-                )
+                url=item.url, path=path, info=item.info)
         resultque.put_nowait(result)
         dlque.task_done()
 

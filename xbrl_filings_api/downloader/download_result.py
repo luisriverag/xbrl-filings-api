@@ -21,8 +21,5 @@ class DownloadResult:
     err: Union[Exception, None] = None
     """Exception raised while the file was being downloaded."""
 
-    obj: Any = None
-    """Reference object related to this download."""
-
-    file: Union[str, None] = None
-    """File format of the downloaded file."""
+    info: Any = None
+    """`DownloadSpecs` attribute `info` for parallel downloads."""
