@@ -264,17 +264,18 @@ class Test_download_parallel_aiter:
                 sha256=None,
                 info=None)
             ]
-        dl_res = None
+        res_list: list[DownloadResult] = []
         with responses.RequestsMock() as rsps:
             dl_aiter = downloader.download_parallel_aiter(
                 items=items,
                 max_concurrent=None,
                 timeout=30.0
                 )
-            dl_res: DownloadResult = await anext(dl_aiter)
-        assert dl_res.url == url
-        assert dl_res.path is None
-        assert isinstance(dl_res.err, requests.ConnectionError)
+            res_list = [res async for res in dl_aiter]
+        assert len(res_list) == 1
+        assert res_list[0].url == url
+        assert res_list[0].path is None
+        assert isinstance(res_list[0].err, requests.ConnectionError)
 
     async def test_aiter_original_filename(self, mock_url_response, tmp_path):
         e_filename = 'test_aiter_original_filename.zip'
@@ -288,7 +289,7 @@ class Test_download_parallel_aiter:
                 sha256=None,
                 info=None)
             ]
-        dl_res = None
+        res_list: list[DownloadResult] = []
         with responses.RequestsMock() as rsps:
             mock_url_response(url, rsps)
             dl_aiter = downloader.download_parallel_aiter(
@@ -296,12 +297,11 @@ class Test_download_parallel_aiter:
                 max_concurrent=None,
                 timeout=30.0
                 )
-            dl_res: DownloadResult = await anext(dl_aiter)
-            with pytest.raises(StopAsyncIteration):
-                await anext(dl_aiter)
-        assert dl_res.url == url
-        assert dl_res.err is None
-        save_path = Path(dl_res.path)
+            res_list = [res async for res in dl_aiter]
+        assert len(res_list) == 1
+        assert res_list[0].url == url
+        assert res_list[0].err is None
+        save_path = Path(res_list[0].path)
         assert save_path.is_file()
         assert save_path.stat().st_size > 0
         assert save_path.name == e_filename
@@ -320,6 +320,7 @@ class Test_download_parallel_aiter:
                 sha256=e_file_sha256,
                 info=None)
             ]
+        res_list: list[DownloadResult] = []
         with responses.RequestsMock() as rsps:
             mock_url_response(url, rsps)
             dl_aiter = downloader.download_parallel_aiter(
@@ -327,9 +328,10 @@ class Test_download_parallel_aiter:
                 max_concurrent=None,
                 timeout=30.0
                 )
-            dl_res: DownloadResult = await anext(dl_aiter)
-        assert dl_res.url == url
-        assert isinstance(dl_res.err, xf_exceptions.CorruptDownloadError)
+            res_list = [res async for res in dl_aiter]
+        assert len(res_list) == 1
+        assert res_list[0].url == url
+        assert isinstance(res_list[0].err, xf_exceptions.CorruptDownloadError)
         corrupt_path = tmp_path / e_filename
         assert corrupt_path.is_file()
         assert corrupt_path.stat().st_size > 0
