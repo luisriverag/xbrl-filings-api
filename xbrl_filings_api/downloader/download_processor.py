@@ -201,9 +201,12 @@ async def download_parallel_aiter(
     """
     Download multiple files in parallel.
 
-    As the resulting items are yielded when downloads finish, an
-    additional attribute `info` of both `DownloadSpecs` and
-    `DownloadResult` can be used to keep track of files.
+    The ordering of `items` defines the order in which the requests will
+    be started. As the downloads take arbitrary periods of time to
+    finish, it does not guarantee the same order in the yielded results.
+    For this purpose, an additional any-typed attribute `info` of both
+    `DownloadSpecs` and `DownloadResult` is provided to keep track of
+    individual downloads.
 
     Yielded `DownloadResult` objects will not have the `path` attribute
     value when the `sha256` check fails even though the file is in fact
@@ -219,7 +222,7 @@ async def download_parallel_aiter(
         `info`.
     max_concurrent : int or None, default None
         Maximum number of simultaneous downloads allowed at any moment.
-        If None, all downloads will be started immediately. If 1,
+        If `None`, all downloads will be started immediately. If 1,
         downloading will be sequential.
     timeout : float, default 30.0
         Maximum timeout for getting the initial response for a single

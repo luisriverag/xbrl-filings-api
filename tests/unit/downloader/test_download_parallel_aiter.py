@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 import requests
 import responses
+from responses.registries import OrderedRegistry
 
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.exceptions as xf_exceptions
@@ -218,7 +219,7 @@ async def test_3_items_sequentially(
 async def test_3_items_max_concurrent_2(
         plain_specs, hashfail_specs, renamed_specs, mock_url_response,
         tmp_path):
-    e_filestem = 'test_3_items_sequentially'
+    e_filestem = 'test_3_items_max_concurrent_2'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
     url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
     items = [
@@ -259,3 +260,29 @@ async def test_3_items_max_concurrent_2(
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
             assert save_path.name == f'{e_filestem}_3_renamed.zip'
+
+
+async def test_items_request_start_order(
+        plain_specs, mock_url_response, tmp_path):
+    e_filestem = 'test_items_request_order'
+    url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
+    item_count = 50
+    max_concurrent = 17
+    url_list = [
+        f'{url_prefix}{e_filestem}_{n}.zip'
+        for n in range(0, item_count+1)
+        ]
+    items = [
+        plain_specs(url_list[test_n], tmp_path, info=f'test{test_n}')
+        for test_n in range(1, item_count+1)
+        ]
+    with responses.RequestsMock(registry=OrderedRegistry) as rsps:
+        for url_n in range(1, item_count+1):
+            mock_url_response(url_list[url_n], rsps)
+        dl_aiter = downloader.download_parallel_aiter(
+            items=items,
+            max_concurrent=max_concurrent,
+            timeout=30.0
+            )
+        async for _ in dl_aiter:
+            pass
