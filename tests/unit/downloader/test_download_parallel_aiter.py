@@ -1,4 +1,4 @@
-"""Test function `download_parallel_aiter`."""
+"""Define tests for async iterator `download_parallel_aiter`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
