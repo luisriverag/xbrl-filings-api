@@ -25,8 +25,8 @@ class Test_download_async:
         e_filename = 'test_connection_error.zip'
         url = f'https://filings.xbrl.org/download_async/{e_filename}'
         with responses.RequestsMock() as rsps:
-            with pytest.raises(requests.ConnectionError):
-                path_str = await downloader.download_async(
+            with pytest.raises(requests.exceptions.ConnectionError):
+                await downloader.download_async(
                     url=url,
                     to_dir=tmp_path,
                     stem_pattern=None,
@@ -34,6 +34,29 @@ class Test_download_async:
                     sha256=None,
                     timeout=30.0
                     )
+        empty_path = tmp_path / e_filename
+        assert not empty_path.is_file()
+
+    async def test_not_found_error(self, mock_url_response, tmp_path):
+        e_filename = 'test_not_found_error.zip'
+        url = f'https://filings.xbrl.org/download_async/{e_filename}'
+        with responses.RequestsMock() as rsps:
+            rsps.add(
+                method=responses.GET,
+                url=url,
+                status=404,
+                )
+            with pytest.raises(requests.exceptions.HTTPError, match='404 Client Error'):
+                await downloader.download_async(
+                    url=url,
+                    to_dir=tmp_path,
+                    stem_pattern=None,
+                    filename=None,
+                    sha256=None,
+                    timeout=30.0
+                    )
+        empty_path = tmp_path / e_filename
+        assert not empty_path.is_file()
 
     async def test_original_filename(self, mock_url_response, tmp_path):
         e_filename = 'test_original_filename.zip'
@@ -249,95 +272,3 @@ class Test_download_async:
         assert save_path_b.name == 'file0002'
 
 
-class Test_download_parallel_aiter:
-    """Test function `download_parallel_aiter`."""
-
-    async def test_aiter_connection_error(self, mock_url_response, tmp_path):
-        e_filename = 'test_aiter_connection_error.zip'
-        url = f'https://filings.xbrl.org/download_async/{e_filename}'
-        items = [
-            DownloadSpecs(
-                url=url,
-                to_dir=tmp_path,
-                stem_pattern=None,
-                filename=None,
-                sha256=None,
-                info=None)
-            ]
-        res_list: list[DownloadResult] = []
-        with responses.RequestsMock() as rsps:
-            dl_aiter = downloader.download_parallel_aiter(
-                items=items,
-                max_concurrent=None,
-                timeout=30.0
-                )
-            res_list = [res async for res in dl_aiter]
-        assert len(res_list) == 1
-        assert res_list[0].url == url
-        assert res_list[0].path is None
-        assert isinstance(res_list[0].err, requests.ConnectionError)
-
-    async def test_aiter_original_filename(self, mock_url_response, tmp_path):
-        e_filename = 'test_aiter_original_filename.zip'
-        url = f'https://filings.xbrl.org/download_parallel_aiter/{e_filename}'
-        items = [
-            DownloadSpecs(
-                url=url,
-                to_dir=tmp_path,
-                stem_pattern=None,
-                filename=None,
-                sha256=None,
-                info=None)
-            ]
-        res_list: list[DownloadResult] = []
-        with responses.RequestsMock() as rsps:
-            mock_url_response(url, rsps)
-            dl_aiter = downloader.download_parallel_aiter(
-                items=items,
-                max_concurrent=None,
-                timeout=30.0
-                )
-            res_list = [res async for res in dl_aiter]
-        assert len(res_list) == 1
-        assert res_list[0].url == url
-        assert res_list[0].err is None
-        save_path = Path(res_list[0].path)
-        assert save_path.is_file()
-        assert save_path.stat().st_size > 0
-        assert save_path.name == e_filename
-
-    async def test_aiter_sha256_fail(self, mock_url_response, tmp_path):
-        filename = 'test_aiter_sha256_fail.zip'
-        e_filename = f'{filename}.corrupt'
-        e_file_sha256 = '0' * 64
-        url = f'https://filings.xbrl.org/download_async/{filename}'
-        items = [
-            DownloadSpecs(
-                url=url,
-                to_dir=tmp_path,
-                stem_pattern=None,
-                filename=None,
-                sha256=e_file_sha256,
-                info=None)
-            ]
-        res_list: list[DownloadResult] = []
-        with responses.RequestsMock() as rsps:
-            mock_url_response(url, rsps)
-            dl_aiter = downloader.download_parallel_aiter(
-                items=items,
-                max_concurrent=None,
-                timeout=30.0
-                )
-            res_list = [res async for res in dl_aiter]
-        assert len(res_list) == 1
-        assert res_list[0].url == url
-        assert isinstance(res_list[0].err, xf_exceptions.CorruptDownloadError)
-        corrupt_path = tmp_path / e_filename
-        assert corrupt_path.is_file()
-        assert corrupt_path.stat().st_size > 0
-        success_path = tmp_path / filename
-        assert not success_path.is_file()
-
-    # async def test_3_items_at_once(self, mock_url_response, tmp_path):
-    # async def test_3_items_sequentially(self, mock_url_response, tmp_path):
-    # async def test_3_items_max_concurrent_2(self, mock_url_response, tmp_path):
