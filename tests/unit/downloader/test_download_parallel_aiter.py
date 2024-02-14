@@ -20,6 +20,7 @@ pytestmark = pytest.mark.asyncio
 
 @pytest.fixture
 def plain_specs():
+    """Function for a plain `DownloadSpecs` object."""
     def _plain_specs(url, path, *, info=None):
         return DownloadSpecs(
             url=url,
@@ -34,6 +35,7 @@ def plain_specs():
 
 @pytest.fixture
 def hashfail_specs():
+    """Function for a failing `sha256` hash check `DownloadSpecs` object."""
     def _hashfail_specs(url, path, *, info=None):
         e_file_sha256 = '0' * 64
         return DownloadSpecs(
@@ -49,6 +51,7 @@ def hashfail_specs():
 
 @pytest.fixture
 def renamed_specs():
+    """Function for a ``_renamed`` suffixed file stem `DownloadSpecs` object."""
     def _renamed_specs(url, path, *, info=None):
         return DownloadSpecs(
             url=url,
@@ -62,6 +65,7 @@ def renamed_specs():
 
 
 async def test_aiter_connection_error(plain_specs, tmp_path):
+    """Test raising of `requests.ConnectionError`."""
     e_filename = 'test_aiter_connection_error.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     items = [plain_specs(url, tmp_path)]
@@ -80,6 +84,7 @@ async def test_aiter_connection_error(plain_specs, tmp_path):
 
 
 async def test_aiter_original_filename(plain_specs, mock_url_response, tmp_path):
+    """Test filename from URL will be used for saved file."""
     e_filename = 'test_aiter_original_filename.zip'
     url = f'https://filings.xbrl.org/download_parallel_aiter/{e_filename}'
     items = [plain_specs(url, tmp_path)]
@@ -102,6 +107,7 @@ async def test_aiter_original_filename(plain_specs, mock_url_response, tmp_path)
 
 
 async def test_aiter_sha256_fail(hashfail_specs, mock_url_response, tmp_path):
+    """Test raising of `CorruptDownloadError` when `sha256` is incorrect."""
     filename = 'test_aiter_sha256_fail.zip'
     e_filename = f'{filename}.corrupt'
     url = f'https://filings.xbrl.org/download_async/{filename}'
@@ -128,6 +134,7 @@ async def test_aiter_sha256_fail(hashfail_specs, mock_url_response, tmp_path):
 async def test_3_items_at_once(
         plain_specs, hashfail_specs, renamed_specs, mock_url_response,
         tmp_path):
+    """Test downloading 3 items with `max_concurrent` as None."""
     e_filestem = 'test_3_items_at_once'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
     url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
@@ -173,6 +180,7 @@ async def test_3_items_at_once(
 async def test_3_items_sequentially(
         plain_specs, hashfail_specs, renamed_specs, mock_url_response,
         tmp_path):
+    """Test downloading 3 items one by one, max_concurrent=1."""
     e_filestem = 'test_3_items_sequentially'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
     url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
@@ -219,6 +227,7 @@ async def test_3_items_sequentially(
 async def test_3_items_max_concurrent_2(
         plain_specs, hashfail_specs, renamed_specs, mock_url_response,
         tmp_path):
+    """Test downloading 3 items with `max_concurrent` as 2."""
     e_filestem = 'test_3_items_max_concurrent_2'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
     url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
@@ -264,6 +273,7 @@ async def test_3_items_max_concurrent_2(
 
 async def test_items_request_start_order(
         plain_specs, mock_url_response, tmp_path):
+    """Test that downloads are started according to order of `items`, n=50, max_concurrent=17."""
     e_filestem = 'test_items_request_order'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
     item_count = 50

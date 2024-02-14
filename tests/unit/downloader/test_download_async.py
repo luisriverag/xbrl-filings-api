@@ -18,6 +18,7 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_connection_error(mock_url_response, tmp_path):
+    """Test raising of `requests.ConnectionError`."""
     e_filename = 'test_connection_error.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     with responses.RequestsMock() as rsps:
@@ -35,6 +36,7 @@ async def test_connection_error(mock_url_response, tmp_path):
 
 
 async def test_not_found_error(mock_url_response, tmp_path):
+    """Test raising of status 404 `requests.HTTPError`."""
     e_filename = 'test_not_found_error.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     with responses.RequestsMock() as rsps:
@@ -57,6 +59,7 @@ async def test_not_found_error(mock_url_response, tmp_path):
 
 
 async def test_original_filename(mock_url_response, tmp_path):
+    """Test filename from URL will be used for saved file."""
     e_filename = 'test_original_filename.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     path_str = None
@@ -77,6 +80,7 @@ async def test_original_filename(mock_url_response, tmp_path):
 
 
 async def test_with_filename(mock_url_response, tmp_path):
+    """Test filename in attr `filename` will be used for saved file."""
     url = 'https://filings.xbrl.org/download_async/test_with_filename.zip'
     e_filename = 'filename.abc'
     path_str = None
@@ -97,6 +101,7 @@ async def test_with_filename(mock_url_response, tmp_path):
 
 
 async def test_stem_pattern_filename(mock_url_response, tmp_path):
+    """Test filename stem in attr `stem_pattern` will be used for saved file."""
     url = 'https://filings.xbrl.org/download_async/test_stem_pattern_filename.zip'
     e_filename = 'test_stem_pattern_filename' + '_test' + '.zip'
     path_str = None
@@ -117,6 +122,7 @@ async def test_stem_pattern_filename(mock_url_response, tmp_path):
 
 
 async def test_stem_pattern_no_placeholder(tmp_path):
+    """Test raising error when attr `stem_pattern` misses placeholder ``/name/``."""
     e_filename = 'test_stem_pattern_no_placeholder.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     e_filename = 'test_stem_pattern_filename' + '_test' + '.zip'
@@ -134,6 +140,7 @@ async def test_stem_pattern_no_placeholder(tmp_path):
 
 
 async def test_to_dir_as_string(mock_url_response, tmp_path):
+    """Test giving parameter `to_dir` as string."""
     e_filename = 'test_to_dir_as_string.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     path_str = None
@@ -153,8 +160,8 @@ async def test_to_dir_as_string(mock_url_response, tmp_path):
     assert save_path.name == e_filename
 
 
-async def test_sha256_success(
-        mock_url_response, mock_response_data, tmp_path):
+async def test_sha256_success(mock_url_response, mock_response_data, tmp_path):
+    """Test correct `sha256` hash download succeeds."""
     e_filename = 'test_sha256_success.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     fhash = hashlib.sha256(
@@ -178,6 +185,7 @@ async def test_sha256_success(
 
 
 async def test_sha256_fail(mock_url_response, tmp_path):
+    """Test raising of `CorruptDownloadError` when `sha256` is incorrect."""
     filename = 'test_sha256_fail.zip'
     e_filename = f'{filename}.corrupt'
     url = f'https://filings.xbrl.org/download_async/{filename}'
@@ -201,6 +209,7 @@ async def test_sha256_fail(mock_url_response, tmp_path):
 
 
 async def test_autocreate_dir(mock_url_response, tmp_path):
+    """Test the non-existent intermediary directories in `to_dir` are created."""
     e_filename = 'test_autocreate_dir.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     path_str = None
@@ -223,6 +232,7 @@ async def test_autocreate_dir(mock_url_response, tmp_path):
 
 
 async def test_overwrite_file(mock_url_response, tmp_path):
+    """Test an already existing file in the directory gets overwritten."""
     e_filename = 'test_overwrite_file.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
 
@@ -249,6 +259,7 @@ async def test_overwrite_file(mock_url_response, tmp_path):
 
 
 async def test_filename_not_available(mock_url_response, tmp_path):
+    """Test downloads with no derivable filename get filenames."""
     url = 'https://filings.xbrl.org/'
     path_a = path_b = None
     with responses.RequestsMock() as rsps:
