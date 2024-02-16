@@ -4,64 +4,98 @@
 #
 # SPDX-License-Identifier: MIT
 
-import urllib.parse
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
+import pytest
+import requests
 import responses
 
 import xbrl_filings_api as xf
 import xbrl_filings_api.downloader as downloader
+import xbrl_filings_api.exceptions as xf_exceptions
 
 
-@responses.activate
+def test_download_connection_error(tmp_path):
+    """Test raising of `requests.ConnectionError`."""
+    e_filename = 'test_download_connection_error.zip'
+    url = f'https://filings.xbrl.org/download/{e_filename}'
+    with responses.RequestsMock() as rsps:
+        with pytest.raises(requests.exceptions.ConnectionError):
+            downloader.download(
+                url=url,
+                to_dir=tmp_path,
+                stem_pattern=None,
+                filename=None,
+                sha256=None,
+                timeout=30.0
+                )
+    empty_path = tmp_path / e_filename
+    assert not empty_path.is_file()
+
+
+def test_download_not_found_error(tmp_path):
+    """Test raising of status 404 `requests.HTTPError`."""
+    e_filename = 'test_download_not_found_error.zip'
+    url = f'https://filings.xbrl.org/download/{e_filename}'
+    with responses.RequestsMock() as rsps:
+        rsps.add(
+            method=responses.GET,
+            url=url,
+            status=404,
+            )
+        with pytest.raises(requests.exceptions.HTTPError, match='404 Client Error'):
+            downloader.download(
+                url=url,
+                to_dir=tmp_path,
+                stem_pattern=None,
+                filename=None,
+                sha256=None,
+                timeout=30.0
+                )
+    empty_path = tmp_path / e_filename
+    assert not empty_path.is_file()
+
+
 def test_download_original_filename(mock_url_response, tmp_path):
+    """Test filename from URL will be used for saved file."""
     e_filename = 'test_download_original_filename.zip'
+    path_str = None
     url = f'https://filings.xbrl.org/files/{e_filename}'
-    mock_url_response(url)
-    path_str = downloader.download(
-        url=url,
-        to_dir=tmp_path,
-        stem_pattern=None,
-        filename=None,
-        sha256=None,
-        timeout=30.0
-        )
+    with responses.RequestsMock() as rsps:
+        mock_url_response(url, rsps)
+        path_str = downloader.download(
+            url=url,
+            to_dir=tmp_path,
+            stem_pattern=None,
+            filename=None,
+            sha256=None,
+            timeout=30.0
+            )
     save_path = Path(path_str)
     assert save_path.is_file()
     assert save_path.stat().st_size > 0
     assert save_path.name == e_filename
 
 
-@responses.activate
 def test_download_with_filename(mock_url_response, tmp_path):
+    """Test filename in attr `filename` will be used for saved file."""
     url = 'https://filings.xbrl.org/files/test_download_with_filename.zip'
-    mock_url_response(url)
     e_filename = 'filename.abc'
-    path_str = downloader.download(
-        url=url,
-        to_dir=tmp_path,
-        stem_pattern=None,
-        filename=e_filename,
-        sha256=None,
-        timeout=30.0
-        )
+    path_str = None
+    with responses.RequestsMock() as rsps:
+        mock_url_response(url, rsps)
+        path_str = downloader.download(
+            url=url,
+            to_dir=tmp_path,
+            stem_pattern=None,
+            filename=e_filename,
+            sha256=None,
+            timeout=30.0
+            )
     save_path = Path(path_str)
     assert save_path.is_file()
     assert save_path.stat().st_size > 0
     assert save_path.name == e_filename
 
 
-# def test_download_parallel():
-#     save_path = downloader.download_parallel(
-#         url='str',
-#         to_dir='str | PurePath',
-#         stem_pattern='str | None = None',
-#         filename='str | None = None',
-#         sha256='str | None = None',
-#         timeout=30.0
-#     )
 
-
-# def test_validate_stem_pattern():
-#     with pytest.raises(ValueError):
-#         downloader.validate_stem_pattern('str | None')

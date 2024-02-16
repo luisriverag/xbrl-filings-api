@@ -13,59 +13,13 @@ from responses.registries import OrderedRegistry
 
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.exceptions as xf_exceptions
-from xbrl_filings_api.downloader import DownloadResult, DownloadSpecs
+from xbrl_filings_api.downloader import DownloadResult
 
 pytestmark = pytest.mark.asyncio
 
 
-@pytest.fixture
-def plain_specs():
-    """Function for a plain `DownloadSpecs` object."""
-    def _plain_specs(url, path, *, info=None):
-        return DownloadSpecs(
-            url=url,
-            to_dir=path,
-            stem_pattern=None,
-            filename=None,
-            sha256=None,
-            info=info
-            )
-    return _plain_specs
-
-
-@pytest.fixture
-def hashfail_specs():
-    """Function for a failing `sha256` hash check `DownloadSpecs` object."""
-    def _hashfail_specs(url, path, *, info=None):
-        e_file_sha256 = '0' * 64
-        return DownloadSpecs(
-            url=url,
-            to_dir=path,
-            stem_pattern=None,
-            filename=None,
-            sha256=e_file_sha256,
-            info=info
-            )
-    return _hashfail_specs
-
-
-@pytest.fixture
-def renamed_specs():
-    """Function for a ``_renamed`` suffixed file stem `DownloadSpecs` object."""
-    def _renamed_specs(url, path, *, info=None):
-        return DownloadSpecs(
-            url=url,
-            to_dir=path,
-            stem_pattern='/name/_renamed',
-            filename=None,
-            sha256=None,
-            info=info
-            )
-    return _renamed_specs
-
-
 async def test_aiter_connection_error(plain_specs, tmp_path):
-    """Test raising of `requests.ConnectionError`."""
+    """Test yielding of `requests.ConnectionError`."""
     e_filename = 'test_aiter_connection_error.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     items = [plain_specs(url, tmp_path)]
@@ -81,6 +35,34 @@ async def test_aiter_connection_error(plain_specs, tmp_path):
     assert res_list[0].url == url
     assert res_list[0].path is None
     assert isinstance(res_list[0].err, requests.exceptions.ConnectionError)
+    empty_path = tmp_path / e_filename
+    assert not empty_path.is_file()
+
+
+async def test_aiter_not_found_error(plain_specs, tmp_path):
+    """Test yielding of status 404 `requests.HTTPError`."""
+    e_filename = 'test_aiter_not_found_error.zip'
+    url = f'https://filings.xbrl.org/download_async/{e_filename}'
+    items = [plain_specs(url, tmp_path)]
+    res_list: list[DownloadResult] = []
+    with responses.RequestsMock() as rsps:
+        rsps.add(
+            method=responses.GET,
+            url=url,
+            status=404,
+            )
+        dl_aiter = downloader.download_parallel_aiter(
+            items=items,
+            max_concurrent=None,
+            timeout=30.0
+            )
+        res_list = [res async for res in dl_aiter]
+    assert len(res_list) == 1
+    assert res_list[0].url == url
+    assert res_list[0].path is None
+    assert isinstance(res_list[0].err, requests.exceptions.HTTPError)
+    empty_path = tmp_path / e_filename
+    assert not empty_path.is_file()
 
 
 async def test_aiter_original_filename(plain_specs, mock_url_response, tmp_path):

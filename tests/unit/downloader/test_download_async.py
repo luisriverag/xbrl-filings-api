@@ -17,7 +17,7 @@ import xbrl_filings_api.exceptions as xf_exceptions
 pytestmark = pytest.mark.asyncio
 
 
-async def test_connection_error(mock_url_response, tmp_path):
+async def test_connection_error(tmp_path):
     """Test raising of `requests.ConnectionError`."""
     e_filename = 'test_connection_error.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
@@ -35,7 +35,7 @@ async def test_connection_error(mock_url_response, tmp_path):
     assert not empty_path.is_file()
 
 
-async def test_not_found_error(mock_url_response, tmp_path):
+async def test_not_found_error(tmp_path):
     """Test raising of status 404 `requests.HTTPError`."""
     e_filename = 'test_not_found_error.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
