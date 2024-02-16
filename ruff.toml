@@ -123,8 +123,9 @@ max-doc-length = 72
 "__about__.py" = ["D100"]
 # Tests allow non-imperative docstrings (D401), mixed case names (N801, N802),
 # have shortened 'self' (N805), may leave parameters/fixtures unused (ARG001),
-# and decorators unparenthesised (PT023)
-"test_*" = ["D401", "N801", "N802", "N805", "ARG001", "PT023"]
+# and decorators unparenthesised (PT023), do not expect docstring imperative
+# mood due to fixtures (D401)
+"test_*" = ["D401", "N801", "N802", "N805", "ARG001", "PT023", "D401"]
 # Allow print() in scripts
 "examples.py" = ["T201"]
 "__main__.py" = ["T201"]

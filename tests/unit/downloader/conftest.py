@@ -8,12 +8,20 @@ from xbrl_filings_api.downloader import DownloadSpecs
 
 @pytest.fixture(scope='module')
 def mock_response_data():
+    """Arbitrary data to mock download."""
     return '0123456789' * 100
+
+
+@pytest.fixture(scope='module')
+def mock_response_data_charcount(mock_response_data):
+    """Arbitrary data to mock download."""
+    return len(mock_response_data)
 
 
 
 @pytest.fixture(scope='module')
 def mock_url_response(mock_response_data):
+    """Function to add a `responses` mock URL with `mock_response_data` body."""
     def _mock_url_response(
             url: str, rsps: Union[responses.RequestsMock, None] = None):
         nonlocal mock_response_data
