@@ -6,9 +6,9 @@
 
 from pathlib import Path
 
-import pytest
 import requests
 import responses
+from responses.registries import OrderedRegistry
 
 import xbrl_filings_api.downloader as downloader
 import xbrl_filings_api.exceptions as xf_exceptions
@@ -80,3 +80,144 @@ def test_parallel_original_filename(plain_specs, mock_url_response, tmp_path):
     assert save_path.is_file()
     assert save_path.stat().st_size > 0
     assert save_path.name == e_filename
+
+
+def test_parallel_sha256_fail(hashfail_specs, mock_url_response, tmp_path):
+    """Test returning of `CorruptDownloadError` when `sha256` is incorrect."""
+    filename = 'test_parallel_sha256_fail.zip'
+    e_filename = f'{filename}.corrupt'
+    url = f'https://filings.xbrl.org/download_parallel/{filename}'
+    items = [hashfail_specs(url, tmp_path)]
+    res_list: list[DownloadResult] = []
+    with responses.RequestsMock() as rsps:
+        mock_url_response(url, rsps)
+        res_list = downloader.download_parallel(
+            items=items,
+            max_concurrent=None,
+            timeout=30.0
+            )
+    assert len(res_list) == 1
+    assert res_list[0].url == url
+    assert isinstance(res_list[0].err, xf_exceptions.CorruptDownloadError)
+    corrupt_path = tmp_path / e_filename
+    assert corrupt_path.is_file()
+    assert corrupt_path.stat().st_size > 0
+    success_path = tmp_path / filename
+    assert not success_path.is_file()
+
+
+def test_sync_3_items_at_once(
+        plain_specs, hashfail_specs, renamed_specs, mock_url_response,
+        tmp_path):
+    """Test downloading 3 items with `max_concurrent` as None."""
+    e_filestem = 'test_sync_3_items_at_once'
+    url_prefix = 'https://filings.xbrl.org/download_parallel/'
+    url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
+    items = [
+        plain_specs(url_list[1], tmp_path, info='test1'),
+        hashfail_specs(url_list[2], tmp_path, info='test2'),
+        renamed_specs(url_list[3], tmp_path, info='test3'),
+        ]
+    res_list: list[DownloadResult] = []
+    with responses.RequestsMock() as rsps:
+        for url_n in range(1, 4):
+            mock_url_response(url_list[url_n], rsps)
+        res_list = downloader.download_parallel(
+            items=items,
+            max_concurrent=None,
+            timeout=30.0
+            )
+    assert len(res_list) == 3
+    for res in res_list:
+        if res.info == 'test1':
+            assert res.url == url_list[1]
+            assert res.err is None
+            save_path = Path(res.path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == f'{e_filestem}_1.zip'
+        elif res.info == 'test2':
+            assert res.url == url_list[2]
+            assert isinstance(res.err, xf_exceptions.CorruptDownloadError)
+            assert res.path is None
+            corrupt_path = tmp_path / f'{e_filestem}_2.zip.corrupt'
+            assert corrupt_path.is_file()
+            assert corrupt_path.stat().st_size > 0
+        elif res.info == 'test3':
+            assert res.url == url_list[3]
+            assert res.err is None
+            save_path = Path(res.path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == f'{e_filestem}_3_renamed.zip'
+
+
+def test_sync_3_items_max_concurrent_2(
+        plain_specs, hashfail_specs, renamed_specs, mock_url_response,
+        tmp_path):
+    """Test downloading 3 items with `max_concurrent` as 2."""
+    e_filestem = 'test_sync_3_items_max_concurrent_2'
+    url_prefix = 'https://filings.xbrl.org/download_parallel/'
+    url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
+    items = [
+        plain_specs(url_list[1], tmp_path, info='test1'),
+        hashfail_specs(url_list[2], tmp_path, info='test2'),
+        renamed_specs(url_list[3], tmp_path, info='test3'),
+        ]
+    res_list: list[DownloadResult] = []
+    with responses.RequestsMock() as rsps:
+        for url_n in range(1, 4):
+            mock_url_response(url_list[url_n], rsps)
+        res_list = downloader.download_parallel(
+            items=items,
+            max_concurrent=None,
+            timeout=30.0
+            )
+    assert len(res_list) == 3
+    for res in res_list:
+        if res.info == 'test1':
+            assert res.url == url_list[1]
+            assert res.err is None
+            save_path = Path(res.path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == f'{e_filestem}_1.zip'
+        elif res.info == 'test2':
+            assert res.url == url_list[2]
+            assert isinstance(res.err, xf_exceptions.CorruptDownloadError)
+            assert res.path is None
+            corrupt_path = tmp_path / f'{e_filestem}_2.zip.corrupt'
+            assert corrupt_path.is_file()
+            assert corrupt_path.stat().st_size > 0
+        elif res.info == 'test3':
+            assert res.url == url_list[3]
+            assert res.err is None
+            save_path = Path(res.path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == f'{e_filestem}_3_renamed.zip'
+
+
+def test_sync_items_request_start_order(
+        plain_specs, mock_url_response, tmp_path):
+    """Test that downloads are started according to order of `items`, n=50, max_concurrent=17."""
+    e_filestem = 'test_sync_items_request_start_order'
+    url_prefix = 'https://filings.xbrl.org/download_parallel/'
+    item_count = 50
+    max_concurrent = 17
+    url_list = [
+        f'{url_prefix}{e_filestem}_{n}.zip'
+        for n in range(0, item_count+1)
+        ]
+    items = [
+        plain_specs(url_list[test_n], tmp_path, info=f'test{test_n}')
+        for test_n in range(1, item_count+1)
+        ]
+    with responses.RequestsMock(registry=OrderedRegistry) as rsps:
+        for url_n in range(1, item_count+1):
+            mock_url_response(url_list[url_n], rsps)
+        downloader.download_parallel(
+            items=items,
+            max_concurrent=max_concurrent,
+            timeout=30.0
+            )

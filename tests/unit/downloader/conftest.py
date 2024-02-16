@@ -1,7 +1,6 @@
 from typing import Union
 
 import pytest
-import pytest_asyncio
 import responses
 
 from xbrl_filings_api.downloader import DownloadSpecs
