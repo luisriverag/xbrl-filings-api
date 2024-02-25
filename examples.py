@@ -1,13 +1,23 @@
-"""Examples of the library."""
+"""
+Example functions and coroutines for the library.
+
+This module may be run as a script. The script asks which example or
+examples to run.
+"""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
 import asyncio
+import inspect
 import logging
+import re
 import tempfile
+import webbrowser
+from collections.abc import Awaitable
 from pathlib import Path
+from types import FunctionType
 
 import xbrl_filings_api as xf
 from xbrl_filings_api import DownloadInfo, DownloadResult
@@ -53,5 +63,50 @@ async def print_progress_async():
             print(f'{pretext:<16} {result.path}')
         if result.err:
             print(result.err)
+    print()
 
-asyncio.run(print_progress_async())
+
+def open_ixbrl_viewer_in_browser():
+    """Open Inline XBRL viewer in web browser of ASML 2022 English."""
+    filings = xf.get_filings(
+        filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'}
+        )
+    filing = next(iter(filings))
+    webbrowser.open_new_tab(filing.viewer_url)
+
+
+# Runner script
+if __name__ == '__main__':
+    print(
+        'Select an example function to run. Write the number of the example\n'
+        'or a comma-separated list of numbers.\n'
+        )
+    globaldict = locals()
+    ex_names = {
+        i+1: funcname
+        for i, funcname in enumerate(
+            aname for aname, val in globaldict.items() if (
+                isinstance(val, FunctionType)
+                and aname != 'namedtuple'
+                )
+            )
+        }
+    for num, funcname in ex_names.items():
+        print(f'{num}: {funcname}')
+        func = globaldict[funcname]
+        print('\n'.join([
+            ' '*4 + dline.lstrip()
+            for dline in func.__doc__.strip().split('\n')
+            ]) + '\n')
+    while input_str := input('Example number(s): '):
+        nums = [int(num) for num in input_str.split(',')]
+        for num in nums:
+            funcname = ex_names[num]
+            func = globaldict[funcname]
+            print(re.sub(
+                r' +""".+"""\n', '', inspect.getsource(func),
+                count=1, flags=re.DOTALL))
+            if inspect.iscoroutinefunction(func):
+                asyncio.run(func())
+            else:
+                func()
