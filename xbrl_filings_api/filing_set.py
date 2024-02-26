@@ -64,7 +64,7 @@ class FilingSet(set[Filing]):
             *,
             stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
-            max_concurrent: int | None = 5,
+            max_concurrent: Union[int, None] = 5,
             ) -> None:
         """
         Download files in type or types of `files`.
@@ -159,7 +159,7 @@ class FilingSet(set[Filing]):
             *,
             stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
-            max_concurrent: int | None = 5
+            max_concurrent: Union[int, None] = 5
             ) -> AsyncIterator[downloader.DownloadResult]:
         """
         Download files in type or types of `files`.

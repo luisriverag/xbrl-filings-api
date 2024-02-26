@@ -438,7 +438,7 @@ class Filing(APIResource):
             *,
             stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
-            max_concurrent: int | None = None
+            max_concurrent: Union[int, None] = None
             ) -> None:
         """
         Download files in type or types of `files`.
@@ -528,7 +528,7 @@ class Filing(APIResource):
             *,
             stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
-            max_concurrent: int | None = 5
+            max_concurrent: Union[int, None] = 5
             ) -> AsyncIterator[downloader.DownloadResult]:
         """
         Download files in type or types of `files`.
