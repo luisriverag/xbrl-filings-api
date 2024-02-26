@@ -15,6 +15,7 @@ the aforementioned script.
 # SPDX-License-Identifier: MIT
 
 from pathlib import Path
+from typing import Union
 
 import pytest
 import responses
@@ -45,6 +46,29 @@ def res_colls(filings) -> dict[str, ResourceCollection]:
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
         }
+
+
+@pytest.fixture(scope='module')
+def mock_response_data():
+    """Arbitrary data to mock download."""
+    return '0123456789' * 100
+
+
+@pytest.fixture(scope='module')
+def mock_url_response(mock_response_data):
+    """Function to add a `responses` mock URL with `mock_response_data` body."""
+    def _mock_url_response(
+            url: str, rsps: Union[responses.RequestsMock, None] = None):
+        nonlocal mock_response_data
+        if rsps is None:
+            rsps = responses
+        rsps.add(
+            method=responses.GET,
+            url=url,
+            body=mock_response_data,
+            headers={}
+            )
+    return _mock_url_response
 
 
 @pytest.fixture

@@ -18,7 +18,6 @@ def mock_response_data_charcount(mock_response_data):
     return len(mock_response_data)
 
 
-
 @pytest.fixture(scope='module')
 def mock_url_response(mock_response_data):
     """Function to add a `responses` mock URL with `mock_response_data` body."""

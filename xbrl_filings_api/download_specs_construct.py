@@ -21,7 +21,6 @@ def construct(
         filing: Any,
         to_dir: Union[str, PurePath, None],
         stem_pattern: Union[str, None],
-        filename: Union[str, None],
         valid_file_formats: Container,
         *,
         check_corruption: bool
@@ -43,7 +42,7 @@ def construct(
             download_item = files[format_key]
             full_item = _get_filing_download_specs(
                 format_key, download_item, filing, to_dir, stem_pattern,
-                filename, valid_file_formats,
+                valid_file_formats,
                 check_corruption=check_corruption
                 )
             if full_item:
@@ -52,7 +51,7 @@ def construct(
     elif isinstance(files, Iterable):
         for file in files:
             full_item = _get_filing_download_specs(
-                file, None, filing, to_dir, stem_pattern, filename,
+                file, None, filing, to_dir, stem_pattern,
                 valid_file_formats,
                 check_corruption=check_corruption
                 )
@@ -70,7 +69,6 @@ def _get_filing_download_specs(
         filing: Any,
         to_dir: Union[str, PurePath, None],
         stem_pattern: Union[str, None],
-        filename: Union[str, None],
         valid_file_formats: Container,
         *,
         check_corruption: bool
@@ -91,6 +89,7 @@ def _get_filing_download_specs(
     if check_corruption and file == 'package':
         sha256 = filing.package_sha256
 
+    filename = None
     if download_item:
         if download_item.to_dir:
             to_dir = download_item.to_dir

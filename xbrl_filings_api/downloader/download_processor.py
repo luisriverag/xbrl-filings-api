@@ -270,9 +270,12 @@ async def _download_parallel_worker(
         result = None
         try:
             path = await download_async(
-                item.url, item.to_dir,
-                stem_pattern=item.stem_pattern, filename=item.filename,
-                sha256=item.sha256, timeout=timeout
+                item.url,
+                item.to_dir,
+                stem_pattern=item.stem_pattern,
+                filename=item.filename,
+                sha256=item.sha256,
+                timeout=timeout
                 )
         except Exception as err:
             result = DownloadResult(

@@ -1,4 +1,9 @@
-"""Define tests for `Filing`."""
+"""
+Define tests for `Filing`.
+
+Tests for downloading methods are in separate test module
+`test_downloading`.
+"""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #

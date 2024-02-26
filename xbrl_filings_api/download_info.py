@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 
 @dataclass
@@ -15,7 +15,7 @@ class DownloadInfo:
     obj: Any
     """Filing object which is used as the origin for the download."""
 
-    file: str
+    file: Literal['json', 'package', 'xhtml']
     """
     File type to download.
 

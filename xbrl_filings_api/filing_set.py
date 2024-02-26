@@ -13,6 +13,7 @@ from collections.abc import AsyncIterator, Collection, Iterable, Mapping
 from pathlib import Path, PurePath
 from typing import Optional, Union
 
+import xbrl_filings_api.options as options
 from xbrl_filings_api import (
     database_processor,
     download_specs_construct,
@@ -63,7 +64,7 @@ class FilingSet(set[Filing]):
             *,
             stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
-            max_concurrent: int = 5
+            max_concurrent: int | None = 5,
             ) -> None:
         """
         Download files in type or types of `files`.
@@ -92,6 +93,8 @@ class FilingSet(set[Filing]):
         ``743700XJC24THUPK0S03-2022-12-31-fi_second_try.xhtml``. Not
         recommended for packages as their names should not be changed.
 
+        HTTP request timeout is defined in `options.timeout_sec`.
+
         Parameters
         ----------
         files : str or iterable of str or mapping of str: DownloadItem
@@ -105,8 +108,9 @@ class FilingSet(set[Filing]):
             is always required.
         check_corruption : bool, default True
             Calculate hashes for package files.
-        max_concurrent : int, default 5
-            Maximum number of simultaneous downloads allowed.
+        max_concurrent : int or None, default 5
+            Maximum number of simultaneous downloads allowed. Value
+            `None` means unlimited.
 
         Raises
         ------
@@ -124,17 +128,21 @@ class FilingSet(set[Filing]):
         for filing in self:
             items.extend(
                 download_specs_construct.construct(
-                    files, filing, to_dir, stem_pattern, None,
+                    files, filing, to_dir, stem_pattern,
                     Filing.VALID_DOWNLOAD_FORMATS,
                     check_corruption=check_corruption
                     ))
         results = downloader.download_parallel(
-            items, max_concurrent)
+            items,
+            max_concurrent=max_concurrent,
+            timeout=options.timeout_sec
+            )
         for result in results:
             if result.path:
+                res_info: DownloadInfo = result.info
                 setattr(
-                    result.obj,
-                    f'{result.file}_download_path',
+                    res_info.obj,
+                    f'{res_info.file}_download_path',
                     result.path
                     )
         excs = [
@@ -151,8 +159,7 @@ class FilingSet(set[Filing]):
             *,
             stem_pattern: Union[str, None] = None,
             check_corruption: bool = True,
-            max_concurrent: int = 5,
-            timeout: float = 30.0
+            max_concurrent: int | None = 5
             ) -> AsyncIterator[downloader.DownloadResult]:
         """
         Download files in type or types of `files`.
@@ -173,11 +180,9 @@ class FilingSet(set[Filing]):
             is always required.
         check_corruption : bool, default True
             Calculate hashes for package files.
-        max_concurrent : int, default 5
-            Maximum number of simultaneous downloads allowed.
-        timeout : float, default 30.0
-            Maximum timeout for getting an initial response from the
-            server in seconds.
+        max_concurrent : int or None, default 5
+            Maximum number of simultaneous downloads allowed. Value
+            `None` means unlimited.
 
         Yields
         ------
@@ -190,21 +195,21 @@ class FilingSet(set[Filing]):
         for filing in self:
             items.extend(
                 download_specs_construct.construct(
-                    files, filing, to_dir, stem_pattern, None,
+                    files, filing, to_dir, stem_pattern,
                     Filing.VALID_DOWNLOAD_FORMATS,
                     check_corruption=check_corruption
                     ))
         dliter = downloader.download_parallel_aiter(
             items,
             max_concurrent=max_concurrent,
-            timeout=timeout
+            timeout=options.timeout_sec
             )
         async for result in dliter:
             if result.path:
                 res_info: DownloadInfo = result.info
                 setattr(
                     res_info.obj,
-                    f'{result.file}_download_path',
+                    f'{res_info.file}_download_path',
                     result.path
                     )
             yield result
