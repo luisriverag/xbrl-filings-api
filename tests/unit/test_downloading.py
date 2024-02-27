@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-import hashlib
 import urllib.parse
 from pathlib import Path, PurePosixPath
 
@@ -16,9 +15,9 @@ import xbrl_filings_api.exceptions as xf_exceptions
 
 
 @pytest.fixture(scope='module')
-def get_filing_or_filingset():
+def get_asml22en_or_oldest3_fi():
     """Function for single Filing or FilingSet."""
-    def _get_filing_or_filingset(libclass):
+    def _get_asml22en_or_oldest3_fi(libclass):
         mock_dir_path = Path(__file__).parent.parent / 'mock_responses'
         if libclass is xf.Filing:
             fset = None
@@ -45,7 +44,7 @@ def get_filing_or_filingset():
                     add_api_params=None
                     )
             return fset, list(fset)
-    return _get_filing_or_filingset
+    return _get_asml22en_or_oldest3_fi
 
 
 @pytest.fixture(scope='module')
@@ -59,9 +58,9 @@ def url_filename():
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json(
-        libclass, get_filing_or_filingset, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
     """Test downloading `json_url` by `download`."""
-    target, filings = get_filing_or_filingset(libclass)
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
         for filing in filings:
@@ -83,9 +82,9 @@ def test_download_json(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json(
-        libclass, get_filing_or_filingset, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
     """Test downloading `json_url` by `download_aiter`."""
-    target, filings = get_filing_or_filingset(libclass)
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
         for filing in filings:
@@ -113,9 +112,9 @@ async def test_download_aiter_json(
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_package_no_check_corruption(
-        libclass, get_filing_or_filingset, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
     """Test downloading `package_url` by `download` without sha256 check."""
-    target, filings = get_filing_or_filingset(libclass)
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
         for filing in filings:
@@ -137,9 +136,9 @@ def test_download_package_no_check_corruption(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_package_no_check_corruption(
-        libclass, get_filing_or_filingset, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
     """Test downloading `package_url` by `download_aiter` without sha256 check."""
-    target, filings = get_filing_or_filingset(libclass)
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
         for filing in filings:
@@ -163,3 +162,185 @@ async def test_download_aiter_package_no_check_corruption(
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
             assert save_path.name == url_filename(filing.package_url)
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_package_check_corruption_success(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        mock_response_sha256, tmp_path):
+    """Test downloading `package_url` by `download` with sha256 check success."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    for filing in filings:
+        # Filing objects are mutable
+        filing.package_sha256 = mock_response_sha256
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.package_url, rsps)
+        # Must not raise CorruptDownloadError
+        target.download(
+            files='package',
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        save_path = Path(filing.package_download_path)
+        assert save_path.is_file()
+        assert save_path.stat().st_size > 0
+        assert save_path.name == url_filename(filing.package_url)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_package_check_corruption_success(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        mock_response_sha256, tmp_path):
+    """Test downloading `package_url` by `download_aiter` with sha256 check success."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    for filing in filings:
+        # Filing objects are mutable
+        filing.package_sha256 = mock_response_sha256
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.package_url, rsps)
+        # Must not raise CorruptDownloadError
+        dliter = target.download_aiter(
+            files='package',
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        async for res in dliter:
+            assert res.err is None
+            res_info: xf.DownloadInfo = res.info
+            assert res_info.file == 'package'
+            filing: xf.Filing = res_info.obj
+            assert res.url == filing.package_url
+            assert res.path == filing.package_download_path
+            save_path = Path(filing.package_download_path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == url_filename(filing.package_url)
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_package_check_corruption_fail(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """Test downloading `package_url` by `download` with sha256 check failure."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    for filing in filings:
+        # Filing objects are mutable
+        filing.package_sha256 = '0'*64
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.package_url, rsps)
+        with pytest.raises(xf_exceptions.CorruptDownloadError):
+            target.download(
+                files='package',
+                to_dir=tmp_path,
+                stem_pattern=None,
+                check_corruption=True,
+                max_concurrent=None
+                )
+    for filing in filings:
+        filename = url_filename(filing.package_url)
+        corrupt_path = tmp_path / f'{filename}.corrupt'
+        assert corrupt_path.is_file()
+        assert corrupt_path.stat().st_size > 0
+        success_path = tmp_path / filename
+        assert not success_path.is_file()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_package_check_corruption_fail(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """Test downloading `package_url` by `download_aiter` with sha256 check failure."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    for filing in filings:
+        # Filing objects are mutable
+        filing.package_sha256 = '0'*64
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.package_url, rsps)
+        dliter = target.download_aiter(
+            files='package',
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        async for res in dliter:
+            assert isinstance(res.err, xf_exceptions.CorruptDownloadError)
+            res_info: xf.DownloadInfo = res.info
+            assert res_info.file == 'package'
+            filing: xf.Filing = res_info.obj
+            assert res.url == filing.package_url
+            assert res.path is None
+            assert filing.package_download_path is None
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_xhtml(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """Test downloading `xhtml_url` by `download`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.xhtml_url, rsps)
+        target.download(
+            files='xhtml',
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        save_path = Path(filing.xhtml_download_path)
+        assert save_path.is_file()
+        assert save_path.stat().st_size > 0
+        assert save_path.name == url_filename(filing.xhtml_url)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_xhtml(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """Test downloading `xhtml_url` by `download_aiter`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.xhtml_url, rsps)
+        dliter = target.download_aiter(
+            files='xhtml',
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        async for res in dliter:
+            assert res.err is None
+            res_info: xf.DownloadInfo = res.info
+            assert res_info.file == 'xhtml'
+            filing: xf.Filing = res_info.obj
+            assert res.url == filing.xhtml_url
+            assert res.path == filing.xhtml_download_path
+            save_path = Path(filing.xhtml_download_path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == url_filename(filing.xhtml_url)

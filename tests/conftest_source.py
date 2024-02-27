@@ -14,6 +14,7 @@ flag ``-n`` / ``--new``).
 #
 # SPDX-License-Identifier: MIT
 
+import hashlib
 from pathlib import Path
 from typing import Union
 
@@ -52,6 +53,16 @@ def res_colls(filings) -> dict[str, ResourceCollection]:
 def mock_response_data():
     """Arbitrary data to mock download."""
     return '0123456789' * 100
+
+
+@pytest.fixture(scope='module')
+def mock_response_sha256(mock_response_data):
+    """SHA-256 hash for `mock_response_data`."""
+    fhash = hashlib.sha256(
+        string=mock_response_data.encode(encoding='utf-8'),
+        usedforsecurity=False
+        )
+    return fhash.hexdigest()
 
 
 @pytest.fixture(scope='module')
