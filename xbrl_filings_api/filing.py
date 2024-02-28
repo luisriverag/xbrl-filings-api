@@ -441,18 +441,26 @@ class Filing(APIResource):
             max_concurrent: Union[int, None] = None
             ) -> None:
         """
-        Download files in type or types of `files`.
+        Download files of this `Filing` according to `files` parameter.
+
+        The filesystem path of the downloaded file will be saved in the
+        `Filing` object attributes {file}_download_path such as
+        ``json_download_path`` for the downloaded JSON file.
+
+        If there are ``package`` download definition(s) in the parameter
+        `files` and parameter `check_corruption` is True, the downloaded
+        package files will be checked through the `package_sha256`
+        attribute of `Filing` objects. If this hash attribute does not
+        match the one calculated from the downloaded file, an exception
+        `CorruptDownloadError` of the first erraneous occurrence will be
+        raised after all downloads have finished. The downloaded file(s)
+        will not be deleted but the filename(s) will be appended with
+        ending ``.corrupt``. However, attributes {file}_download_path
+        will not store these corrupt paths.
 
         The directories in `to_dir` will be created if they do not
         exist. By default, filename is derived from download URL. If the
         file already exists, it will be overwritten.
-
-        If parameter `files` includes `package`, the downloaded files
-        will be checked through the `package_sha256` attribute of Filing
-        objects. If the hash does not match with the one calculated from
-        download, exceptions `CorruptDownloadError` after all downloads
-        have finished. The downloaded file will not be deleted but its
-        name will be appended with ending ``.corrupt``.
 
         If download is interrupted, the files will be left with ending
         ``.unfinished``.

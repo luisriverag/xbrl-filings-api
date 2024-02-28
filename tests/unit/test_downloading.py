@@ -344,3 +344,203 @@ async def test_download_aiter_xhtml(
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
             assert save_path.name == url_filename(filing.xhtml_url)
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_json_and_xhtml(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` and `xhtml_url` by `download`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+            mock_url_response(filing.xhtml_url, rsps)
+        target.download(
+            files=['json', 'xhtml'],
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        json_path = Path(filing.json_download_path)
+        assert json_path.is_file()
+        assert json_path.stat().st_size > 0
+        assert json_path.name == url_filename(filing.json_url)
+        xhtml_path = Path(filing.xhtml_download_path)
+        assert xhtml_path.is_file()
+        assert xhtml_path.stat().st_size > 0
+        assert xhtml_path.name == url_filename(filing.xhtml_url)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_json_and_xhtml(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` and `xhtml_url` by `download_aiter`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+            mock_url_response(filing.xhtml_url, rsps)
+        dliter = target.download_aiter(
+            files=['json', 'xhtml'],
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        async for res in dliter:
+            assert res.err is None
+            res_info: xf.DownloadInfo = res.info
+            save_path = None
+            filing: xf.Filing = res_info.obj
+            if res_info.file == 'json':
+                assert res.url == filing.json_url
+                assert res.path == filing.json_download_path
+                save_path = Path(filing.json_download_path)
+                assert save_path.name == url_filename(filing.json_url)
+            elif res_info.file == 'xhtml':
+                assert res.url == filing.xhtml_url
+                assert res.path == filing.xhtml_download_path
+                save_path = Path(filing.xhtml_download_path)
+                assert save_path.name == url_filename(filing.xhtml_url)
+            else:
+                pytest.fail('DownloadResult.info.file not "json" or "xhtml"')
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_json_DownloadItem(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `download` with `DownloadItem` setup."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+        target.download(
+            files={
+                'json': xf.DownloadItem(
+                    filename=None,
+                    to_dir=None,
+                    stem_pattern=None
+                    )
+                },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        save_path = Path(filing.json_download_path)
+        assert save_path.is_file()
+        assert save_path.stat().st_size > 0
+        assert save_path.name == url_filename(filing.json_url)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_json_DownloadItem(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `download_aiter` with `DownloadItem` setup."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+        dliter = target.download_aiter(
+            files={
+                'json': xf.DownloadItem(
+                    filename=None,
+                    to_dir=None,
+                    stem_pattern=None
+                    )
+                },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        async for res in dliter:
+            assert res.err is None
+            res_info: xf.DownloadInfo = res.info
+            assert res_info.file == 'json'
+            filing: xf.Filing = res_info.obj
+            assert res.url == filing.json_url
+            assert res.path == filing.json_download_path
+            save_path = Path(filing.json_download_path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == url_filename(filing.json_url)
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_json_DownloadItem_rename(
+        libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `download` with `DownloadItem` renamed setup."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+        target.download(
+            files={
+                'json': xf.DownloadItem(
+                    filename='file.abc',
+                    to_dir=None,
+                    stem_pattern=None
+                    )
+                },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        save_path = Path(filing.json_download_path)
+        assert save_path.is_file()
+        assert save_path.stat().st_size > 0
+        assert save_path.name == 'file.abc'
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_json_DownloadItem_rename(
+        libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `download_aiter` with `DownloadItem` renamed setup."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+        dliter = target.download_aiter(
+            files={
+                'json': xf.DownloadItem(
+                    filename='file.abc',
+                    to_dir=None,
+                    stem_pattern=None
+                    )
+                },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        async for res in dliter:
+            assert res.err is None
+            res_info: xf.DownloadInfo = res.info
+            assert res_info.file == 'json'
+            filing: xf.Filing = res_info.obj
+            assert res.url == filing.json_url
+            assert res.path == filing.json_download_path
+            save_path = Path(filing.json_download_path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == 'file.abc'
