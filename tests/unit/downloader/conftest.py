@@ -67,9 +67,9 @@ def hashfail_specs():
 
 
 @pytest.fixture
-def renamed_specs():
+def stem_renamed_specs():
     """Function for a ``_renamed`` suffixed file stem `DownloadSpecs` object."""
-    def _renamed_specs(url, path, *, info=None):
+    def _stem_renamed_specs(url, path, *, info=None):
         return DownloadSpecs(
             url=url,
             to_dir=path,
@@ -78,4 +78,19 @@ def renamed_specs():
             sha256=None,
             info=info
             )
-    return _renamed_specs
+    return _stem_renamed_specs
+
+
+@pytest.fixture
+def filename_renamed_specs():
+    """Function for a ``renamed.abc`` filename `DownloadSpecs` object."""
+    def _filename_renamed_specs(url, path, *, info=None):
+        return DownloadSpecs(
+            url=url,
+            to_dir=path,
+            stem_pattern=None,
+            filename='renamed.abc',
+            sha256=None,
+            info=info
+            )
+    return _filename_renamed_specs

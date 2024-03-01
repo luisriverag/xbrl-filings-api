@@ -113,21 +113,22 @@ async def test_aiter_sha256_fail(hashfail_specs, mock_url_response, tmp_path):
     assert not success_path.is_file()
 
 
-async def test_3_items_at_once(
-        plain_specs, hashfail_specs, renamed_specs, mock_url_response,
-        tmp_path):
-    """Test downloading 3 items with `max_concurrent` as None."""
-    e_filestem = 'test_3_items_at_once'
+async def test_4_items_at_once(
+        plain_specs, hashfail_specs, stem_renamed_specs,
+        filename_renamed_specs, mock_url_response, tmp_path):
+    """Test downloading 4 items with `max_concurrent` as None."""
+    e_filestem = 'test_4_items_at_once'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
-    url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
+    url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 5)]
     items = [
         plain_specs(url_list[1], tmp_path, info='test1'),
         hashfail_specs(url_list[2], tmp_path, info='test2'),
-        renamed_specs(url_list[3], tmp_path, info='test3'),
+        stem_renamed_specs(url_list[3], tmp_path, info='test3'),
+        filename_renamed_specs(url_list[4], tmp_path, info='test4'),
         ]
     res_list: list[DownloadResult] = []
     with responses.RequestsMock() as rsps:
-        for url_n in range(1, 4):
+        for url_n in range(1, 5):
             mock_url_response(url_list[url_n], rsps)
         dl_aiter = downloader.download_parallel_aiter(
             items=items,
@@ -135,7 +136,7 @@ async def test_3_items_at_once(
             timeout=30.0
             )
         res_list = [res async for res in dl_aiter]
-    assert len(res_list) == 3
+    assert len(res_list) == 4
     for res in res_list:
         if res.info == 'test1':
             assert res.url == url_list[1]
@@ -158,22 +159,32 @@ async def test_3_items_at_once(
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
             assert save_path.name == f'{e_filestem}_3_renamed.zip'
+        elif res.info == 'test4':
+            assert res.url == url_list[4]
+            assert res.err is None
+            save_path = Path(res.path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == f'renamed.abc'
+        else:
+            assert pytest.fail('Info is other than one defined in test')
 
-async def test_3_items_sequentially(
-        plain_specs, hashfail_specs, renamed_specs, mock_url_response,
-        tmp_path):
-    """Test downloading 3 items one by one, max_concurrent=1."""
-    e_filestem = 'test_3_items_sequentially'
+async def test_4_items_sequentially(
+        plain_specs, hashfail_specs, stem_renamed_specs,
+        filename_renamed_specs, mock_url_response, tmp_path):
+    """Test downloading 4 items one by one, max_concurrent=1."""
+    e_filestem = 'test_4_items_sequentially'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
-    url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
+    url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 5)]
     items = [
         plain_specs(url_list[1], tmp_path, info='test1'),
         hashfail_specs(url_list[2], tmp_path, info='test2'),
-        renamed_specs(url_list[3], tmp_path, info='test3'),
+        stem_renamed_specs(url_list[3], tmp_path, info='test3'),
+        filename_renamed_specs(url_list[4], tmp_path, info='test4'),
         ]
     res_list: list[DownloadResult] = []
     with responses.RequestsMock() as rsps:
-        for url_n in range(1, 4):
+        for url_n in range(1, 5):
             mock_url_response(url_list[url_n], rsps)
         dl_aiter = downloader.download_parallel_aiter(
             items=items,
@@ -181,7 +192,7 @@ async def test_3_items_sequentially(
             timeout=30.0
             )
         res_list = [res async for res in dl_aiter]
-    assert len(res_list) == 3
+    assert len(res_list) == 4
     for res in res_list:
         if res.info == 'test1':
             assert res.url == url_list[1]
@@ -204,23 +215,33 @@ async def test_3_items_sequentially(
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
             assert save_path.name == f'{e_filestem}_3_renamed.zip'
+        elif res.info == 'test4':
+            assert res.url == url_list[4]
+            assert res.err is None
+            save_path = Path(res.path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == f'renamed.abc'
+        else:
+            assert pytest.fail('Info is other than one defined in test')
 
 
-async def test_3_items_max_concurrent_2(
-        plain_specs, hashfail_specs, renamed_specs, mock_url_response,
-        tmp_path):
-    """Test downloading 3 items with `max_concurrent` as 2."""
-    e_filestem = 'test_3_items_max_concurrent_2'
+async def test_4_items_max_concurrent_2(
+        plain_specs, hashfail_specs, stem_renamed_specs,
+        filename_renamed_specs, mock_url_response, tmp_path):
+    """Test downloading 4 items with `max_concurrent` as 2."""
+    e_filestem = 'test_4_items_max_concurrent_2'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
-    url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 4)]
+    url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 5)]
     items = [
         plain_specs(url_list[1], tmp_path, info='test1'),
         hashfail_specs(url_list[2], tmp_path, info='test2'),
-        renamed_specs(url_list[3], tmp_path, info='test3'),
+        stem_renamed_specs(url_list[3], tmp_path, info='test3'),
+        filename_renamed_specs(url_list[4], tmp_path, info='test4'),
         ]
     res_list: list[DownloadResult] = []
     with responses.RequestsMock() as rsps:
-        for url_n in range(1, 4):
+        for url_n in range(1, 5):
             mock_url_response(url_list[url_n], rsps)
         dl_aiter = downloader.download_parallel_aiter(
             items=items,
@@ -228,7 +249,7 @@ async def test_3_items_max_concurrent_2(
             timeout=30.0
             )
         res_list = [res async for res in dl_aiter]
-    assert len(res_list) == 3
+    assert len(res_list) == 4
     for res in res_list:
         if res.info == 'test1':
             assert res.url == url_list[1]
@@ -251,6 +272,15 @@ async def test_3_items_max_concurrent_2(
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
             assert save_path.name == f'{e_filestem}_3_renamed.zip'
+        elif res.info == 'test4':
+            assert res.url == url_list[4]
+            assert res.err is None
+            save_path = Path(res.path)
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == f'renamed.abc'
+        else:
+            assert pytest.fail('Info is other than one defined in test')
 
 
 async def test_items_request_start_order(
