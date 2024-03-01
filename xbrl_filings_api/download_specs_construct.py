@@ -58,7 +58,7 @@ def construct(
             if full_item:
                 items.append(full_item)
     else:
-        msg = "Parameter 'files' is neither a Mapping nor an Iterable"
+        msg = "Parameter 'files' is none of str, Iterable or Mapping"
         raise ValueError(msg)
     return items
 

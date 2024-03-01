@@ -236,37 +236,41 @@ async def download_parallel_aiter(
     itemlen = len(items)
     if max_concurrent is None:
         max_concurrent = itemlen
+    else:
+        max_concurrent = min(max_concurrent, itemlen)
 
-    dlque: asyncio.Queue[DownloadSpecs] = asyncio.Queue()
+    dlque: asyncio.Queue[Union[DownloadSpecs, None]] = asyncio.Queue()
     for item in items:
         dlque.put_nowait(item)
+    # Termination markers for each worker
+    for _ in range(max_concurrent):
+        dlque.put_nowait(None)
+
     resultque: asyncio.Queue[DownloadResult] = asyncio.Queue()
 
-    tasks: list[asyncio.Task] = []
-    for worker_num in range(1, min(max_concurrent, itemlen) + 1):
+    tasks: set[asyncio.Task] = set()
+    for worker_num in range(1, max_concurrent + 1):
         task = asyncio.create_task(
             _download_parallel_worker(dlque, resultque, timeout),
             name=f'worker-{worker_num}'
             )
-        tasks.append(task)
+        tasks.add(task)
 
     for item_i in range(itemlen):
         result = await resultque.get()
-        if item_i == itemlen-1:
-            for task in tasks:
-                task.cancel()
-            await asyncio.gather(*tasks, return_exceptions=True)
         yield result
 
 
 async def _download_parallel_worker(
-        dlque: asyncio.Queue[DownloadSpecs],
+        dlque: asyncio.Queue[Union[DownloadSpecs, None]],
         resultque: asyncio.Queue[DownloadResult],
         timeout: float
         ) -> NoReturn:
     """Coroutine worker for `download_parallel_aiter`."""
     while True:
-        item: DownloadSpecs = await dlque.get()
+        item: Union[DownloadSpecs, None] = await dlque.get()
+        if item is None:
+            break
         result = None
         try:
             path = await download_async(
