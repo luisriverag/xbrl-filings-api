@@ -19,7 +19,11 @@ class DownloadItem:
     """
 
     filename: Optional[str] = None
-    """Name to be used for the saved file."""
+    """
+    Name to be used for the saved file.
+
+    Can only be set for `Filing` object download methods.
+    """
 
     to_dir: Optional[Union[str, PurePath]] = None
     """Directory to save the file."""

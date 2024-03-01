@@ -138,8 +138,10 @@ class FilingSet(set[Filing]):
                 download_specs_construct.construct(
                     files, filing, to_dir, stem_pattern,
                     Filing.VALID_DOWNLOAD_FORMATS,
-                    check_corruption=check_corruption
+                    check_corruption=check_corruption,
+                    isfilingset=True
                     ))
+        print(items)
         results = downloader.download_parallel(
             items,
             max_concurrent=max_concurrent,
@@ -205,13 +207,15 @@ class FilingSet(set[Filing]):
                 download_specs_construct.construct(
                     files, filing, to_dir, stem_pattern,
                     Filing.VALID_DOWNLOAD_FORMATS,
-                    check_corruption=check_corruption
+                    check_corruption=check_corruption,
+                    isfilingset=True
                     ))
         dliter = downloader.download_parallel_aiter(
             items,
             max_concurrent=max_concurrent,
             timeout=options.timeout_sec
             )
+        print(items)
         async for result in dliter:
             if result.path:
                 res_info: DownloadInfo = result.info

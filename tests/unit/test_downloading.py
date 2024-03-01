@@ -480,19 +480,43 @@ async def test_download_aiter_json_DownloadItem(
             assert save_path.name == url_filename(filing.json_url)
 
 
-@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
-def test_download_json_DownloadItem_rename(
-        libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `download` with `DownloadItem` renamed setup."""
-    target, filings = get_asml22en_or_oldest3_fi(libclass)
+def test_download_json_Filing_DownloadItem_rename(
+        get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `Filing.download` with `DownloadItem` renamed setup."""
     filing: xf.Filing
+    filing, _ = get_asml22en_or_oldest3_fi(xf.Filing)
     with responses.RequestsMock() as rsps:
-        for filing in filings:
-            mock_url_response(filing.json_url, rsps)
-        target.download(
+        mock_url_response(filing.json_url, rsps)
+        filing.download(
             files={
                 'json': xf.DownloadItem(
-                    filename='file.abc',
+                    filename='renamed_file.abc',
+                    to_dir=None,
+                    stem_pattern=None
+                    )
+                },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    save_path = Path(filing.json_download_path)
+    assert save_path.is_file()
+    assert save_path.stat().st_size > 0
+    assert save_path.name == 'renamed_file.abc'
+
+
+def test_download_json_FilingSet_DownloadItem_rename(
+        get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
+    """Test raising when downloading `json_url` by `FilingSet.download` with `DownloadItem` renamed setup."""
+    filingset: xf.FilingSet
+    filingset, filings = get_asml22en_or_oldest3_fi(xf.FilingSet)
+    filing: xf.Filing
+    with pytest.raises(ValueError, match='The attribute DownloadItem.filename may not be other than None'):
+        filingset.download(
+            files={
+                'json': xf.DownloadItem(
+                    filename='renamed_file.abc',
                     to_dir=None,
                     stem_pattern=None
                     )
@@ -503,26 +527,23 @@ def test_download_json_DownloadItem_rename(
             max_concurrent=None
             )
     for filing in filings:
-        save_path = Path(filing.json_download_path)
-        assert save_path.is_file()
-        assert save_path.stat().st_size > 0
-        assert save_path.name == 'file.abc'
+        assert filing.json_download_path is None
+    save_path = tmp_path / 'renamed_file.abc'
+    assert not save_path.is_file()
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
-async def test_download_aiter_json_DownloadItem_rename(
-        libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `download_aiter` with `DownloadItem` renamed setup."""
-    target, filings = get_asml22en_or_oldest3_fi(libclass)
+async def test_download_aiter_json_Filing_DownloadItem_rename(
+        get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `Filing.download_aiter` with `DownloadItem` renamed setup."""
     filing: xf.Filing
+    filing, _ = get_asml22en_or_oldest3_fi(xf.Filing)
     with responses.RequestsMock() as rsps:
-        for filing in filings:
-            mock_url_response(filing.json_url, rsps)
-        dliter = target.download_aiter(
+        mock_url_response(filing.json_url, rsps)
+        dliter = filing.download_aiter(
             files={
                 'json': xf.DownloadItem(
-                    filename='file.abc',
+                    filename='renamed_file.abc',
                     to_dir=None,
                     stem_pattern=None
                     )
@@ -543,4 +564,32 @@ async def test_download_aiter_json_DownloadItem_rename(
             save_path = Path(filing.json_download_path)
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
-            assert save_path.name == 'file.abc'
+            assert save_path.name == 'renamed_file.abc'
+
+
+@pytest.mark.asyncio
+async def test_download_aiter_json_FilingSet_DownloadItem_rename(
+        get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
+    """Test raising when downloading `json_url` by `FilingSet.download_aiter` with `DownloadItem` renamed setup."""
+    filingset: xf.FilingSet
+    filingset, filings = get_asml22en_or_oldest3_fi(xf.FilingSet)
+    dliter = filingset.download_aiter(
+        files={
+            'json': xf.DownloadItem(
+                filename='renamed_file.abc',
+                to_dir=None,
+                stem_pattern=None
+                )
+            },
+        to_dir=tmp_path,
+        stem_pattern=None,
+        check_corruption=True,
+        max_concurrent=None
+        )
+    with pytest.raises(ValueError, match='The attribute DownloadItem.filename may not be other than None'):
+        async for _ in dliter:
+            pass
+    for filing in filings:
+        assert filing.json_download_path is None
+    save_path = tmp_path / 'renamed_file.abc'
+    assert not save_path.is_file()

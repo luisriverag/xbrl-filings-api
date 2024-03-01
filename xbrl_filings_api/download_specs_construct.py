@@ -23,7 +23,8 @@ def construct(
         stem_pattern: Union[str, None],
         valid_file_formats: Container,
         *,
-        check_corruption: bool
+        check_corruption: bool,
+        isfilingset: bool = False
         ) -> list[DownloadSpecs]:
     """
     Construct a list of `DownloadSpecs` objects.
@@ -43,7 +44,8 @@ def construct(
             full_item = _get_filing_download_specs(
                 format_key, download_item, filing, to_dir, stem_pattern,
                 valid_file_formats,
-                check_corruption=check_corruption
+                check_corruption=check_corruption,
+                isfilingset=isfilingset
                 )
             if full_item:
                 items.append(full_item)
@@ -53,7 +55,8 @@ def construct(
             full_item = _get_filing_download_specs(
                 file, None, filing, to_dir, stem_pattern,
                 valid_file_formats,
-                check_corruption=check_corruption
+                check_corruption=check_corruption,
+                isfilingset=isfilingset
                 )
             if full_item:
                 items.append(full_item)
@@ -71,7 +74,8 @@ def _get_filing_download_specs(
         stem_pattern: Union[str, None],
         valid_file_formats: Container,
         *,
-        check_corruption: bool
+        check_corruption: bool,
+        isfilingset: bool
         ) -> Union[DownloadSpecs, None]:
     if file not in valid_file_formats:
         msg = f'file {file!r} is not among {valid_file_formats!r}'
@@ -96,6 +100,12 @@ def _get_filing_download_specs(
         if download_item.stem_pattern:
             stem_pattern = download_item.stem_pattern
         if download_item.filename:
+            if isfilingset:
+                msg = (
+                    'The attribute DownloadItem.filename may not be other '
+                    'than None when calling FilingSet methods.'
+                    )
+                raise ValueError(msg)
             filename = download_item.filename
     if not to_dir:
         to_dir = '.'
@@ -107,4 +117,4 @@ def _get_filing_download_specs(
         filename=filename,
         sha256=sha256,
         info=DownloadInfo(obj=filing, file=file)
-    )
+        )
