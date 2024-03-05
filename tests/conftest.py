@@ -335,3 +335,11 @@ def processed_time_multifilter_response():
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('processed_time_multifilter'))
         yield rsps
+
+
+@pytest.fixture
+def unknown_filter_error_response():
+    """Get an error of unknown filter."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('unknown_filter_error'))
+        yield rsps

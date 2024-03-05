@@ -639,7 +639,7 @@ async def test_download_aiter_json_FilingSet_DownloadItem_rename_raise(
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_DownloadItem_2_to_dir(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
     """Test downloading `json_url` by `download` with `DownloadItem` 2 different to_dir."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     json_path = tmp_path / 'json'
@@ -681,7 +681,7 @@ def test_download_json_DownloadItem_2_to_dir(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json_DownloadItem_2_to_dir(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
     """Test downloading `json_url` by `download_aiter` 2 different to_dir."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     json_path = tmp_path / 'json'
@@ -726,7 +726,7 @@ async def test_download_aiter_json_DownloadItem_2_to_dir(
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_DownloadItem_2_stem_pattern(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
     """Test downloading `json_url` by `download` with `DownloadItem` 2 different stem_pattern."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
@@ -762,7 +762,7 @@ def test_download_json_DownloadItem_2_stem_pattern(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json_DownloadItem_2_stem_pattern(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
     """Test downloading `json_url` by `download_aiter` 2 different stem_pattern."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing

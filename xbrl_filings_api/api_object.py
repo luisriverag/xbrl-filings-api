@@ -45,28 +45,3 @@ class APIObject:
 
         self.request_url = api_request.url
         """URL requested from the API."""
-
-    def __str__(self) -> str:
-        """Return string representation of the object."""
-        attrs = [
-            att for att in dir(self)
-            if not (att.startswith('_') or getattr(self.__class__, att, False))
-            ]
-        attrs = order_columns.order_columns(attrs)
-        attvals: list[str] = []
-        for att in attrs:
-            val_str = None
-            val = getattr(self, att)
-            if isinstance(val, Sized) and not isinstance(val, str):
-                val_str = f'{val.__class__.__qualname__}(len={len(val)})'
-            elif isinstance(val, datetime):
-                try:
-                    fstr = time_formats[options.time_accuracy]
-                except KeyError:
-                    fstr = time_formats['min']
-                val_str = val.strftime(fstr)
-            else:
-                val_str = repr(val)
-            attvals.append(f'{att} = {val_str}')
-        attrep = ',\n  '.join(av for av in attvals)
-        return f'{__name__}.{self.__class__.__qualname__}(\n  {attrep}\n  )'

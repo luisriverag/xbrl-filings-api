@@ -553,6 +553,21 @@ def _fetch_processed_time_multifilter():
 _addmock('processed_time_multifilter')
 
 
+@_recorder.record(file_path=_get_path('unknown_filter_error'))
+def _fetch_unknown_filter_error():
+    """Get an error of unknown filter."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'filter[abcdef]': '0'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('unknown_filter_error')
+
+
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 
 
