@@ -4,13 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from collections.abc import Sized
-from datetime import datetime
-
-from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.json_tree import _JSONTree
-from xbrl_filings_api.time_formats import time_formats
 
 
 class APIObject:

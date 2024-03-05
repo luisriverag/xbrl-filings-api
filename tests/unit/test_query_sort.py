@@ -7,19 +7,11 @@
 # Allow unnecessary double quotes as file includes SQL statements.
 # ruff: noqa: Q000
 
-import sqlite3
 from datetime import datetime, timezone
-
-import pytest
 
 import xbrl_filings_api as xf
 
 UTC = timezone.utc
-
-
-def _db_record_count(cur):
-    cur.execute("SELECT COUNT(*) FROM Filing")
-    return cur.fetchone()[0]
 
 
 def test_sort_oldest_finnish_str(oldest3_fi_response, monkeypatch):

@@ -7,17 +7,10 @@
 # Allow unnecessary double quotes as file includes SQL statements.
 # ruff: noqa: Q000
 
-import sqlite3
-
 import pytest
 import requests
 
 import xbrl_filings_api as xf
-
-
-def _db_record_count(cur):
-    cur.execute("SELECT COUNT(*) FROM Filing")
-    return cur.fetchone()[0]
 
 
 @pytest.mark.xfail(
