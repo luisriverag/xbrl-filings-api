@@ -18,11 +18,6 @@ import xbrl_filings_api as xf
 UTC = timezone.utc
 
 
-def _db_record_count(cur):
-    cur.execute("SELECT COUNT(*) FROM Filing")
-    return cur.fetchone()[0]
-
-
 def test_get_filings_api_id(api_id_multifilter_response):
     """Requested `api_id` filings are returned."""
     shell_api_ids = '1134', '1135', '4496', '4529'
@@ -38,8 +33,9 @@ def test_get_filings_api_id(api_id_multifilter_response):
     assert received_api_ids == set(shell_api_ids)
 
 
+@pytest.mark.sqlite
 def test_to_sqlite_api_id(
-        api_id_multifilter_response, tmp_path, monkeypatch):
+        api_id_multifilter_response, db_record_count, tmp_path, monkeypatch):
     """Filtering by `api_id` inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     shell_api_ids = '1134', '1135', '4496', '4529'
@@ -64,7 +60,7 @@ def test_to_sqlite_api_id(
         )
     saved_ids = {row[0] for row in cur.fetchall()}
     assert saved_ids == set(shell_api_ids)
-    assert _db_record_count(cur) == 4
+    assert db_record_count(cur) == 4
 
 
 def test_get_filings_country_only_first(country_multifilter_response):
@@ -85,8 +81,9 @@ def test_get_filings_country_only_first(country_multifilter_response):
     assert 'NO' not in received_countries, 'Too many FI filings'
 
 
+@pytest.mark.sqlite
 def test_to_sqlite_country_only_first(
-        country_multifilter_response, tmp_path, monkeypatch):
+        country_multifilter_response, db_record_count, tmp_path, monkeypatch):
     """Filtering by `country` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     country_codes = ['FI', 'SE', 'NO']
@@ -111,7 +108,7 @@ def test_to_sqlite_country_only_first(
         )
     saved_countries = {row[0] for row in cur.fetchall()}
     assert saved_countries == {'FI'}
-    assert _db_record_count(cur) == 3
+    assert db_record_count(cur) == 3
 
 
 def test_get_filings_filing_index(
@@ -133,8 +130,10 @@ def test_get_filings_filing_index(
     assert received_countries == set(filing_index_codes)
 
 
+@pytest.mark.sqlite
 def test_to_sqlite_filing_index(
-        filing_index_multifilter_response, tmp_path, monkeypatch):
+        filing_index_multifilter_response, db_record_count, tmp_path,
+        monkeypatch):
     """Filtering by `filing_index` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     filing_index_codes = (
@@ -162,7 +161,7 @@ def test_to_sqlite_filing_index(
         )
     saved_fxo = {row[0] for row in cur.fetchall()}
     assert saved_fxo == set(filing_index_codes)
-    assert _db_record_count(cur) == 2
+    assert db_record_count(cur) == 2
 
 
 def test_get_filings_reporting_date(reporting_date_multifilter_response):
@@ -180,6 +179,7 @@ def test_get_filings_reporting_date(reporting_date_multifilter_response):
                 )
 
 
+@pytest.mark.sqlite
 def test_to_sqlite_reporting_date(
         reporting_date_multifilter_response, tmp_path, monkeypatch):
     """Filtering by `reporting_date` raises exception."""
@@ -229,9 +229,10 @@ def test_get_filings_inconsistency_count(
         'API.'
         ),
     raises=xf.APIError)
+@pytest.mark.sqlite
 def test_to_sqlite_inconsistency_count(
-        inconsistency_count_multifilter_response, tmp_path, monkeypatch
-        ):
+        inconsistency_count_multifilter_response, db_record_count, tmp_path,
+        monkeypatch):
     """Filtering by `inconsistency_count` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     ic_counts = 1, 2
@@ -256,7 +257,7 @@ def test_to_sqlite_inconsistency_count(
         )
     saved_ic_counts = {row[0] for row in cur.fetchall()}
     assert saved_ic_counts == set(ic_counts)
-    assert _db_record_count(cur) == 2
+    assert db_record_count(cur) == 2
 
 
 def test_get_filings_processed_time_str(
@@ -287,9 +288,10 @@ def test_get_filings_processed_time_str(
     assert cloetta_sv_strs[1] in received_strs
 
 
+@pytest.mark.sqlite
 def test_to_sqlite_processed_time_str(
-        processed_time_multifilter_response, tmp_path, monkeypatch
-        ):
+        processed_time_multifilter_response, db_record_count, tmp_path,
+        monkeypatch):
     """Filtering by `processed_time` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     cloetta_sv_strs = (
@@ -317,7 +319,7 @@ def test_to_sqlite_processed_time_str(
         )
     saved_proc_times = {row[0] for row in cur.fetchall()}
     assert saved_proc_times == set(cloetta_sv_strs)
-    assert _db_record_count(cur) == 2
+    assert db_record_count(cur) == 2
 
 
 # filing_page_iter

@@ -49,6 +49,15 @@ def res_colls(filings) -> dict[str, ResourceCollection]:
         }
 
 
+@pytest.fixture(scope='package')
+def db_record_count():
+    """Function for getting total count of Filing database table."""
+    def _db_record_count(cur):
+        cur.execute("SELECT COUNT(*) FROM Filing")
+        return cur.fetchone()[0]
+    return _db_record_count
+
+
 @pytest.fixture(scope='module')
 def mock_response_data():
     """Arbitrary data to mock download."""

@@ -14,11 +14,6 @@ import pytest
 import xbrl_filings_api as xf
 
 
-def _db_record_count(cur):
-    cur.execute("SELECT COUNT(*) FROM Filing")
-    return cur.fetchone()[0]
-
-
 def test_get_filings_override_max_size(asml22en_response):
     """`max_size` can be overridden with `add_api_params`."""
     asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'

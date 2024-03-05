@@ -23,11 +23,6 @@ import xbrl_filings_api as xf
 UTC = timezone.utc
 
 
-def _db_record_count(cur):
-    cur.execute("SELECT COUNT(*) FROM Filing")
-    return cur.fetchone()[0]
-
-
 def test_get_filings_api_id(creditsuisse21en_by_id_response):
     """Requested `api_id` is returned."""
     creditsuisse21en_api_id = '162'
@@ -46,7 +41,7 @@ def test_get_filings_api_id(creditsuisse21en_by_id_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_api_id(
-    creditsuisse21en_by_id_response, tmp_path, monkeypatch):
+    creditsuisse21en_by_id_response, db_record_count, tmp_path, monkeypatch):
     """Requested `api_id` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     creditsuisse21en_api_id = '162'
@@ -69,7 +64,7 @@ def test_to_sqlite_api_id(
         (creditsuisse21en_api_id,)
         )
     assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_filing_index(asml22en_response):
@@ -90,7 +85,7 @@ def test_get_filings_filing_index(asml22en_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_filing_index(
-        asml22en_response, tmp_path, monkeypatch):
+        asml22en_response, db_record_count, tmp_path, monkeypatch):
     """Requested `filing_index` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
@@ -113,7 +108,7 @@ def test_to_sqlite_filing_index(
         (asml22_fxo,)
         )
     assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_language(filter_language_response):
@@ -170,7 +165,7 @@ def test_get_filings_last_end_date_str(filter_last_end_date_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_last_end_date_str(
-        filter_last_end_date_response, tmp_path, monkeypatch):
+        filter_last_end_date_response, db_record_count, tmp_path, monkeypatch):
     """Requested `last_end_date` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     date_str = '2021-02-28'
@@ -194,7 +189,7 @@ def test_to_sqlite_last_end_date_str(
         )
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_last_end_date_obj(filter_last_end_date_response):
@@ -215,7 +210,7 @@ def test_get_filings_last_end_date_obj(filter_last_end_date_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_last_end_date_obj(
-        filter_last_end_date_response, tmp_path, monkeypatch):
+        filter_last_end_date_response, db_record_count, tmp_path, monkeypatch):
     """Requested `last_end_date` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     date_obj = date(2021, 2, 28)
@@ -239,7 +234,7 @@ def test_to_sqlite_last_end_date_obj(
         )
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_last_end_date_datetime(
@@ -313,7 +308,7 @@ def test_get_filings_error_count(filter_error_count_response):
     raises=xf.APIError)
 @pytest.mark.sqlite
 def test_to_sqlite_error_count(
-        filter_error_count_response, tmp_path, monkeypatch):
+        filter_error_count_response, db_record_count, tmp_path, monkeypatch):
     """Requested `error_count` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = tmp_path / 'test_to_sqlite_error_count.db'
@@ -336,7 +331,7 @@ def test_to_sqlite_error_count(
         )
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_added_time_str(
@@ -381,7 +376,7 @@ def test_get_filings_added_time_2_str(
 
 @pytest.mark.sqlite
 def test_to_sqlite_added_time_2_str(
-        filter_added_time_2_response, tmp_path, monkeypatch):
+        filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
     """Requested `added_time` as str is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
@@ -406,7 +401,7 @@ def test_to_sqlite_added_time_2_str(
         )
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_added_time_datetime(
@@ -431,7 +426,7 @@ def test_get_filings_added_time_datetime(
 
 @pytest.mark.sqlite
 def test_to_sqlite_added_time_datetime(
-        filter_added_time_2_response, tmp_path, monkeypatch):
+        filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
     """Requested `added_time` as datetime is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
@@ -457,7 +452,7 @@ def test_to_sqlite_added_time_datetime(
         )
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_added_time_date(filter_added_time_lax_response):
@@ -549,7 +544,7 @@ def test_get_filings_package_url(filter_package_url_response):
     raises=xf.APIError)
 @pytest.mark.sqlite
 def test_to_sqlite_package_url(
-        filter_package_url_response, tmp_path, monkeypatch):
+        filter_package_url_response, db_record_count, tmp_path, monkeypatch):
     """Requested `package_url` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     filter_url = (
@@ -576,7 +571,7 @@ def test_to_sqlite_package_url(
         )
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_package_sha256(filter_package_sha256_response):
@@ -598,7 +593,7 @@ def test_get_filings_package_sha256(filter_package_sha256_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_package_sha256(
-        filter_package_sha256_response, tmp_path, monkeypatch):
+        filter_package_sha256_response, db_record_count, tmp_path, monkeypatch):
     """Requested `package_sha256` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     filter_sha = (
@@ -623,7 +618,7 @@ def test_to_sqlite_package_sha256(
         )
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 
 def test_get_filings_2filters_country_last_end_date_str(
@@ -645,7 +640,7 @@ def test_get_filings_2filters_country_last_end_date_str(
 
 @pytest.mark.sqlite
 def test_to_sqlite_2filters_country_last_end_date_str(
-        finnish_jan22_response, tmp_path, monkeypatch):
+        finnish_jan22_response, db_record_count, tmp_path, monkeypatch):
     """Filters `country` and `last_end_date` insert 2 filings to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = (
@@ -673,7 +668,7 @@ def test_to_sqlite_2filters_country_last_end_date_str(
     fxo_b = cur.fetchone()[0]
     assert fxo_a != fxo_b, 'Filings are unique'
     assert cur.fetchone() is None, 'Two filings inserted'
-    assert _db_record_count(cur) == 2
+    assert db_record_count(cur) == 2
 
 
 def test_get_filings_2filters_country_last_end_date_date(finnish_jan22_response):
@@ -694,7 +689,7 @@ def test_get_filings_2filters_country_last_end_date_date(finnish_jan22_response)
 
 @pytest.mark.sqlite
 def test_to_sqlite_2filters_country_last_end_date_date(
-    finnish_jan22_response, tmp_path, monkeypatch):
+    finnish_jan22_response, db_record_count, tmp_path, monkeypatch):
     """Filters `country` and `last_end_date` as date insert to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = (
@@ -722,4 +717,4 @@ def test_to_sqlite_2filters_country_last_end_date_date(
     fxo_b = cur.fetchone()[0]
     assert fxo_a != fxo_b, 'Filings are unique'
     assert cur.fetchone() is None, 'Two filings inserted'
-    assert _db_record_count(cur) == 2
+    assert db_record_count(cur) == 2

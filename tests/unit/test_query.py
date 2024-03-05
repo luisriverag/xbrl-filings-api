@@ -18,11 +18,6 @@ import xbrl_filings_api as xf
 UTC = timezone.utc
 
 
-def _db_record_count(cur):
-    cur.execute("SELECT COUNT(*) FROM Filing")
-    return cur.fetchone()[0]
-
-
 def test_get_filings(asml22en_response):
     """Requested filing is returned."""
     asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
@@ -38,7 +33,7 @@ def test_get_filings(asml22en_response):
     assert isinstance(asml22, xf.Filing), 'Filing is returned'
 
 @pytest.mark.sqlite
-def test_to_sqlite(asml22en_response, tmp_path, monkeypatch):
+def test_to_sqlite(asml22en_response, db_record_count, tmp_path, monkeypatch):
     """Requested filing is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
@@ -61,7 +56,7 @@ def test_to_sqlite(asml22en_response, tmp_path, monkeypatch):
         (asml22_fxo,)
         )
     assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
-    assert _db_record_count(cur) == 1
+    assert db_record_count(cur) == 1
 
 @pytest.mark.paging
 def test_filing_page_iter(asml22en_response):
