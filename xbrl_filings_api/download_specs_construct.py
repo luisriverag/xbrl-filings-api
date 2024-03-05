@@ -78,7 +78,7 @@ def _get_filing_download_specs(
         isfilingset: bool
         ) -> Union[DownloadSpecs, None]:
     if file not in valid_file_formats:
-        msg = f'file {file!r} is not among {valid_file_formats!r}'
+        msg = f'File {file!r} is not among {valid_file_formats!r}'
         raise ValueError(msg)
 
     url = getattr(filing, f'{file}_url')

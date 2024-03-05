@@ -347,6 +347,48 @@ async def test_download_aiter_xhtml(
 
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_viewer_fail(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """Test raising when downloading `viewer_url` by `download`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with pytest.raises(ValueError, match="File 'viewer' is not among"):
+        target.download(
+            files='viewer',
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        empty_path = tmp_path / url_filename(filing.viewer_url)
+        assert not empty_path.is_file()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_viewer_fail(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, tmp_path):
+    """Test raising when downloading `viewer_url` by `download_aiter`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    dliter = target.download_aiter(
+        files='viewer',
+        to_dir=tmp_path,
+        stem_pattern=None,
+        check_corruption=True,
+        max_concurrent=None
+        )
+    with pytest.raises(ValueError, match="File 'viewer' is not among"):
+        async for _ in dliter:
+            pass
+    for filing in filings:
+        empty_path = tmp_path / url_filename(filing.viewer_url)
+        assert not empty_path.is_file()
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_and_xhtml(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
     """Test downloading `json_url` and `xhtml_url` by `download`."""
