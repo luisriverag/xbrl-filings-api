@@ -347,7 +347,7 @@ async def test_download_aiter_xhtml(
 
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
-def test_download_viewer_fail(
+def test_download_viewer_raise(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
         tmp_path):
     """Test raising when downloading `viewer_url` by `download`."""
@@ -368,7 +368,7 @@ def test_download_viewer_fail(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
-async def test_download_aiter_viewer_fail(
+async def test_download_aiter_viewer_raise(
         libclass, get_asml22en_or_oldest3_fi, url_filename, tmp_path):
     """Test raising when downloading `viewer_url` by `download_aiter`."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
@@ -548,8 +548,8 @@ def test_download_json_Filing_DownloadItem_rename(
     assert save_path.name == 'renamed_file.abc'
 
 
-def test_download_json_FilingSet_DownloadItem_rename(
-        get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
+def test_download_json_FilingSet_DownloadItem_rename_raise(
+        get_asml22en_or_oldest3_fi, tmp_path):
     """Test raising when downloading `json_url` by `FilingSet.download` with `DownloadItem` renamed setup."""
     filingset: xf.FilingSet
     filingset, filings = get_asml22en_or_oldest3_fi(xf.FilingSet)
@@ -610,8 +610,8 @@ async def test_download_aiter_json_Filing_DownloadItem_rename(
 
 
 @pytest.mark.asyncio
-async def test_download_aiter_json_FilingSet_DownloadItem_rename(
-        get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
+async def test_download_aiter_json_FilingSet_DownloadItem_rename_raise(
+        get_asml22en_or_oldest3_fi, tmp_path):
     """Test raising when downloading `json_url` by `FilingSet.download_aiter` with `DownloadItem` renamed setup."""
     filingset: xf.FilingSet
     filingset, filings = get_asml22en_or_oldest3_fi(xf.FilingSet)
@@ -635,3 +635,167 @@ async def test_download_aiter_json_FilingSet_DownloadItem_rename(
         assert filing.json_download_path is None
     save_path = tmp_path / 'renamed_file.abc'
     assert not save_path.is_file()
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_json_DownloadItem_2_to_dir(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `download` with `DownloadItem` 2 different to_dir."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    json_path = tmp_path / 'json'
+    xhtml_path = tmp_path / 'xhtml'
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+            mock_url_response(filing.xhtml_url, rsps)
+        target.download(
+            files={
+                'json': xf.DownloadItem(
+                    filename=None,
+                    to_dir=json_path,
+                    stem_pattern=None
+                    ),
+                'xhtml': xf.DownloadItem(
+                    filename=None,
+                    to_dir=xhtml_path,
+                    stem_pattern=None
+                    ),
+            },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        json_dl_path = Path(filing.json_download_path)
+        assert json_dl_path.parent == json_path
+        assert json_dl_path.is_file()
+        assert json_dl_path.stat().st_size > 0
+        xhtml_dl_path = Path(filing.xhtml_download_path)
+        assert xhtml_dl_path.parent == xhtml_path
+        assert xhtml_dl_path.is_file()
+        assert xhtml_dl_path.stat().st_size > 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_json_DownloadItem_2_to_dir(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `download_aiter` 2 different to_dir."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    json_path = tmp_path / 'json'
+    xhtml_path = tmp_path / 'xhtml'
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+            mock_url_response(filing.xhtml_url, rsps)
+        dliter = target.download_aiter(
+            files={
+                'json': xf.DownloadItem(
+                    filename=None,
+                    to_dir=json_path,
+                    stem_pattern=None
+                    ),
+                'xhtml': xf.DownloadItem(
+                    filename=None,
+                    to_dir=xhtml_path,
+                    stem_pattern=None
+                    ),
+            },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        async for res in dliter:
+            assert res.err is None
+            res_info: xf.DownloadInfo = res.info
+            res_path = Path(res.path)
+            assert res_path.is_file()
+            assert res_path.stat().st_size > 0
+            if res_info.file == 'json':
+                assert res_path.parent == json_path
+            elif res_info.file == 'xhtml':
+                assert res_path.parent == xhtml_path
+            else:
+                pytest.fail(f'Additional files: {res_info.file!r}')
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_json_DownloadItem_2_stem_pattern(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `download` with `DownloadItem` 2 different stem_pattern."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+            mock_url_response(filing.xhtml_url, rsps)
+        target.download(
+            files={
+                'json': xf.DownloadItem(
+                    filename=None,
+                    to_dir=None,
+                    stem_pattern='json_/name/'
+                    ),
+                'xhtml': xf.DownloadItem(
+                    filename=None,
+                    to_dir=None,
+                    stem_pattern='xhtml_/name/'
+                    ),
+            },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        json_dl_path = Path(filing.json_download_path)
+        assert json_dl_path.name.startswith('json_')
+        xhtml_dl_path = Path(filing.xhtml_download_path)
+        assert xhtml_dl_path.name.startswith('xhtml_')
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_json_DownloadItem_2_stem_pattern(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` by `download_aiter` 2 different stem_pattern."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+            mock_url_response(filing.xhtml_url, rsps)
+        dliter = target.download_aiter(
+            files={
+                'json': xf.DownloadItem(
+                    filename=None,
+                    to_dir=None,
+                    stem_pattern='json_/name/'
+                    ),
+                'xhtml': xf.DownloadItem(
+                    filename=None,
+                    to_dir=None,
+                    stem_pattern='xhtml_/name/'
+                    ),
+            },
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        async for res in dliter:
+            assert res.err is None
+            res_info: xf.DownloadInfo = res.info
+            res_path = Path(res.path)
+            if res_info.file == 'json':
+                assert res_path.name.startswith('json_')
+            elif res_info.file == 'xhtml':
+                assert res_path.name.startswith('xhtml_')
+            else:
+                pytest.fail(f'Additional files: {res_info.file!r}')
