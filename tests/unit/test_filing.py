@@ -145,7 +145,6 @@ class TestFilingAsml22enNoEntity:
         ('xhtml_url', 'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/asml-2022-12-31-en.xhtml'),
         ('json_download_path', None),
         ('package_download_path', None),
-        ('viewer_download_path', None),
         ('xhtml_download_path', None),
         ('package_sha256', '3f44981c656dc2bcd0ed3a88e6d062e6b8c041a656f420257bccd63535c2b6ac'),
         ])

@@ -61,7 +61,6 @@ class Filing(APIResource):
     request_url : str
     json_download_path : str or None
     package_download_path : str or None
-    viewer_download_path : str or None
     xhtml_download_path : str or None
     package_sha256 : str or None
     """
@@ -295,6 +294,8 @@ class Filing(APIResource):
         examine the marked up Inline XBRL facts one at a time. The
         underlying software is called The Open Source Inline XBRL Viewer
         and it is developed by Workiva.
+
+        This file cannot be downloaded.
         """
 
         self.xhtml_url: Union[str, None] = self._json.get(
@@ -320,9 +321,6 @@ class Filing(APIResource):
 
         self.package_download_path: Union[str, None] = None
         """Local path where `package_url` was downloaded."""
-
-        self.viewer_download_path: Union[str, None] = None
-        """Local path where `viewer_url` was downloaded."""
 
         self.xhtml_download_path: Union[str, None] = None
         """Local path where `xhtml_url` was downloaded."""

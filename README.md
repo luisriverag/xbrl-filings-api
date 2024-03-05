@@ -71,7 +71,6 @@ Data attributes:
 | `request_url`           | str      | URL of the API request              |         | \-                    |
 | `json_download_path`    | str      | Path where `json_url` was downloaded |        | \-                    |
 | `package_download_path` | str      | Path where `package_url` was downloaded |     | \-                    |
-| `viewer_download_path`  | str      | Path where `viewer_url` was downloaded |      | \-                    |
 | `xhtml_download_path`   | str      | Path where `xhtml_url` was downloaded |       | \-                    |
 | `package_sha256`        | str      | SHA-256 hash of `package_url` file  |  **X**  |`sha256`               |
 
