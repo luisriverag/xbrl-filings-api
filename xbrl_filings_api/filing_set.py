@@ -26,6 +26,7 @@ from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
+    GET_ONLY_FILINGS,
     GET_VALIDATION_MESSAGES,
     ScopeFlag,
 )
@@ -55,7 +56,6 @@ class FilingSet(set[Filing]):
         self.entities = ResourceCollection(self, 'entity', Entity)
         self.validation_messages = ResourceCollection(
             self, 'validation_messages', ValidationMessage)
-        self._columns: Union[list[str], None] = None
 
     def download(
             self,
@@ -322,25 +322,24 @@ class FilingSet(set[Filing]):
         """Get sets of data objects and disable flags for empty sets."""
         data_objs: dict[str, Collection[APIResource]] = {'Filing': self}
         subresources = [
-            (Entity, self.entities),
-            (ValidationMessage, self.validation_messages)
+            (Entity, self.entities, GET_ENTITY),
+            (ValidationMessage, self.validation_messages, GET_VALIDATION_MESSAGES)
             ]
         type_obj: type[APIResource]
         obj_set: ResourceCollection
-        for type_obj, obj_set in subresources:
+        for type_obj, obj_set, type_flag in subresources:
             if not obj_set.exist:
                 flags &= ~type_obj._FILING_FLAG
-            else:
+            elif type_flag in flags:
                 data_objs[type_obj.__name__] = obj_set
+        if flags == ScopeFlag(0):
+            flags = GET_ONLY_FILINGS
         return data_objs, flags
 
     @property
     def columns(self) -> list[str]:
         """List of available columns for filings of this set."""
-        if self._columns:
-            return self._columns
-        self._columns = Filing.get_columns(
+        return Filing.get_columns(
             filings=self,
             has_entities=self.entities.exist
             )
-        return self._columns

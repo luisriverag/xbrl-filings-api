@@ -268,6 +268,30 @@ def oldest3_fi_response():
 
 
 @pytest.fixture
+def oldest3_fi_entities_response():
+    """Oldest 3 AFR filings reported in Finland with entities."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('oldest3_fi_entities'))
+        yield rsps
+
+
+@pytest.fixture
+def oldest3_fi_vmessages_response():
+    """Oldest 3 AFR filings reported in Finland with validation messages."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('oldest3_fi_vmessages'))
+        yield rsps
+
+
+@pytest.fixture
+def oldest3_fi_ent_vmessages_response():
+    """Oldest 3 AFR filings reported in Finland with entities and validation messages."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('oldest3_fi_ent_vmessages'))
+        yield rsps
+
+
+@pytest.fixture
 def sort_two_fields_response():
     """
     Sort Finnish filings by `last_end_date` and `added_time`.

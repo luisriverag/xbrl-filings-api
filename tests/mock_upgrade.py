@@ -391,6 +391,57 @@ def _fetch_oldest3_fi():
 _addmock('oldest3_fi')
 
 
+@_recorder.record(file_path=_get_path('oldest3_fi_entities'))
+def _fetch_oldest3_fi_entities():
+    """Oldest 3 AFR filings reported in Finland with entities."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 3,
+            'filter[country]': 'FI',
+            'sort': 'date_added', # added_time
+            'include': 'entity'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('oldest3_fi_entities')
+
+
+@_recorder.record(file_path=_get_path('oldest3_fi_vmessages'))
+def _fetch_oldest3_fi_vmessages():
+    """Oldest 3 AFR filings reported in Finland with validation messages."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 3,
+            'filter[country]': 'FI',
+            'sort': 'date_added', # added_time
+            'include': 'validation_messages'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('oldest3_fi_vmessages')
+
+
+@_recorder.record(file_path=_get_path('oldest3_fi_ent_vmessages'))
+def _fetch_oldest3_fi_ent_vmessages():
+    """Oldest 3 AFR filings reported in Finland with entities and validation messages."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 3,
+            'filter[country]': 'FI',
+            'sort': 'date_added', # added_time
+            'include': 'entity,validation_messages'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('oldest3_fi_ent_vmessages')
+
+
 @_recorder.record(file_path=_get_path('sort_two_fields'))
 def _fetch_sort_two_fields():
     """
