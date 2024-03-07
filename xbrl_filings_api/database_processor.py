@@ -11,6 +11,7 @@ import logging
 import sqlite3
 from collections.abc import Collection
 from datetime import datetime
+from itertools import chain
 from pathlib import Path
 from typing import Union
 
@@ -35,7 +36,7 @@ from xbrl_filings_api.validation_message import ValidationMessage
 
 logger = logging.getLogger(__name__)
 
-CurrentSchemaType = dict[str, list[str]]
+_CurrentSchemaType = dict[str, list[str]]
 """`{'TableName': ['col1', 'col2', ...]}`"""
 
 
@@ -89,9 +90,13 @@ def _create_database_or_extend_schema(
         filing_data_attrs: list[str],
         *,
         update: bool
-        ) -> tuple[sqlite3.Connection, CurrentSchemaType]:
+        ) -> tuple[sqlite3.Connection, _CurrentSchemaType]:
     """
     Create a new SQLite3 database or extend the database schema.
+
+    When `update=True`, any of the tables in existing database must
+    match required tables and all of these matching tables must have a
+    column ``api_id``.
 
     Returns
     -------
@@ -118,12 +123,11 @@ def _create_database_or_extend_schema(
 
     connection = sqlite3.connect(db_path)
     cur = connection.cursor()
-    table_names = {cls.__name__ for cls in resource_types}
+    required_table_names = {cls.__name__ for cls in resource_types}
     existing_tables: set[str] = set()
     existing_views: set[str] = set()
 
     if update:
-        schema_match = False
         _exec(
             cur,
             "SELECT type, name FROM sqlite_schema "
@@ -132,69 +136,88 @@ def _create_database_or_extend_schema(
         db_objs = cur.fetchall()
         existing_tables = {row[1] for row in db_objs if row[0] == 'table'}
         existing_views = {row[1] for row in db_objs if row[0] == 'view'}
-        for table_name in existing_tables:
-            if table_name in table_names:
+        schema_match = False
+        for existing_table in existing_tables:
+            if existing_table in required_table_names:
                 schema_match = True
                 break
         if not schema_match:
             path = str(db_path)
             raise DatabaseSchemaUnmatchError(path)
 
-    table_schema: CurrentSchemaType = {}
+    table_schema: _CurrentSchemaType = {}
     for type_obj in resource_types:
         table_name = type_obj.__name__
-        cols = data_attrs[table_name]
+        required_columns = data_attrs[table_name]
 
-        col_defs = _get_col_defs(cols)
+        col_defs = _get_col_defs(required_columns)
         table_schema[table_name] = [cd[0] for cd in col_defs]
 
         if table_name in existing_tables:
-            schema_match = False
-            presql = "SELECT name FROM pragma_table_info('"
-            _exec(cur, f"{presql}{table_name}')")
-            existing_cols = [row[0] for row in cur.fetchall()]
-            add_cols = []
-            for col in cols:
-                try:
-                    existing_cols.index(col)
-                except ValueError:
-                    add_cols.append(col)
-                else:
-                    schema_match = True
-            if not schema_match or 'api_id' not in cols:
+            existing_cols = _get_existing_column_names(table_name, cur)
+            if 'api_id' not in existing_cols:
                 path = str(db_path)
                 raise DatabaseSchemaUnmatchError(path)
-            for col, tc in _get_col_defs(add_cols):
-                _exec(
-                    cur,
-                    f"ALTER TABLE {table_name} ADD COLUMN {col} {tc}"
-                    )
-                table_schema[table_name].append(col)
-            connection.commit()
-            continue
-
-        _exec(
-            cur,
-            f"CREATE TABLE {table_name} (\n  "
-            + ",\n  ".join(' '.join(cd) for cd in col_defs)
-            + "\n) WITHOUT ROWID"
-            )
+            _add_missing_required_columns(
+                table_name, cur, required_columns, existing_cols)
+        else:
+            _create_new_table(table_name, cur, col_defs)
         connection.commit()
 
     if options.views:
-        for view in options.views:
-            if view.name in existing_views:
-                continue
-            for table_name in view.required_tables:
-                if table_name not in table_schema:
-                    continue
-            _exec(
-                cur,
-                f"CREATE VIEW {view.name}\n"
-                "AS" + view.sql.rstrip()
-                )
-            connection.commit()
+        _add_compatible_views(cur, existing_views, table_schema)
+        connection.commit()
     return connection, table_schema
+
+
+def _add_missing_required_columns(
+        table_name: str, cur: sqlite3.Cursor, required_columns: list[str],
+        existing_cols: set[str]):
+    add_cols = []
+    for col in required_columns:
+        if col not in existing_cols:
+            add_cols.append(col)
+    add_cols = order_columns.order_columns(add_cols)
+    for cname, ctype in _get_col_defs(add_cols):
+        _exec(
+            cur,
+            f"ALTER TABLE {table_name} ADD COLUMN {cname} {ctype}"
+            )
+
+
+def _create_new_table(
+        table_name: str, cur: sqlite3.Cursor, col_defs: list[tuple[str, str]]):
+    _exec(
+        cur,
+        f"CREATE TABLE {table_name} (\n  "
+        + ",\n  ".join(f'{cname} {ctype}' for cname, ctype in col_defs)
+        + "\n) WITHOUT ROWID"
+        )
+
+
+def _add_compatible_views(
+        cur: sqlite3.Cursor, existing_views: list[str],
+        table_schema: _CurrentSchemaType):
+    for view in options.views:
+        if view.name in existing_views:
+            continue
+        for table_name in view.required_tables:
+            if table_name not in table_schema:
+                continue
+        _exec(
+            cur,
+            f"CREATE VIEW {view.name}\n"
+            "AS" + view.sql.rstrip()
+            )
+
+
+def _get_existing_column_names(
+        table_name: str, cur: sqlite3.Cursor) -> set[str]:
+    _exec(
+        cur,
+        f"SELECT name FROM pragma_table_info(?)",
+        (table_name,))
+    return set(*zip(*cur.fetchall()))
 
 
 def _get_col_defs(cols: list[str]) -> list[tuple[str, str]]:
@@ -214,7 +237,7 @@ def _get_col_defs(cols: list[str]) -> list[tuple[str, str]]:
 
 
 def _insert_data(
-        table_schema: CurrentSchemaType,
+        table_schema: _CurrentSchemaType,
         data_objs: dict[str, Collection[APIResource]],
         con: sqlite3.Connection):
     cur = con.cursor()
@@ -235,7 +258,7 @@ def _insert_data(
         _exec(
             cur,
             f"REPLACE INTO {table_name} ({colsql})\nVALUES ({phs})",
-            records
+            many=records
             )
         con.commit()
 
@@ -243,15 +266,17 @@ def _insert_data(
 def _exec(
         cur: sqlite3.Cursor,
         sql: str,
-        data: Union[Collection[Collection[ResourceLiteralType]], None] = None
+        params: Collection[str] = (),
+        *,
+        many: Union[Collection[Collection[ResourceLiteralType]], None] = None
         ) -> None:
-    data_len = f' <count: {len(data)}>' if data else ''
+    data_len = f' <count: {len(many)}>' if many else ''
     logger.debug(sql + ';' + data_len)
 
-    if data is not None:
-        cur.executemany(sql, data)
+    if many is not None:
+        cur.executemany(sql, many)
     else:
-        cur.execute(sql)
+        cur.execute(sql, params)
 
 
 def _adapt_datetime(dt: datetime):
