@@ -1,0 +1,308 @@
+"""Define tests for method `get_pandas_data` of `FilingSet`."""
+
+# SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
+from datetime import date
+
+import pandas as pd
+import pytest
+
+import xbrl_filings_api as xf
+
+
+@pytest.fixture
+def oldest3_fi_filingset(oldest3_fi_response):
+    """FilingSet from mock response ``oldest3_fi``."""
+    return xf.get_filings(
+        filters={'country': 'FI'},
+        sort='date_added',
+        max_size=3,
+        flags=xf.GET_ONLY_FILINGS,
+        add_api_params=None
+        )
+
+
+@pytest.fixture
+def oldest3_fi_entities_filingset(oldest3_fi_entities_response):
+    """FilingSet from mock response ``oldest3_fi_entities`` with entities."""
+    return xf.get_filings(
+        filters={'country': 'FI'},
+        sort='date_added',
+        max_size=3,
+        flags=xf.GET_ENTITY,
+        add_api_params=None
+        )
+
+
+def test_filings(oldest3_fi_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert enento20en.at[i, 'country'] == 'FI'
+    assert enento20en.at[i, 'filing_index'] == '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0'
+    assert enento20en.at[i, 'language'] == 'en'
+    assert enento20en.at[i, 'last_end_date'] == pd.Timestamp('2020-12-31')
+    assert enento20en.at[i, 'reporting_date'] == pd.Timestamp('2020-12-31')
+    assert enento20en.at[i, 'error_count'] == 0
+    assert enento20en.at[i, 'inconsistency_count'] == 19
+    assert enento20en.at[i, 'warning_count'] == 0
+    assert enento20en.at[i, 'added_time'] == pd.Timestamp('2021-05-18 00:00:00')
+    assert 'added_time_str' not in enento20en.columns.array
+    assert enento20en.at[i, 'processed_time'] == pd.Timestamp('2023-01-18 11:02:18.936351')
+    assert 'processed_time_str' not in enento20en.columns.array
+    assert 'entity_api_id' not in enento20en.columns.array
+    assert 'json_url' not in enento20en.columns.array
+    assert 'package_url' not in enento20en.columns.array
+    assert 'viewer_url' not in enento20en.columns.array
+    assert 'xhtml_url' not in enento20en.columns.array
+    assert isinstance(enento20en.at[i, 'query_time'], pd.Timestamp)
+    assert 'request_url' not in enento20en.columns.array
+    assert 'json_download_path' not in enento20en.columns.array
+    assert 'package_download_path' not in enento20en.columns.array
+    assert 'xhtml_download_path' not in enento20en.columns.array
+    assert enento20en.at[i, 'package_sha256'] == 'ab0c60224c225ba3921188514ecd6c37af6a947f68a5c3a0c6eb34abfaae822b'
+    assert 'entity' not in enento20en.columns.array
+    assert 'validation_messages' not in enento20en.columns.array
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array
+
+
+def test_filings_attr_names(oldest3_fi_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data` with attr_names."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=['api_id', 'filing_index', 'last_end_date'],
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    assert len(df.columns.array) == 3
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert enento20en.at[i, 'filing_index'] == '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0'
+    assert enento20en.at[i, 'last_end_date'] == pd.Timestamp('2020-12-31')
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array
+
+
+def test_filings_attr_names_entity(oldest3_fi_entities_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data` with attr_names with entity attr."""
+    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=['api_id', 'filing_index', 'last_end_date', 'entity.name'],
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    assert len(df.columns.array) == 4
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert enento20en.at[i, 'filing_index'] == '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0'
+    assert enento20en.at[i, 'last_end_date'] == pd.Timestamp('2020-12-31')
+    assert enento20en.at[i, 'entity.name'] == 'Enento Group Oyj'
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array
+
+
+def test_filings_with_entity(oldest3_fi_entities_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`, with_entity=True."""
+    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=True,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert 'entity_api_id' not in enento20en.columns.array
+    assert enento20en.at[i, 'entity.api_id'] == '548'
+    assert enento20en.at[i, 'entity.identifier'] == '743700EPLUWXE25HGM03'
+    assert enento20en.at[i, 'entity.name'] == 'Enento Group Oyj'
+    assert 'entity.api_entity_filings_url' not in enento20en.columns.array
+    assert isinstance(enento20en.at[i, 'entity.query_time'], pd.Timestamp)
+    assert 'entity.request_url' not in enento20en.columns.array
+    assert 'entity.filings' not in enento20en.columns.array
+    assert 'entity' not in enento20en.columns.array
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array
+
+
+def test_filings_with_entity_no_entity(oldest3_fi_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`, with_entity=True but no entity."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=True,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert 'entity_api_id' not in enento20en.columns.array
+    assert enento20en.at[i, 'entity.api_id'] is None
+    assert enento20en.at[i, 'entity.identifier'] is None
+    assert enento20en.at[i, 'entity.name'] is None
+    assert 'entity.api_entity_filings_url' not in enento20en.columns.array
+    assert enento20en.at[i, 'entity.query_time'] is None
+    assert 'entity.request_url' not in enento20en.columns.array
+    assert 'entity.filings' not in enento20en.columns.array
+    assert 'entity' not in enento20en.columns.array
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array
+
+
+def test_filings_strip_timezone_false(oldest3_fi_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`, strip_timezone=False."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=False,
+        strip_timezone=False,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=False
+        )
+    i = pd_data['api_id'].index('710')
+    assert pd_data['added_time'][i].tzinfo is not None
+    assert pd_data['processed_time'][i].tzinfo is not None
+    assert pd_data['query_time'][i].tzinfo is not None
+    assert '507' in pd_data['api_id']
+    assert '1495' in pd_data['api_id']
+
+
+def test_filings_date_as_datetime_false(oldest3_fi_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`, date_as_datetime=False."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=False,
+        include_urls=False,
+        include_paths=False
+        )
+    i = pd_data['api_id'].index('710')
+    assert type(pd_data['last_end_date'][i]) is date
+    assert type(pd_data['reporting_date'][i]) is date
+    assert '507' in pd_data['api_id']
+    assert '1495' in pd_data['api_id']
+
+
+def test_filings_include_urls(oldest3_fi_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`, include_urls=True."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=True,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert enento20en.at[i, 'json_url'] == 'https://filings.xbrl.org/743700EPLUWXE25HGM03/2020-12-31/ESEF/FI/0/ENENTO-2020-12-31 EN.json'
+    assert enento20en.at[i, 'package_url'] == 'https://filings.xbrl.org/743700EPLUWXE25HGM03/2020-12-31/ESEF/FI/0/ENENTO-2020-12-31_EN.zip'
+    assert enento20en.at[i, 'viewer_url'] == 'https://filings.xbrl.org/743700EPLUWXE25HGM03/2020-12-31/ESEF/FI/0/ENENTO-2020-12-31_EN/reports/ixbrlviewer.html'
+    assert enento20en.at[i, 'xhtml_url'] == 'https://filings.xbrl.org/743700EPLUWXE25HGM03/2020-12-31/ESEF/FI/0/ENENTO-2020-12-31_EN/reports/ENENTO-2020-12-31 EN.html'
+    assert enento20en.at[i, 'request_url'].startswith('https://filings.xbrl.org/api/filings?')
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array
+
+
+def test_filings_with_entity_include_urls(oldest3_fi_entities_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`, with_entity=True & include_urls=True."""
+    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=True,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=True,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert 'entity_api_id' not in enento20en.columns.array
+    assert enento20en.at[i, 'entity.api_id'] == '548'
+    assert enento20en.at[i, 'entity.identifier'] == '743700EPLUWXE25HGM03'
+    assert enento20en.at[i, 'entity.name'] == 'Enento Group Oyj'
+    assert enento20en.at[i, 'entity.api_entity_filings_url'] == 'https://filings.xbrl.org/api/entities/743700EPLUWXE25HGM03/filings'
+    assert isinstance(enento20en.at[i, 'entity.query_time'], pd.Timestamp)
+    assert enento20en.at[i, 'entity.request_url'].startswith('https://filings.xbrl.org/api/filings?')
+    assert 'entity.filings' not in enento20en.columns.array
+    assert 'entity' not in enento20en.columns.array
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array
+
+
+def test_filings_include_paths(oldest3_fi_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`, include_paths=True."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    enento20en_filing = next(filter(lambda f: f.api_id == '710', fs))
+    enento20en_filing.json_download_path = 'test_json'
+    enento20en_filing.package_download_path = 'test_package'
+    enento20en_filing.xhtml_download_path = 'test_xhtml'
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=True
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert enento20en.at[i, 'json_download_path'] == 'test_json'
+    assert enento20en.at[i, 'package_download_path'] == 'test_package'
+    assert enento20en.at[i, 'xhtml_download_path'] == 'test_xhtml'
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array
+
+
+def test_filings_include_paths_no_data(oldest3_fi_filingset):
+    """Test exporting filings by `FilingSet.get_pandas_data`, include_paths=True but no data."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=True
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    assert 'json_download_path' not in enento20en.columns.array
+    assert 'package_download_path' not in enento20en.columns.array
+    assert 'xhtml_download_path' not in enento20en.columns.array
+    assert '507' in df['api_id'].array
+    assert '1495' in df['api_id'].array

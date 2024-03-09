@@ -5,5 +5,5 @@ __pycache__/
 .vscode/
 author-notes/
 dist/
-.coverage
+.coverage*
 *.egg-info

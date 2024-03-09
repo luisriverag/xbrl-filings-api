@@ -10,6 +10,7 @@ This is an extended set type with certain added attributes.
 # SPDX-License-Identifier: MIT
 
 from collections.abc import AsyncIterator, Collection, Iterable, Mapping
+from datetime import date, datetime
 from pathlib import Path, PurePath
 from typing import Optional, Union
 
@@ -278,25 +279,46 @@ class FilingSet(set[Filing]):
             flags, ppath, data_objs, update=update)
 
     def get_pandas_data(
-            self, attr_names: Optional[Iterable[str]] = None
+            self, attr_names: Optional[Iterable[str]] = None, *,
+            with_entity: bool = False, strip_timezone: bool = True,
+            date_as_datetime: bool = True, include_urls : bool = False,
+            include_paths : bool = False
             ) -> dict[str, list[ResourceLiteralType]]:
         """
-        Get data for `pandas.DataFrame` constructor for filings.
+        Get data as dict for `pandas.DataFrame` constructor for filings.
 
         A new dataframe can be instantiated by::
 
-            pandas.DataFrame(data=filingset.get_pandas_data())
+        >>> import pandas as pd
+        >>> df = pd.DataFrame(data=filingset.get_pandas_data())
 
-        If `attr_names` is not given, most data attributes will be
-        extracted. Attributes ending in ``_download_path`` will be
-        extracted only if at least one file of this type has been
-        downloaded and `entity_api_id` if there is at least one entity
-        object in the set.
+        If `attr_names` is not given, data attributes excluding ones
+        ending ``_date_str`` will be extracted. Attributes ending in
+        ``_download_path`` will be extracted only if at least one file
+        of this type has been downloaded and `entity_api_id` if there is
+        at least one entity object in the set and `with_entity` is
+        `False`.
 
         Parameters
         ----------
-        attr_names: iterable of str, optional
-            Valid attributes names of `Filing` object.
+        attr_names : iterable of str, optional
+            Valid attributes names of `Filing` object or ``entity.``
+            prefixed attributes of its `Entity` object.
+        with_entity : bool, default False
+            When `attr_names` is not given, include entity attributes to
+            the filing.
+        strip_timezone : bool, default True
+            Strip timezone information (always UTC) from `datetime`
+            values.
+        date_as_datetime : bool, default True
+            Convert `date` values to naive `datetime` to be converted to
+            `datetime64` by pandas.
+        include_urls : bool, default False
+            When `attr_names` is not given, include attributes ending
+            ``_url``.
+        include_paths : bool, default False
+            When `attr_names` is not given, include attributes ending
+            ``_path``.
 
         Returns
         -------
@@ -309,9 +331,33 @@ class FilingSet(set[Filing]):
             data = {col: [] for col in attr_names}
         else:
             data = {col: [] for col in self.columns}
+            if with_entity:
+                if 'entity_api_id' in data:
+                    del data['entity_api_id']
+                ent_cols = {
+                    f'entity.{col}': [] for col in self.entities.columns}
+                data.update(ent_cols)
+            if not include_urls:
+                url_cols = [col for col in data if col.endswith('_url')]
+                for col in url_cols:
+                    del data[col]
+            if not include_paths:
+                path_cols = [col for col in data if col.endswith('_path')]
+                for col in path_cols:
+                    del data[col]
         for filing in self:
             for col_name in data:
-                data[col_name].append(getattr(filing, col_name))
+                val = None
+                if col_name.startswith('entity.'):
+                    if filing.entity:
+                        val = getattr(filing.entity, col_name[7:])
+                else:
+                    val = getattr(filing, col_name)
+                if strip_timezone and isinstance(val, datetime):
+                    val = val.replace(tzinfo=None)
+                if date_as_datetime and val.__class__ is date:
+                    val = datetime.fromordinal(val.toordinal())
+                data[col_name].append(val)
         return data
 
     def _get_data_sets(
