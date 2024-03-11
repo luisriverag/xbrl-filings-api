@@ -24,23 +24,22 @@ class ResourceCollection:
     not, however, be accessed with an indexer (e.g. `object[index]`) or
     reversed.
 
-    This collection is a view to the resources of the parent
-    `FilingSet`. Adding or removing filings from the parent will change
-    the set of resources in this collection.
+    This collection is a view to the resources of the `FilingSet`.
+    Adding or removing filings from the `filingset` attribute object
+    will change the set of resources in this collection.
 
     Attributes
     ----------
-    parent : FilingSet
-    get_pandas_data : dict of str: list of ResourceLiteralType
+    filingset : FilingSet
     columns : list of str
     exist : bool
     """
 
     def __init__(
-            self, parent: Any, attr_name: str, type_obj: type[APIResource]
+            self, filingset: Any, attr_name: str, type_obj: type[APIResource]
             ) -> None:
-        # FilingSet object
-        self.parent = parent
+        self.filingset = filingset
+        """Reference to the FilingSet object."""
 
         self._attr_name = attr_name
         self._type_obj = type_obj
@@ -50,7 +49,7 @@ class ResourceCollection:
         """Return iterator for subresources."""
         filing: Filing
         yielded_ids = set()
-        for filing in self.parent:
+        for filing in self.filingset:
             attr_val = getattr(filing, self._attr_name)
             if attr_val:
                 if isinstance(attr_val, set):
@@ -83,10 +82,11 @@ class ResourceCollection:
         """
         Get data for `pandas.DataFrame` constructor for objects.
 
-        A new dataframe can be instantiated by::
+        A new dataframe can be instantiated for example for entities as
+        follows::
 
-            pandas.DataFrame(
-                data=filingset.collection_name.get_pandas_data())
+        >>> df = pandas.DataFrame(
+        ...     data=filingset.entities.get_pandas_data())
 
         If `attr_names` is not given, most data attributes will be
         extracted. Attributes ending in ``_download_path`` will be
@@ -131,7 +131,7 @@ class ResourceCollection:
         This property is faster than ``len(obj) != 0``.
         """
         filing: Filing
-        for filing in self.parent:
+        for filing in self.filingset:
             if getattr(filing, self._attr_name):
                 return True
         return False
