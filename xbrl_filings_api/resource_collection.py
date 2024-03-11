@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from collections.abc import Iterable, Iterator
+from datetime import date, datetime
 from typing import Any, Optional, Union
 
 from xbrl_filings_api.api_resource import APIResource
@@ -77,27 +78,40 @@ class ResourceCollection:
         return False
 
     def get_pandas_data(
-            self, attr_names: Optional[Iterable[str]] = None
+            self, attr_names: Optional[Iterable[str]] = None, *,
+            strip_timezone: bool = True, date_as_datetime: bool = True,
+            include_urls : bool = False, include_paths : bool = False
             ) -> dict[str, list[ResourceLiteralType]]:
         """
-        Get data for `pandas.DataFrame` constructor for objects.
+        Get data for `pandas.DataFrame` constructor for subresources.
 
         A new dataframe can be instantiated for example for entities as
         follows::
 
-        >>> df = pandas.DataFrame(
-        ...     data=filingset.entities.get_pandas_data())
+        >>> import pandas as pd
+        >>> df = pd.DataFrame(data=filingset.entities.get_pandas_data())
 
         If `attr_names` is not given, most data attributes will be
         extracted. Attributes ending in ``_download_path`` will be
         extracted only if at least one file of this type has been
-        downloaded and `entity_api_id` if there is at least one entity
-        object in the set.
+        downloaded (and include_paths=True).
 
         Parameters
         ----------
         attr_names: iterable of str, optional
             Valid attribute names of resource object.
+        strip_timezone : bool, default True
+            Strip timezone information (always UTC) from `datetime`
+            values.
+        date_as_datetime : bool, default True
+            Convert `date` values to naive `datetime` to be converted to
+            `datetime64` by pandas.
+        include_urls : bool, default False
+            When `attr_names` is not given, include attributes ending
+            ``_url``.
+        include_paths : bool, default False
+            When `attr_names` is not given, include attributes ending
+            ``_path``.
 
         Returns
         -------
@@ -110,9 +124,22 @@ class ResourceCollection:
             data = {col: [] for col in attr_names}
         else:
             data = {col: [] for col in self.columns}
+            if not include_urls:
+                url_cols = [col for col in data if col.endswith('_url')]
+                for col in url_cols:
+                    del data[col]
+            if not include_paths:
+                path_cols = [col for col in data if col.endswith('_path')]
+                for col in path_cols:
+                    del data[col]
         for resource in self:
             for col_name in data:
-                data[col_name].append(getattr(resource, col_name))
+                val = getattr(resource, col_name)
+                if strip_timezone and isinstance(val, datetime):
+                    val = val.replace(tzinfo=None)
+                if date_as_datetime and val.__class__ is date:
+                    val = datetime.fromordinal(val.toordinal())
+                data[col_name].append(val)
         return data
 
     @property

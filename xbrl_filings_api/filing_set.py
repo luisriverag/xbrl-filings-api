@@ -295,9 +295,9 @@ class FilingSet(set[Filing]):
         If `attr_names` is not given, data attributes excluding ones
         ending ``_date_str`` will be extracted. Attributes ending in
         ``_download_path`` will be extracted only if at least one file
-        of this type has been downloaded and `entity_api_id` if there is
-        at least one entity object in the set and `with_entity` is
-        `False`.
+        of this type has been downloaded (and include_paths=True) and
+        `entity_api_id` if there is at least one entity object in the
+        set and `with_entity` is `False`.
 
         Parameters
         ----------
