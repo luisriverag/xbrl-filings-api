@@ -57,23 +57,3 @@ def get_unexpected_resource_types() -> list[tuple[str, str]]:
         List of ordered tuples in form ``(type_str, origin)``.
     """
     return sorted(_JSONTree.unexpected_resource_types)
-
-
-def get_download_size() -> str:
-    """
-    Return size of data downloaded as text excluding API requests.
-
-    Scale units used are powers of 1024.
-
-    Counter starts when the package is imported for the first time.
-    """
-    kb = 1024
-    bcount = downloader_stats.byte_counter
-    if bcount < kb:
-        return f'{bcount} B'
-    if bcount < kb ** 2:
-        return f'{round(bcount/kb, 2)} kB'
-    if bcount < kb ** 3:
-        return f'{round(bcount/kb**2, 2)} MB'
-    else:
-        return f'{round(bcount/kb**3, 2)} GB'
