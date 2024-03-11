@@ -11,7 +11,6 @@ import logging
 import sqlite3
 from collections.abc import Collection
 from datetime import datetime
-from itertools import chain
 from pathlib import Path
 from typing import Union
 
@@ -42,7 +41,7 @@ _CurrentSchemaType = dict[str, list[str]]
 
 def sets_to_sqlite(
         flags: ScopeFlag,
-        ppath: Path,
+        db_path: Path,
         data_objs: dict[str, Collection[APIResource]],
         *,
         update: bool
@@ -57,16 +56,16 @@ def sets_to_sqlite(
     DatabaseSchemaUnmatchError
     sqlite3.DatabaseError
     """
-    _validate_path(ppath, update=update)
+    _validate_path(db_path, update=update)
     filing_data_attrs = Filing.get_data_attributes(
         flags, data_objs['Filing'])
     con, table_schema = _create_database_or_extend_schema(
-        flags, ppath, filing_data_attrs, update=update)
+        flags, db_path, filing_data_attrs, update=update)
     _insert_data(table_schema, data_objs, con)
     con.close()
 
 
-def _validate_path(ppath: Path, *, update: bool) -> None:
+def _validate_path(db_path: Path, *, update: bool) -> None:
     """
     Validate path by raising expections.
 
@@ -77,11 +76,11 @@ def _validate_path(ppath: Path, *, update: bool) -> None:
     DatabasePathIsReservedError
         When path is reserved.
     """
-    if ppath.is_file():
+    if db_path.is_file():
         if not update:
-            raise DatabaseFileExistsError(str(ppath))
-    elif ppath.exists():
-        raise DatabasePathIsReservedError(str(ppath))
+            raise DatabaseFileExistsError(str(db_path))
+    elif db_path.exists():
+        raise DatabasePathIsReservedError(str(db_path))
 
 
 def _create_database_or_extend_schema(
