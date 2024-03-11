@@ -15,42 +15,6 @@ import xbrl_filings_api as xf
 
 
 @pytest.fixture
-def oldest3_fi_filingset(oldest3_fi_response):
-    """FilingSet from mock response ``oldest3_fi``."""
-    return xf.get_filings(
-        filters={'country': 'FI'},
-        sort='date_added',
-        max_size=3,
-        flags=xf.GET_ONLY_FILINGS,
-        add_api_params=None
-        )
-
-
-@pytest.fixture
-def oldest3_fi_entities_filingset(oldest3_fi_entities_response):
-    """FilingSet from mock response ``oldest3_fi_entities`` with entities."""
-    return xf.get_filings(
-        filters={'country': 'FI'},
-        sort='date_added',
-        max_size=3,
-        flags=xf.GET_ENTITY,
-        add_api_params=None
-        )
-
-
-@pytest.fixture
-def oldest3_fi_vmessages_filingset(oldest3_fi_vmessages_response):
-    """FilingSet from mock response ``oldest3_fi_vmessages`` with validation messages."""
-    return xf.get_filings(
-        filters={'country': 'FI'},
-        sort='date_added',
-        max_size=3,
-        flags=xf.GET_VALIDATION_MESSAGES,
-        add_api_params=None
-        )
-
-
-@pytest.fixture
 def asml22en_entities_filingset(asml22en_entities_response, res_colls):
     """FilingSet from mock response ``asml22en_entities``."""
     return xf.get_filings(

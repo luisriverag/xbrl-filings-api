@@ -21,6 +21,7 @@ from typing import Union
 import pytest
 import responses  # noqa: F401
 
+import xbrl_filings_api as xf
 from xbrl_filings_api import FilingSet, ResourceCollection
 
 MOCK_URL_DIR_NAME = 'mock_responses'
@@ -89,3 +90,51 @@ def mock_url_response(mock_response_data):
             headers={}
             )
     return _mock_url_response
+
+
+@pytest.fixture
+def oldest3_fi_filingset(oldest3_fi_response):
+    """FilingSet from mock response ``oldest3_fi``."""
+    return xf.get_filings(
+        filters={'country': 'FI'},
+        sort='date_added',
+        max_size=3,
+        flags=xf.GET_ONLY_FILINGS,
+        add_api_params=None
+        )
+
+
+@pytest.fixture
+def oldest3_fi_entities_filingset(oldest3_fi_entities_response):
+    """FilingSet from mock response ``oldest3_fi_entities`` with entities."""
+    return xf.get_filings(
+        filters={'country': 'FI'},
+        sort='date_added',
+        max_size=3,
+        flags=xf.GET_ENTITY,
+        add_api_params=None
+        )
+
+
+@pytest.fixture
+def oldest3_fi_vmessages_filingset(oldest3_fi_vmessages_response):
+    """FilingSet from mock response ``oldest3_fi_vmessages`` with validation messages."""
+    return xf.get_filings(
+        filters={'country': 'FI'},
+        sort='date_added',
+        max_size=3,
+        flags=xf.GET_VALIDATION_MESSAGES,
+        add_api_params=None
+        )
+
+
+@pytest.fixture
+def oldest3_fi_ent_vmessages_filingset(oldest3_fi_ent_vmessages_response):
+    """FilingSet from mock response ``oldest3_fi_ent_vmessages`` with entities and validation messages."""
+    return xf.get_filings(
+        filters={'country': 'FI'},
+        sort='date_added',
+        max_size=3,
+        flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES),
+        add_api_params=None
+        )
