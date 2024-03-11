@@ -306,3 +306,6 @@ def test_filings_include_paths_no_data(oldest3_fi_filingset):
     assert 'xhtml_download_path' not in enento20en.columns.array
     assert '507' in df['api_id'].array
     assert '1495' in df['api_id'].array
+
+
+# xf.ResourceCollection.get_pandas_data

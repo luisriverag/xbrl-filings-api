@@ -90,12 +90,14 @@ def test_with_entities(oldest3_fi_entities_filingset):
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert fs.entities.exist is True
     assert len(fs.entities) == 3
-    all_ents = []
+    iter_entities = []
     for ent in fs.entities:
         assert isinstance(ent, xf.Entity)
-        all_ents.append(ent)
-    for ent in all_ents:
-        assert ent in fs.entities
+        iter_entities.append(ent)
+    for iter_entity in iter_entities:
+        assert iter_entity in fs.entities
+    for filing in fs:
+        assert filing.entity in fs.entities
     assert isinstance(fs.entities.columns, list)
     for col in fs.entities.columns:
         assert isinstance(col, str)
@@ -126,12 +128,15 @@ def test_with_vmessages(oldest3_fi_vmessages_filingset):
     assert isinstance(fs.validation_messages, xf.ResourceCollection)
     assert fs.validation_messages.exist is True
     assert len(fs.validation_messages) > 0
-    all_vmsgs = []
+    iter_vmsgs = []
     for vmsg in fs.validation_messages:
         assert isinstance(vmsg, xf.ValidationMessage)
-        all_vmsgs.append(vmsg)
-    for vmsg in all_vmsgs:
+        iter_vmsgs.append(vmsg)
+    for vmsg in iter_vmsgs:
         assert vmsg in fs.validation_messages
+    for filing in fs:
+        for e_vmsg in filing.validation_messages:
+            assert e_vmsg in fs.validation_messages
     assert isinstance(fs.validation_messages.columns, list)
     for col in fs.validation_messages.columns:
         assert isinstance(col, str)
@@ -167,6 +172,8 @@ def test_add_entities(oldest3_fi_entities_filingset, asml22en_entities_filingset
         after_ents.append(ent)
     for ent in after_ents:
         assert ent in fs.entities
+    for filing in fs:
+        assert filing.entity in fs.entities
     assert isinstance(fs.entities.columns, list)
     after_cols = []
     for col in fs.entities.columns:
