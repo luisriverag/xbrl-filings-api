@@ -160,7 +160,6 @@ class _JSONTree:
                 init_count = 0 if key_value is None else 1
                 opcounter[self.class_name][key_path] = (
                     _RetrieveCounter(success_count=init_count, total_count=1))
-
             else:
                 counter = opcounter[self.class_name][key_path]
                 if key_value is not None:
