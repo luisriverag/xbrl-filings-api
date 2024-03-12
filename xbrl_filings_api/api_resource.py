@@ -49,6 +49,10 @@ class APIResource(APIObject):
             JSON fragment in an API response. An ellipsis (...) may be
             given to create a prototype.
         """
+        if type(self) is APIResource:
+            msg = 'APIResource can only be initialized via subclassing'
+            raise NotImplementedError(msg)
+
         is_prototype = False
         if json_frag == Ellipsis:
             is_prototype = True

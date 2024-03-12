@@ -32,18 +32,21 @@ class ResourceCollection:
     Attributes
     ----------
     filingset : FilingSet
+    item_class : type
     columns : list of str
     exist : bool
     """
 
     def __init__(
-            self, filingset: Any, attr_name: str, type_obj: type[APIResource]
+            self, filingset: Any, attr_name: str, item_class: type[APIResource]
             ) -> None:
         self.filingset = filingset
         """Reference to the FilingSet object."""
 
+        self.item_class = item_class
+        """Type object of the items within."""
+
         self._attr_name = attr_name
-        self._type_obj = type_obj
         self._columns: Union[list[str], None] = None
 
     def __iter__(self) -> Iterator[APIResource]:
@@ -147,7 +150,7 @@ class ResourceCollection:
         """List of available columns for resources of this type."""
         if self._columns:
             return self._columns
-        self._columns = self._type_obj.get_columns()
+        self._columns = self.item_class.get_columns()
         return self._columns
 
     @property
@@ -162,3 +165,11 @@ class ResourceCollection:
             if getattr(filing, self._attr_name):
                 return True
         return False
+
+    def __repr__(self) -> str:
+        """Return string repr of resource collection."""
+        return (
+            f'{self.__class__.__name__}('
+            f'item_class={self.item_class!r}, '
+            f'len()={len(self)})'
+            )

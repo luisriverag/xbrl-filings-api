@@ -342,3 +342,18 @@ def test_columns_property(oldest3_fi_filingset):
     for col in fs.columns:
         assert isinstance(col, str)
     assert 'api_id' in fs.columns
+
+
+def test_repr(oldest3_fi_filingset):
+    """Test `__repr__` of FilingSet."""
+    e_repr = 'FilingSet(len(self)=3)'
+    fs: xf.FilingSet = oldest3_fi_filingset
+    assert repr(fs) == e_repr
+
+
+def test_repr_ent_vmessages(oldest3_fi_ent_vmessages_filingset):
+    """Test `__repr__` of FilingSet."""
+    e_repr = (
+        'FilingSet(len(self)=3, len(entities)=3, len(validation_messages)=45)')
+    fs: xf.FilingSet = oldest3_fi_ent_vmessages_filingset
+    assert repr(fs) == e_repr

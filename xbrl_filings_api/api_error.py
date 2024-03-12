@@ -67,7 +67,24 @@ class APIError(FilingsAPIError, APIObject):
         FilingsAPIError.__init__(self)
 
     def __str__(self) -> str:
-        """Return string representation of the error."""
-        ats = [f'{att}={getattr(self, att)!r}' for att in self._str_attrs]
-        ats_txt = ', '.join(ats)
-        return f'{type(self).__qualname__}({ats_txt})'
+        """Return the error as string."""
+        pts = []
+        if self.title:
+            pts.append(str(self.title))
+        if self.detail:
+            if self.title:
+                pts.append('|')
+            pts.append(str(self.detail))
+        if self.code:
+            pts.append(f'({self.code})')
+        pts = [pt.strip() for pt in pts]
+        return ' '.join(pts)
+
+    def __repr__(self) -> str:
+        """Return string repr of API error."""
+        return (
+            f'{self.__class__.__name__}('
+            f'title={self.title!r}, '
+            f'detail={self.detail!r}, '
+            f'code={self.code!r})'
+            )

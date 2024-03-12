@@ -200,3 +200,21 @@ class FilingsPage(_APIPage):
                         f'No filing defined for {vmsg!r}, api_id={vmsg.api_id}'
                         )
                     logger.warning(msg, stacklevel=2)
+
+    def __repr__(self) -> str:
+        """Return string repr of filings page."""
+        query_time = f"datetime({self.query_time.strftime('%Y, %m, %d, %H, %M, %S')})"
+        subreslist = ''
+        if self.entity_list is not None:
+            subreslist += f', len(entity_list)={len(self.entity_list)}'
+        if self.validation_message_list is not None:
+            subreslist += (
+                ', len(validation_message_list)='
+                + str(len(self.validation_message_list))
+                )
+        return (
+            f'{self.__class__.__name__}('
+            f'request_url={self.request_url!r}, '
+            f'query_time={query_time}, '
+            f'len(filing_list)={len(self.filing_list)}{subreslist})'
+            )

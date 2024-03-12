@@ -23,6 +23,10 @@ class APIObject:
             do_not_track: bool = False
             ) -> None:
         """Initialize `APIObject`."""
+        if type(self) is APIObject:
+            msg = 'APIObject can only be initialized via subclassing'
+            raise NotImplementedError(msg)
+
         self._json = _JSONTree(
             class_name=self.__class__.__qualname__,
             json_frag=json_frag,

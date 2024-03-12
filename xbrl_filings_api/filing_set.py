@@ -387,3 +387,16 @@ class FilingSet(set[Filing]):
             filings=self,
             has_entities=self.entities.exist
             )
+
+    def __repr__(self) -> str:
+        """Return string repr of filing set."""
+        subreslist = ''
+        if self.entities.exist:
+            subreslist += f', len(entities)={len(self.entities)}'
+        if self.validation_messages.exist:
+            subreslist += (
+                f', len(validation_messages)={len(self.validation_messages)}')
+        return (
+            f'{self.__class__.__name__}('
+            f'len(self)={len(self)}{subreslist})'
+            )

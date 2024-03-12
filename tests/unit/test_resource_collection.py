@@ -145,3 +145,23 @@ def test_add_entities(oldest3_fi_entities_filingset, asml22en_entities_filingset
         after_cols.append(col)
     for col in before_cols:
         assert col in after_cols
+
+
+def test_repr_entities(oldest3_fi_entities_filingset):
+    """Test `__repr__` for entity ResourceCollection."""
+    e_repr = (
+        "ResourceCollection("
+        "item_class=<class 'xbrl_filings_api.entity.Entity'>, len()=3)"
+        )
+    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    assert repr(fs.entities) == e_repr
+
+
+def test_repr_vmessages(oldest3_fi_vmessages_filingset):
+    """Test `__repr__` for validation message ResourceCollection."""
+    e_repr = (
+        "ResourceCollection(item_class=<class "
+        "'xbrl_filings_api.validation_message.ValidationMessage'>, len()=45)"
+        )
+    fs: xf.FilingSet = oldest3_fi_vmessages_filingset
+    assert repr(fs.validation_messages) == e_repr

@@ -40,6 +40,10 @@ class _APIPage(APIObject):
     """
 
     def __init__(self, json_frag: dict, api_request: _APIRequest):
+        if type(self) is _APIPage:
+            msg = '_APIPage can only be initialized via subclassing'
+            raise NotImplementedError(msg)
+
         super().__init__(json_frag, api_request)
 
         self._data: Union[list, None] = self._json.get(
