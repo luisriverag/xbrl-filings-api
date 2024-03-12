@@ -16,6 +16,11 @@ from collections.abc import Collection
 import pytest
 
 import xbrl_filings_api as xf
+from xbrl_filings_api.exceptions import (
+    DatabaseFileExistsError,
+    DatabasePathIsReservedError,
+    DatabaseSchemaUnmatchError,
+)
 
 
 @pytest.fixture
@@ -234,6 +239,90 @@ def test_to_sqlite_update_more(
     con_b.close()
     for retained_api_id in before_api_ids:
         assert retained_api_id in after_api_ids
+
+
+@pytest.mark.sqlite
+def test_to_sqlite_update_more_but_false(
+        oldest3_fi_filingset, asml22en_filingset, tmp_path, monkeypatch):
+    """Test method `to_sqlite` trying to update existing database but update=False."""
+    monkeypatch.setattr(xf.options, 'views', None)
+    db_path = tmp_path / 'test_to_sqlite_update_more_but_false.db'
+
+    fs_a: xf.FilingSet = oldest3_fi_filingset
+    fs_a.to_sqlite(
+        path=db_path,
+        update=False,
+        flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
+        )
+    assert db_path.is_file()
+    stbef = db_path.stat()
+    edit_time_before = stbef.st_mtime, stbef.st_ctime
+
+    fs_b: xf.FilingSet = asml22en_filingset
+    with pytest.raises(DatabaseFileExistsError):
+        fs_b.to_sqlite(
+            path=db_path,
+            update=False,
+            flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
+            )
+    assert db_path.is_file(), "Failed update won't delete database file"
+    staft = db_path.stat()
+    edit_time_after = staft.st_mtime, staft.st_ctime
+    assert edit_time_before == edit_time_after, "Failed update won't edit file"
+
+
+@pytest.mark.sqlite
+def test_to_sqlite_update_bad_database(
+    asml22en_filingset, tmp_path, monkeypatch):
+    """Test method `to_sqlite` trying to update bad existing database."""
+    monkeypatch.setattr(xf.options, 'views', None)
+    db_path = tmp_path / 'test_to_sqlite_update_bad_database.db'
+
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    cur.executescript(
+        'CREATE TABLE Animal ('
+        'id TEXT PRIMARY KEY NOT NULL, iscute INTEGER NOT NULL'
+        ') WITHOUT ROWID;'
+        )
+    con.commit()
+    cur.executemany(
+        'INSERT INTO Animal (id, iscute) VALUES (?, ?)',
+        [('wombat', 1), ('vampire bat', 0), ('cat', 1)])
+    con.commit()
+    con.close()
+    stbef = db_path.stat()
+    edit_time_before = stbef.st_mtime, stbef.st_ctime
+
+    fs_b: xf.FilingSet = asml22en_filingset
+    with pytest.raises(DatabaseSchemaUnmatchError):
+        fs_b.to_sqlite(
+            path=db_path,
+            update=True,
+            flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
+            )
+    assert db_path.is_file(), "Failed update won't delete database file"
+    staft = db_path.stat()
+    edit_time_after = staft.st_mtime, staft.st_ctime
+    assert edit_time_before == edit_time_after, "Failed update won't edit file"
+
+
+@pytest.mark.sqlite
+def test_to_sqlite_path_reserved(
+        oldest3_fi_filingset, tmp_path, monkeypatch):
+    """Test method `to_sqlite` but assigned path is a folder."""
+    monkeypatch.setattr(xf.options, 'views', None)
+    reserved_path = tmp_path / 'test_to_sqlite_path_reserved'
+    reserved_path.mkdir()
+
+    fs_a: xf.FilingSet = oldest3_fi_filingset
+    with pytest.raises(DatabasePathIsReservedError):
+        fs_a.to_sqlite(
+            path=reserved_path,
+            update=False,
+            flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
+            )
+    assert reserved_path.is_dir()
 
 
 def test_get_data_sets_only_filings(oldest3_fi_filingset):

@@ -200,9 +200,8 @@ def _add_compatible_views(
     for view in options.views:
         if view.name in existing_views:
             continue
-        for table_name in view.required_tables:
-            if table_name not in table_schema:
-                continue
+        if not set(view.required_tables).issubset(set(table_schema)):
+            continue
         _exec(
             cur,
             f"CREATE VIEW {view.name}\n"
