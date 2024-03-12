@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class FilingsPage(_APIPage):
     """
-    JSON:API response page containing filing resources.
+    JSON:API response page containing filings as primary resource.
 
     Attributes
     ----------

@@ -12,7 +12,6 @@ import pytest
 import responses
 
 import xbrl_filings_api as xf
-import xbrl_filings_api.request_processor as request_processor
 from xbrl_filings_api.api_page import _APIPage, _IncludedResource
 
 
