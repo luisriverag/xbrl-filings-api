@@ -425,3 +425,11 @@ def unknown_filter_error_response():
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('unknown_filter_error'))
         yield rsps
+
+
+@pytest.fixture
+def bad_page_error_response():
+    """Get an error of page number -1."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('bad_page_error'))
+        yield rsps

@@ -619,6 +619,21 @@ def _fetch_unknown_filter_error():
 _addmock('unknown_filter_error')
 
 
+@_recorder.record(file_path=_get_path('bad_page_error'))
+def _fetch_bad_page_error():
+    """Get an error of page number -1."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 30,
+            'page[number]': -1
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('bad_page_error')
+
+
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 
 
