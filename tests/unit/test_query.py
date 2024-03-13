@@ -7,7 +7,6 @@
 # Allow unnecessary double quotes as file includes SQL statements.
 # ruff: noqa: Q000
 
-import os
 import sqlite3
 from datetime import timezone
 
@@ -48,7 +47,7 @@ def test_to_sqlite(asml22en_response, db_record_count, tmp_path, monkeypatch):
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(

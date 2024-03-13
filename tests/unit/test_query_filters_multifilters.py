@@ -7,7 +7,6 @@
 # Allow unnecessary double quotes as file includes SQL statements.
 # ruff: noqa: Q000
 
-import os
 import sqlite3
 from datetime import datetime, timezone
 
@@ -50,7 +49,7 @@ def test_to_sqlite_api_id(
         max_size=4,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -98,7 +97,7 @@ def test_to_sqlite_country_only_first(
         max_size=3,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -151,7 +150,7 @@ def test_to_sqlite_filing_index(
         max_size=2,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -198,7 +197,7 @@ def test_to_sqlite_reporting_date(
                 max_size=3,
                 flags=xf.GET_ONLY_FILINGS
                 )
-    assert not os.access(db_path, os.F_OK), 'Database file is not created'
+    assert not db_path.is_file()
 
 
 @pytest.mark.xfail(
@@ -247,7 +246,7 @@ def test_to_sqlite_inconsistency_count(
         max_size=2,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -309,7 +308,7 @@ def test_to_sqlite_processed_time_str(
         max_size=2,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(

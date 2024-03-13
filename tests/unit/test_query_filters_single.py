@@ -12,7 +12,6 @@ Single filter is a literal value for filter, unlike multifilter
 # Allow unnecessary double quotes as file includes SQL statements.
 # ruff: noqa: Q000
 
-import os
 import sqlite3
 from datetime import date, datetime, timezone
 
@@ -56,7 +55,7 @@ def test_to_sqlite_api_id(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -100,7 +99,7 @@ def test_to_sqlite_filing_index(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -143,7 +142,7 @@ def test_to_sqlite_language(
                 max_size=1,
                 flags=xf.GET_ONLY_FILINGS
                 )
-    assert not os.access(db_path, os.F_OK), 'Database file is not created'
+    assert not db_path.is_file()
 
 
 def test_get_filings_last_end_date_str(filter_last_end_date_response):
@@ -180,7 +179,7 @@ def test_to_sqlite_last_end_date_str(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -225,7 +224,7 @@ def test_to_sqlite_last_end_date_obj(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -322,7 +321,7 @@ def test_to_sqlite_error_count(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -392,7 +391,7 @@ def test_to_sqlite_added_time_2_str(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -443,7 +442,7 @@ def test_to_sqlite_added_time_datetime(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -493,7 +492,7 @@ def test_to_sqlite_added_time_date(
             max_size=1,
             flags=xf.GET_ONLY_FILINGS
             )
-    assert not os.access(db_path, os.F_OK), 'Database file is not created'
+    assert not db_path.is_file()
 
 
 def test_get_filings_entity_api_id(filter_entity_api_id_lax_response):
@@ -562,7 +561,7 @@ def test_to_sqlite_package_url(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -609,7 +608,7 @@ def test_to_sqlite_package_sha256(
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -656,7 +655,7 @@ def test_to_sqlite_2filters_country_last_end_date_str(
         max_size=2,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
@@ -705,7 +704,7 @@ def test_to_sqlite_2filters_country_last_end_date_date(
         max_size=2,
         flags=xf.GET_ONLY_FILINGS
         )
-    assert os.access(db_path, os.F_OK), 'Database file is created'
+    assert db_path.is_file()
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
