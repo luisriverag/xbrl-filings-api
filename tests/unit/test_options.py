@@ -10,5 +10,4 @@ import xbrl_filings_api as xf
 # xf.options.max_page_size
 # xf.options.time_accuracy
 # xf.options.year_filter_months
-# xf.options.views
 # xf.options.timeout_sec
