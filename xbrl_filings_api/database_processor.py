@@ -57,6 +57,7 @@ def sets_to_sqlite(
     sqlite3.DatabaseError
     """
     _validate_path(db_path, update=update)
+    _validate_views()
     filing_data_attrs = Filing.get_data_attributes(
         flags, data_objs['Filing'])
     con, table_schema = _create_database_or_extend_schema(
@@ -81,6 +82,16 @@ def _validate_path(db_path: Path, *, update: bool) -> None:
             raise DatabaseFileExistsError(str(db_path))
     elif db_path.exists():
         raise DatabasePathIsReservedError(str(db_path))
+
+
+def _validate_views():
+    used = set()
+    if options.views:
+        for view in options.views:
+            if view.name in used:
+                msg = f'Multiple views in options.views with name "{view.name}"'
+                raise ValueError(msg)
+            used.add(view.name)
 
 
 def _create_database_or_extend_schema(
