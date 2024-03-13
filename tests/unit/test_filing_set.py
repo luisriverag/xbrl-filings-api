@@ -272,11 +272,11 @@ def test_to_sqlite_update_more_but_false(
 
 
 @pytest.mark.sqlite
-def test_to_sqlite_update_bad_database(
+def test_to_sqlite_update_no_tables(
     asml22en_filingset, tmp_path, monkeypatch):
-    """Test method `to_sqlite` trying to update bad existing database."""
+    """Test method `to_sqlite` trying to update database without expected tables."""
     monkeypatch.setattr(xf.options, 'views', None)
-    db_path = tmp_path / 'test_to_sqlite_update_bad_database.db'
+    db_path = tmp_path / 'test_to_sqlite_update_no_tables.db'
 
     con = sqlite3.connect(db_path)
     cur = con.cursor()
@@ -289,6 +289,45 @@ def test_to_sqlite_update_bad_database(
     cur.executemany(
         'INSERT INTO Animal (id, iscute) VALUES (?, ?)',
         [('wombat', 1), ('vampire bat', 0), ('cat', 1)])
+    con.commit()
+    con.close()
+    stbef = db_path.stat()
+    edit_time_before = stbef.st_mtime, stbef.st_ctime
+
+    fs_b: xf.FilingSet = asml22en_filingset
+    with pytest.raises(DatabaseSchemaUnmatchError):
+        fs_b.to_sqlite(
+            path=db_path,
+            update=True,
+            flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
+            )
+    assert db_path.is_file(), "Failed update won't delete database file"
+    staft = db_path.stat()
+    edit_time_after = staft.st_mtime, staft.st_ctime
+    assert edit_time_before == edit_time_after, "Failed update won't edit file"
+
+
+@pytest.mark.sqlite
+def test_to_sqlite_update_no_api_id(
+    asml22en_filingset, tmp_path, monkeypatch):
+    """Test method `to_sqlite` trying to update database whose table has no api_id."""
+    monkeypatch.setattr(xf.options, 'views', None)
+    db_path = tmp_path / 'test_to_sqlite_update_no_api_id.db'
+
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    cur.executescript(
+        'CREATE TABLE Filing ('
+        'filing_index TEXT PRIMARY KEY NOT NULL, country TEXT NOT NULL'
+        ') WITHOUT ROWID;'
+        )
+    con.commit()
+    cur.executemany(
+        'INSERT INTO Filing (filing_index, country) VALUES (?, ?)',
+        [
+            ('743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0', 'FI'),
+            ('549300UWB1AIR85BM957-2020-12-31-ESEF-FI-0', 'FI')
+        ])
     con.commit()
     con.close()
     stbef = db_path.stat()
