@@ -304,7 +304,7 @@ def _fetch_filter_added_time_2():
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
-_addmock('filter_added_time_2', lax_fixture=True)
+_addmock('filter_added_time_2')
 
 
 @_recorder.record(file_path=_get_path('filter_entity_api_id'))

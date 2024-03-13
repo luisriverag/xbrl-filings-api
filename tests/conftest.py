@@ -261,14 +261,6 @@ def filter_added_time_2_response():
 
 
 @pytest.fixture
-def filter_added_time_2_lax_response():
-    """Filter by added_time value '2023-05-09 13:27:02.676029'."""
-    with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
-        rsps._add_from_file(_get_path('filter_added_time_2'))
-        yield rsps
-
-
-@pytest.fixture
 def filter_entity_api_id_response():
     """Return error when filtering with `entity_api_id`."""
     with responses.RequestsMock() as rsps:
