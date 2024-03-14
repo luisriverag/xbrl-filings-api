@@ -221,8 +221,6 @@ class ValidationMessage(APIResource):
                 self._UNREPORTED_ITEMS_RE)
 
             uri_path = urllib.parse.urlparse(self.calc_short_role).path
-            if isinstance(uri_path, bytes):
-                uri_path = uri_path.decode('utf-8')
             if uri_path.strip():
                 last_part = PurePath(uri_path).name
                 if last_part.strip():

@@ -138,7 +138,8 @@ class Filing(APIResource):
         Derived two-letter lower-case language identifier defining the
         language of the filing.
 
-        This code is based on the file name in attribute `package_url`.
+        This code is based primarily on the file name in attribute
+        `package_url` and secondarily on `xhtml_url`.
 
         Three-letter language identifiers are transformed into
         two-letter identifiers for official EU languages.
@@ -392,27 +393,35 @@ class Filing(APIResource):
         return str(rdate)
 
     def _derive_language(self) -> Union[str, None]:
-        stem = self._get_package_url_stem()
-        if not stem:
-            return None
+        stems = (
+            self._get_url_stem(self.package_url),
+            self._get_url_stem(self.xhtml_url)
+            )
+        resolved = None
+        for stem in stems:
+            if not stem:
+                continue
 
-        normstem = stem.replace('_', '-')
-        last_part = normstem.split('-')[-1]
-        part_len = len(last_part)
-        is_bad_length = part_len < 2 or part_len > 3  # noqa: PLR2004
-        if is_bad_length or not last_part.isalpha():
-            return None
+            normstem = stem.replace('_', '-')
+            last_part = normstem.split('-')[-1]
+            if not last_part.isalpha():
+                continue
 
-        last_part = last_part.lower()
-        if part_len == 2:  # noqa: PLR2004
-            return last_part
-        else:
-            return LANG_CODE_TRANSFORM.get(last_part)
+            part_len = len(last_part)
+            last_part = last_part.lower()
+            if part_len == 2:  # noqa: PLR2004
+                resolved = last_part
+                break
+            elif part_len == 3:
+                resolved = LANG_CODE_TRANSFORM.get(last_part)
+                if resolved:
+                    break
+        return resolved
 
     def _derive_reporting_date(self) -> Union[date, None]:
         out_dt = self.last_end_date
 
-        stem = self._get_package_url_stem()
+        stem = self._get_url_stem(self.package_url)
         if not stem:
             return out_dt
 
@@ -640,14 +649,14 @@ class Filing(APIResource):
                     logger.warning(msg, stacklevel=2)
         return found_msgs
 
-    def _get_package_url_stem(self) -> Union[str, None]:
+    def _get_url_stem(self, url: str) -> Union[str, None]:
         presult = None
         try:
-            presult = urllib.parse.urlparse(self.package_url)
+            presult = urllib.parse.urlparse(url)
         except ValueError:
             pass
         if (not isinstance(presult, urllib.parse.ParseResult)
-                or ':' not in self.package_url):
+                or ':' not in url):
             return None
 
         url_path = None

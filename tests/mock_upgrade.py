@@ -634,6 +634,22 @@ def _fetch_bad_page_error():
 _addmock('bad_page_error')
 
 
+@_recorder.record(file_path=_get_path('fortum23fi_xhtml_language'))
+def _fetch_fortum23fi_xhtml_language():
+    """Fortum 2023 Finnish AFR filing with language in xhtml_url."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            # id = api_id
+            'filter[id]': '12366',
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('fortum23fi_xhtml_language')
+
+
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 
 

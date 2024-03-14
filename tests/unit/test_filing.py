@@ -326,7 +326,7 @@ def test_search_validation_messages_fail(
     assert found_vmessages == set()
 
 url_start = 'https://filings.xbrl.org/api/filings/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/'
-@pytest.mark.parametrize('package_url,expected', [
+@pytest.mark.parametrize('url,expected', [
     (None, None),
     ('httpsfilings xbrl asml-2022-12-31-en zip', None),
     (' ', None),
@@ -335,12 +335,25 @@ url_start = 'https://filings.xbrl.org/api/filings/724500Y6DUVHQD6OXN27/2022-12-3
     ((url_start + 'asml/2022-12-31-en'), '2022-12-31-en'),
     ((url_start + 'asml/'), 'asml'),
     ])
-def test_get_package_url_stem(
-        package_url, expected, asml22en_filing):
-    """Test method `_get_package_url_stem` used by `language` and `reporting_date`."""
+def test_get_url_stem(
+        url, expected, asml22en_filing):
+    """Test method `_get_url_stem` used by `language` and `reporting_date`."""
     filing: xf.Filing = asml22en_filing
-    filing.package_url = package_url
     if expected is None:
-        assert filing._get_package_url_stem() is None
+        assert filing._get_url_stem(url) is None
     else:
-        assert filing._get_package_url_stem() == expected
+        assert filing._get_url_stem(url) == expected
+
+
+def test_language_from_xhtml_url(
+        fortum23fi_xhtml_language_response, res_colls):
+    """Test language derived from `xhtml_url` when not available in `package_url`."""
+    fs = xf.get_filings(
+        filters={'api_id': '12366'},
+        sort=None,
+        max_size=1,
+        flags=xf.GET_ONLY_FILINGS,
+        add_api_params=None
+    )
+    fortum23fi = next(iter(fs))
+    assert fortum23fi.language == 'fi'
