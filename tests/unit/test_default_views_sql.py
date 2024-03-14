@@ -126,6 +126,21 @@ def db_ViewEnclosure(tmp_path):
     return con, cur
 
 
+@pytest.fixture
+def db_ViewFilingAge(tmp_path):
+    view = next(v for v in DEFAULT_VIEWS if v.name == 'ViewFilingAge')
+    schema = {
+        'Filing': [
+            'api_id TEXT PRIMARY KEY', 'reporting_date TEXT', 'country TEXT',
+            'language TEXT', 'added_time TEXT', 'processed_time TEXT',
+            'entity_api_id TEXT'
+            ],
+        'Entity': ['api_id TEXT PRIMARY KEY', 'name TEXT', 'identifier TEXT']
+        }
+    con, cur = _db_with_view(view, schema)
+    return con, cur
+
+
 @pytest.mark.sqlite
 def test_ViewNumericErrors_calc(db_ViewNumericErrors):
     """Test typical ViewNumericErrors problem=calc."""
@@ -470,4 +485,108 @@ def test_ViewEnclosure_3_filings(db_ViewEnclosure):
     assert res[12] == '10' # entity_api_id
 
 
-# next(v for v in xf.default_views.DEFAULT_VIEWS if v.name == 'ViewFilingAge')
+@pytest.mark.sqlite
+def test_ViewFilingAge(db_ViewFilingAge):
+    """Test typical ViewFilingAge case."""
+    cur: sqlite3.Cursor
+    con, cur = db_ViewFilingAge
+    _insert_many(con, cur, 'Entity', [{
+        'api_id': '10',
+        'name': 'Example Group Oyj',
+        'identifier': '724500Y6DUVHQD6OXN27'
+        }])
+    _insert_many(con, cur, 'Filing', [{
+        'api_id': '1',
+        'reporting_date': '2022-12-31',
+        'country': 'FI',
+        'language': 'fi',
+        'added_time': '2024-01-01 12:00:00.000000',
+        'processed_time': '2024-01-02 12:00:00.000000',
+        'entity_api_id': '10'
+        }])
+
+    assert _view_row_count(cur, 'ViewFilingAge') == 1
+    cur.execute(
+        'SELECT entity_name, reporting_date, language, dataAgeDays, country, '
+        'added_time, processed_time, addedToProcessedDays, filing_api_id, '
+        'entity_api_id '
+        'FROM ViewFilingAge'
+        )
+    res = cur.fetchone()
+    con.close()
+    assert res[0] == 'Example Group Oyj' # entity_name
+    assert res[1] == '2022-12-31' # reporting_date
+    assert res[2] == 'fi' # language
+    # dataAgeDays is untestable
+    assert res[4] == 'FI' # country
+    assert res[5] == '2024-01-01 12:00:00.000000' # added_time
+    assert res[6] == '2024-01-02 12:00:00.000000' # processed_time
+    assert res[7] == 1 # addedToProcessedDays
+    assert res[8] == '1' # filing_api_id
+    assert res[9] == '10' # entity_api_id
+
+
+@pytest.mark.sqlite
+def test_ViewFilingAge_addedToProcessedDays_nearly_one(db_ViewFilingAge):
+    """Test ViewFilingAge addedToProcessedDays=0 due to not quite 1."""
+    cur: sqlite3.Cursor
+    con, cur = db_ViewFilingAge
+    _insert_many(con, cur, 'Entity', [{
+        'api_id': '10',
+        'name': 'Example Group Oyj',
+        'identifier': '724500Y6DUVHQD6OXN27'
+        }])
+    _insert_many(con, cur, 'Filing', [{
+        'api_id': '1',
+        'reporting_date': '2022-12-31',
+        'country': 'FI',
+        'language': 'fi',
+        'added_time': '2024-01-01 12:00:00.001000',
+        'processed_time': '2024-01-02 12:00:00.000000',
+        'entity_api_id': '10'
+        }])
+
+    assert _view_row_count(cur, 'ViewFilingAge') == 1
+    cur.execute(
+        'SELECT added_time, processed_time, addedToProcessedDays '
+        'FROM ViewFilingAge'
+        )
+    res = cur.fetchone()
+    con.close()
+    # Time resolution of SQLite is milliseconds
+    assert res[0] == '2024-01-01 12:00:00.001000' # added_time
+    assert res[1] == '2024-01-02 12:00:00.000000' # processed_time
+    assert res[2] == 0 # addedToProcessedDays
+
+
+@pytest.mark.sqlite
+def test_ViewFilingAge_addedToProcessedDays_one_and_half(db_ViewFilingAge):
+    """Test ViewFilingAge addedToProcessedDays=1 when its 1.5."""
+    cur: sqlite3.Cursor
+    con, cur = db_ViewFilingAge
+    _insert_many(con, cur, 'Entity', [{
+        'api_id': '10',
+        'name': 'Example Group Oyj',
+        'identifier': '724500Y6DUVHQD6OXN27'
+        }])
+    _insert_many(con, cur, 'Filing', [{
+        'api_id': '1',
+        'reporting_date': '2022-12-31',
+        'country': 'FI',
+        'language': 'fi',
+        'added_time': '2024-01-01 12:00:00.000000',
+        'processed_time': '2024-01-03 00:00:00.000000',
+        'entity_api_id': '10'
+        }])
+
+    assert _view_row_count(cur, 'ViewFilingAge') == 1
+    cur.execute(
+        'SELECT added_time, processed_time, addedToProcessedDays '
+        'FROM ViewFilingAge'
+        )
+    res = cur.fetchone()
+    con.close()
+    # Time resolution of SQLite is milliseconds
+    assert res[0] == '2024-01-01 12:00:00.000000' # added_time
+    assert res[1] == '2024-01-03 00:00:00.000000' # processed_time
+    assert res[2] == 1 # addedToProcessedDays

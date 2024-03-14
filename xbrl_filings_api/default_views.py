@@ -256,7 +256,7 @@ ORDER BY name, reporting_date, country
         doc="""
         Examine the age of the data on the filings.
 
-        Ordered descending on ``ageNowMonths``.
+        Ordered descending on ``dataAgeDays``.
 
         Columns
         -------
@@ -264,20 +264,19 @@ ORDER BY name, reporting_date, country
             From ``Entity.name``.
         reporting_date : TEXT or NULL
             From ``Filing.reporting_date``.
-        ageNowMonths : INTEGER or NULL
-            Age of the filing in months expecting month to be 29.53
-            days.
-        country : TEXT or NULL
-            From ``Filing.country``.
         language : TEXT or NULL
             From ``Filing.language``.
+        dataAgeDays : INTEGER or NULL
+            Age of the data in the filing in full days.
+        country : TEXT or NULL
+            From ``Filing.country``.
         added_time : TEXT or NULL
             From ``Filing.added_time``.
         processed_time : TEXT or NULL
             From ``Filing.processed_time``.
         addedToProcessedDays : INTEGER or NULL
             Days passed from ``Filing.added_time`` to
-            ``Filing.processed_time`` rounded to full days.
+            ``Filing.processed_time`` in full days.
         filing_api_id : TEXT
             From ``Filing.api_id``.
         entity_api_id : TEXT
@@ -287,21 +286,21 @@ ORDER BY name, reporting_date, country
 SELECT
   name AS entity_name,
   reporting_date,
-  cast(round(
-    (julianday(date('now'))-julianday(reporting_date))/29.53
-  ) AS INTEGER) AS ageNowMonths,
-  country,
   language,
+  cast(
+    julianday(date('now')) - julianday(reporting_date)
+  AS INTEGER) AS dataAgeDays,
+  country,
   added_time,
   processed_time,
-  cast(round(
-    julianday(date(processed_time))-julianday(date(added_time))
-  ) AS INTEGER) AS addedToProcessedDays,
+  cast(
+    julianday(processed_time) - julianday(added_time)
+  AS INTEGER) AS addedToProcessedDays,
   f.api_id AS filing_api_id,
   e.api_id AS entity_api_id
 FROM Filing AS f
   JOIN Entity AS e ON f.entity_api_id=e.api_id
-ORDER BY ageNowMonths DESC
+ORDER BY dataAgeDays DESC
 """
         ),
     ]
