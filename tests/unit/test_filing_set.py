@@ -70,6 +70,7 @@ def test_to_sqlite(oldest3_fi_filingset, db_record_count, tmp_path, monkeypatch)
     saved_fxo_ids = {row[0] for row in cur.fetchall()}
     assert saved_fxo_ids == e_fxo_ids
     assert db_record_count(cur) == 3
+    con.close()
 
 
 @pytest.mark.sqlite

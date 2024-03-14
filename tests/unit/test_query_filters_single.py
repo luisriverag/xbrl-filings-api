@@ -64,6 +64,7 @@ def test_to_sqlite_api_id(
         )
     assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_filing_index(asml22en_response):
@@ -108,6 +109,7 @@ def test_to_sqlite_filing_index(
         )
     assert cur.fetchone() == (1,), 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_language(filter_language_response):
@@ -189,6 +191,7 @@ def test_to_sqlite_last_end_date_str(
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_last_end_date_obj(filter_last_end_date_response):
@@ -234,6 +237,7 @@ def test_to_sqlite_last_end_date_obj(
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_last_end_date_datetime(
@@ -331,6 +335,7 @@ def test_to_sqlite_error_count(
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_added_time_str(
@@ -401,6 +406,7 @@ def test_to_sqlite_added_time_2_str(
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_added_time_datetime(
@@ -452,6 +458,7 @@ def test_to_sqlite_added_time_datetime(
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_added_time_date(filter_added_time_lax_response):
@@ -571,6 +578,7 @@ def test_to_sqlite_package_url(
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_package_sha256(filter_package_sha256_response):
@@ -618,6 +626,7 @@ def test_to_sqlite_package_sha256(
     count_num = cur.fetchone()[0]
     assert count_num == 1, 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
+    con.close()
 
 
 def test_get_filings_2filters_country_last_end_date_str(
@@ -668,6 +677,7 @@ def test_to_sqlite_2filters_country_last_end_date_str(
     assert fxo_a != fxo_b, 'Filings are unique'
     assert cur.fetchone() is None, 'Two filings inserted'
     assert db_record_count(cur) == 2
+    con.close()
 
 
 def test_get_filings_2filters_country_last_end_date_date(finnish_jan22_response):
@@ -717,3 +727,4 @@ def test_to_sqlite_2filters_country_last_end_date_date(
     assert fxo_a != fxo_b, 'Filings are unique'
     assert cur.fetchone() is None, 'Two filings inserted'
     assert db_record_count(cur) == 2
+    con.close()

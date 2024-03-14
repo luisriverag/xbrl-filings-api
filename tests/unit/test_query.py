@@ -56,6 +56,7 @@ def test_to_sqlite(asml22en_response, db_record_count, tmp_path, monkeypatch):
         )
     assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
     assert db_record_count(cur) == 1
+    con.close()
 
 @pytest.mark.paging
 def test_filing_page_iter(asml22en_response):

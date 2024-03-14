@@ -60,6 +60,7 @@ def test_to_sqlite_api_id(
     saved_ids = {row[0] for row in cur.fetchall()}
     assert saved_ids == set(shell_api_ids)
     assert db_record_count(cur) == 4
+    con.close()
 
 
 def test_get_filings_country_only_first(country_multifilter_response):
@@ -108,6 +109,7 @@ def test_to_sqlite_country_only_first(
     saved_countries = {row[0] for row in cur.fetchall()}
     assert saved_countries == {'FI'}
     assert db_record_count(cur) == 3
+    con.close()
 
 
 def test_get_filings_filing_index(
@@ -161,6 +163,7 @@ def test_to_sqlite_filing_index(
     saved_fxo = {row[0] for row in cur.fetchall()}
     assert saved_fxo == set(filing_index_codes)
     assert db_record_count(cur) == 2
+    con.close()
 
 
 def test_get_filings_reporting_date(reporting_date_multifilter_response):
@@ -257,6 +260,7 @@ def test_to_sqlite_inconsistency_count(
     saved_ic_counts = {row[0] for row in cur.fetchall()}
     assert saved_ic_counts == set(ic_counts)
     assert db_record_count(cur) == 2
+    con.close()
 
 
 def test_get_filings_processed_time_str(
@@ -319,6 +323,7 @@ def test_to_sqlite_processed_time_str(
     saved_proc_times = {row[0] for row in cur.fetchall()}
     assert saved_proc_times == set(cloetta_sv_strs)
     assert db_record_count(cur) == 2
+    con.close()
 
 
 # filing_page_iter
