@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT
 
 import sqlite3
-import subprocess
 
 import pytest
 
@@ -13,8 +12,8 @@ import xbrl_filings_api as xf
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
 
 
-def _db_with_view(db_path, view, schema):
-    con = sqlite3.connect(db_path)
+def _db_with_view(view, schema):
+    con = sqlite3.connect(':memory:')
     cur = con.cursor()
     for table_name, cols in schema.items():
         colsql = ', '.join(cols)
@@ -40,60 +39,58 @@ def _insert_many(con, cur, table_name, rowdicts):
     con.commit()
 
 
-def _insert_example_group_fi(con, cur):
-    """Filing api_id=1, Entity api_id=10."""
-    _insert_many(con, cur, 'Filing', [{
-        'api_id': '1',
-        'reporting_date': '2022-12-31',
-        'language': 'fi',
-        'entity_api_id': '10'
-    }])
-    _insert_many(con, cur, 'Entity', [{
-        'api_id': '10',
-        'name': 'Example Group Oyj'
-    }])
-
-
 def _view_row_count(cur, view_name):
     cur.execute(f'SELECT count(*) FROM {view_name}')
     return cur.fetchone()[0]
 
 
-def _insert_example_calc_vmessage(con, cur, api_id, filing_api_id):
-    _insert_many(con, cur, 'ValidationMessage', [{
-            'api_id': api_id,
-            'duplicate_lesser': None,
-            'duplicate_greater': None,
-            'code': 'xbrl.5.2.5.2:calcInconsistency',
-            'calc_reported_sum': 35_641_000.0,
-            'calc_computed_sum': 29_640_000.0,
-            'calc_line_item': 'ifrs-full:EquityAttributableToOwnersOfParent',
-            'calc_short_role': 'StmtOfFinancialPosition',
-            'calc_context_id': 'E2021',
-            'filing_api_id': filing_api_id
+def _insert_example_group_fi_ViewNumericErrors(con, cur):
+    """Filing api_id=1, Entity api_id=10."""
+    _insert_many(con, cur, 'Entity', [{
+        'api_id': '10',
+        'name': 'Example Group Oyj'
+        }])
+    _insert_many(con, cur, 'Filing', [{
+        'api_id': '1',
+        'reporting_date': '2022-12-31',
+        'language': 'fi',
+        'entity_api_id': '10'
         }])
 
 
-def _insert_example_duplicate_vmessage(con, cur, api_id, filing_api_id):
+def _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id, filing_api_id):
     _insert_many(con, cur, 'ValidationMessage', [{
-            'api_id': api_id,
-            'duplicate_lesser': 31_821_000.0,
-            'duplicate_greater': 38_417_000.0,
-            'code': 'message:tech_duplicated_facts1',
-            'calc_reported_sum': None,
-            'calc_computed_sum': None,
-            'calc_line_item': None,
-            'calc_short_role': None,
-            'calc_context_id': None,
-            'filing_api_id': filing_api_id
+        'api_id': api_id,
+        'duplicate_lesser': None,
+        'duplicate_greater': None,
+        'code': 'xbrl.5.2.5.2:calcInconsistency',
+        'calc_reported_sum': 35_641_000.0,
+        'calc_computed_sum': 29_640_000.0,
+        'calc_line_item': 'ifrs-full:EquityAttributableToOwnersOfParent',
+        'calc_short_role': 'StmtOfFinancialPosition',
+        'calc_context_id': 'E2021',
+        'filing_api_id': filing_api_id
+        }])
+
+
+def _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id, filing_api_id):
+    _insert_many(con, cur, 'ValidationMessage', [{
+        'api_id': api_id,
+        'duplicate_lesser': 31_821_000.0,
+        'duplicate_greater': 38_417_000.0,
+        'code': 'message:tech_duplicated_facts1',
+        'calc_reported_sum': None,
+        'calc_computed_sum': None,
+        'calc_line_item': None,
+        'calc_short_role': None,
+        'calc_context_id': None,
+        'filing_api_id': filing_api_id
         }])
 
 
 @pytest.fixture
 def db_ViewNumericErrors(tmp_path):
-    db_path = tmp_path / 'db_ViewNumericErrors.db'
-    view = next(
-        v for v in DEFAULT_VIEWS if v.name == 'ViewNumericErrors')
+    view = next(v for v in DEFAULT_VIEWS if v.name == 'ViewNumericErrors')
     schema = {
         'Filing': [
             'api_id TEXT PRIMARY KEY', 'reporting_date TEXT', 'language TEXT',
@@ -108,8 +105,25 @@ def db_ViewNumericErrors(tmp_path):
             'filing_api_id TEXT'
             ]
         }
-    con, cur = _db_with_view(db_path, view, schema)
-    return db_path, con, cur
+    con, cur = _db_with_view(view, schema)
+    return con, cur
+
+
+@pytest.fixture
+def db_ViewEnclosure(tmp_path):
+    view = next(v for v in DEFAULT_VIEWS if v.name == 'ViewEnclosure')
+    schema = {
+        'Filing': [
+            'api_id TEXT PRIMARY KEY', 'reporting_date TEXT', 'country TEXT',
+            'language TEXT', 'error_count INTEGER',
+            'inconsistency_count INTEGER', 'warning_count INTEGER',
+            'added_time TEXT', 'processed_time TEXT',
+            'entity_api_id TEXT'
+            ],
+        'Entity': ['api_id TEXT PRIMARY KEY', 'name TEXT', 'identifier TEXT']
+        }
+    con, cur = _db_with_view(view, schema)
+    return con, cur
 
 
 @pytest.mark.sqlite
@@ -118,19 +132,19 @@ def test_ViewNumericErrors_calc(db_ViewNumericErrors):
     e_reported = 35_641_000.0
     e_computed = 29_640_000.0
     cur: sqlite3.Cursor
-    db_path, con, cur = db_ViewNumericErrors
-    _insert_example_group_fi(con, cur)
+    con, cur = db_ViewNumericErrors
+    _insert_example_group_fi_ViewNumericErrors(con, cur)
     _insert_many(con, cur, 'ValidationMessage', [{
-            'api_id': '100',
-            'duplicate_lesser': None,
-            'duplicate_greater': None,
-            'code': 'xbrl.5.2.5.2:calcInconsistency',
-            'calc_reported_sum': e_reported,
-            'calc_computed_sum': e_computed,
-            'calc_line_item': 'ifrs-full:EquityAttributableToOwnersOfParent',
-            'calc_short_role': 'StmtOfFinancialPosition',
-            'calc_context_id': 'E2021',
-            'filing_api_id': '1'
+        'api_id': '100',
+        'duplicate_lesser': None,
+        'duplicate_greater': None,
+        'code': 'xbrl.5.2.5.2:calcInconsistency',
+        'calc_reported_sum': e_reported,
+        'calc_computed_sum': e_computed,
+        'calc_line_item': 'ifrs-full:EquityAttributableToOwnersOfParent',
+        'calc_short_role': 'StmtOfFinancialPosition',
+        'calc_context_id': 'E2021',
+        'filing_api_id': '1'
         }])
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
@@ -156,10 +170,6 @@ def test_ViewNumericErrors_calc(db_ViewNumericErrors):
     assert res[10] == 'fi' # language
     assert res[11] == '1' # filing_api_id
     assert res[12] == '10' # entity_api_id
-    # subprocess.run((
-    #     r'C:\Users\malff\AppData\Local\Programs\DB Browser for SQLite\DB Browser for SQLite.exe',
-    #     str(db_path)
-    #     ))
 
 
 @pytest.mark.sqlite
@@ -168,19 +178,19 @@ def test_ViewNumericErrors_duplicate(db_ViewNumericErrors):
     e_lesser = 31_821_000.0
     e_greater = 38_417_000.0
     cur: sqlite3.Cursor
-    db_path, con, cur = db_ViewNumericErrors
-    _insert_example_group_fi(con, cur)
+    con, cur = db_ViewNumericErrors
+    _insert_example_group_fi_ViewNumericErrors(con, cur)
     _insert_many(con, cur, 'ValidationMessage', [{
-            'api_id': '100',
-            'duplicate_lesser': e_lesser,
-            'duplicate_greater': e_greater,
-            'code': 'message:tech_duplicated_facts1',
-            'calc_reported_sum': None,
-            'calc_computed_sum': None,
-            'calc_line_item': None,
-            'calc_short_role': None,
-            'calc_context_id': None,
-            'filing_api_id': '1'
+        'api_id': '100',
+        'duplicate_lesser': e_lesser,
+        'duplicate_greater': e_greater,
+        'code': 'message:tech_duplicated_facts1',
+        'calc_reported_sum': None,
+        'calc_computed_sum': None,
+        'calc_line_item': None,
+        'calc_short_role': None,
+        'calc_context_id': None,
+        'filing_api_id': '1'
         }])
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
@@ -212,16 +222,16 @@ def test_ViewNumericErrors_duplicate(db_ViewNumericErrors):
 def test_ViewNumericErrors_select_language_fi_not_gi(db_ViewNumericErrors):
     """Test ViewNumericErrors selects language version 'fi', not 'gi'."""
     cur: sqlite3.Cursor
-    db_path, con, cur = db_ViewNumericErrors
-    _insert_example_group_fi(con, cur)
+    con, cur = db_ViewNumericErrors
+    _insert_example_group_fi_ViewNumericErrors(con, cur)
     _insert_many(con, cur, 'Filing', [{
         'api_id': '2',
         'reporting_date': '2022-12-31',
         'language': 'gi',
         'entity_api_id': '10'
-    }])
-    _insert_example_calc_vmessage(con, cur, api_id='102', filing_api_id='1')
-    _insert_example_calc_vmessage(con, cur, api_id='103', filing_api_id='2')
+        }])
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='103', filing_api_id='2')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
     cur.execute(
@@ -239,16 +249,16 @@ def test_ViewNumericErrors_select_language_fi_not_gi(db_ViewNumericErrors):
 def test_ViewNumericErrors_select_language_ei_not_fi(db_ViewNumericErrors):
     """Test ViewNumericErrors selects language version 'ei', not 'fi'."""
     cur: sqlite3.Cursor
-    db_path, con, cur = db_ViewNumericErrors
-    _insert_example_group_fi(con, cur)
+    con, cur = db_ViewNumericErrors
+    _insert_example_group_fi_ViewNumericErrors(con, cur)
     _insert_many(con, cur, 'Filing', [{
         'api_id': '2',
         'reporting_date': '2022-12-31',
         'language': 'ei',
         'entity_api_id': '10'
-    }])
-    _insert_example_calc_vmessage(con, cur, api_id='102', filing_api_id='1')
-    _insert_example_calc_vmessage(con, cur, api_id='103', filing_api_id='2')
+        }])
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='103', filing_api_id='2')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
     cur.execute(
@@ -266,16 +276,16 @@ def test_ViewNumericErrors_select_language_ei_not_fi(db_ViewNumericErrors):
 def test_ViewNumericErrors_select_language_null_not_fi(db_ViewNumericErrors):
     """Test ViewNumericErrors selects language version NULL, not 'fi'."""
     cur: sqlite3.Cursor
-    db_path, con, cur = db_ViewNumericErrors
-    _insert_example_group_fi(con, cur)
+    con, cur = db_ViewNumericErrors
+    _insert_example_group_fi_ViewNumericErrors(con, cur)
     _insert_many(con, cur, 'Filing', [{
         'api_id': '2',
         'reporting_date': '2022-12-31',
         'language': None,
         'entity_api_id': '10'
-    }])
-    _insert_example_calc_vmessage(con, cur, api_id='102', filing_api_id='1')
-    _insert_example_calc_vmessage(con, cur, api_id='103', filing_api_id='2')
+        }])
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='103', filing_api_id='2')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
     cur.execute(
@@ -293,12 +303,12 @@ def test_ViewNumericErrors_select_language_null_not_fi(db_ViewNumericErrors):
 def test_ViewNumericErrors_duplicate_reduce_multiples(db_ViewNumericErrors):
     """Test ViewNumericErrors problem=duplicate when same duplicate recorded multiple times."""
     cur: sqlite3.Cursor
-    db_path, con, cur = db_ViewNumericErrors
-    _insert_example_group_fi(con, cur)
+    con, cur = db_ViewNumericErrors
+    _insert_example_group_fi_ViewNumericErrors(con, cur)
     # All have same ``duplicate_lesser`` and ``duplicate_greater``
-    _insert_example_duplicate_vmessage(con, cur, api_id='100', filing_api_id='1')
-    _insert_example_duplicate_vmessage(con, cur, api_id='101', filing_api_id='1')
-    _insert_example_duplicate_vmessage(con, cur, api_id='102', filing_api_id='1')
+    _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id='100', filing_api_id='1')
+    _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id='101', filing_api_id='1')
+    _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
     cur.execute(
@@ -317,12 +327,12 @@ def test_ViewNumericErrors_duplicate_reduce_multiples(db_ViewNumericErrors):
 def test_ViewNumericErrors_calc_dont_reduce_multiples(db_ViewNumericErrors):
     """Test ViewNumericErrors problem=calc when similar errors recorded multiple times."""
     cur: sqlite3.Cursor
-    db_path, con, cur = db_ViewNumericErrors
-    _insert_example_group_fi(con, cur)
+    con, cur = db_ViewNumericErrors
+    _insert_example_group_fi_ViewNumericErrors(con, cur)
     # All have same ``calc_reported_sum`` and ``calc_computed_sum``
-    _insert_example_calc_vmessage(con, cur, api_id='100', filing_api_id='1')
-    _insert_example_calc_vmessage(con, cur, api_id='101', filing_api_id='1')
-    _insert_example_calc_vmessage(con, cur, api_id='102', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='100', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='101', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 3
     cur.execute(
@@ -338,5 +348,126 @@ def test_ViewNumericErrors_calc_dont_reduce_multiples(db_ViewNumericErrors):
     con.close()
 
 
-# next(v for v in xf.default_views.DEFAULT_VIEWS if v.name == 'ViewEnclosure')
+@pytest.mark.sqlite
+def test_ViewEnclosure_one_filing(db_ViewEnclosure):
+    """Test ViewEnclosure with a single language filing."""
+    cur: sqlite3.Cursor
+    con, cur = db_ViewEnclosure
+    _insert_many(con, cur, 'Entity', [{
+        'api_id': '10',
+        'name': 'Example Group Oyj',
+        'identifier': '724500Y6DUVHQD6OXN27'
+        }])
+    _insert_many(con, cur, 'Filing', [{
+        'api_id': '1',
+        'reporting_date': '2022-12-31',
+        'country': 'FI',
+        'language': 'fi',
+        'error_count': 1,
+        'inconsistency_count': 2,
+        'warning_count': 3,
+        'added_time': '2024-02-29 12:17:45.429217',
+        'processed_time': '2024-03-01 13:03:23.593280',
+        'entity_api_id': '10'
+        }])
+
+    assert _view_row_count(cur, 'ViewEnclosure') == 1
+    cur.execute(
+        'SELECT entity_name, reporting_date, country, filing_count, '
+        'languages, filingApiIds, error_count, inconsistency_count, '
+        'warning_count, added_time, processed_time, entity_identifier, '
+        'entity_api_id '
+        'FROM ViewEnclosure'
+        )
+    res = cur.fetchone()
+    con.close()
+    assert res[0] == 'Example Group Oyj' # entity_name
+    assert res[1] == '2022-12-31' # reporting_date
+    assert res[2] == 'FI' # country
+    assert res[3] == 1 # filing_count
+    assert res[4] == 'fi' # languages
+    assert res[5] == '1' # filingApiIds
+    assert res[6] == 1 # error_count
+    assert res[7] == 2 # inconsistency_count
+    assert res[8] == 3 # warning_count
+    assert res[9] == '2024-02-29 12:17:45.429217' # added_time
+    assert res[10] == '2024-03-01 13:03:23.593280' # processed_time
+    assert res[11] == '724500Y6DUVHQD6OXN27' # entity_identifier
+    assert res[12] == '10' # entity_api_id
+
+
+@pytest.mark.sqlite
+def test_ViewEnclosure_3_filings(db_ViewEnclosure):
+    """Test ViewEnclosure with three language filings."""
+    cur: sqlite3.Cursor
+    con, cur = db_ViewEnclosure
+    _insert_many(con, cur, 'Entity', [{
+        'api_id': '10',
+        'name': 'Example Group Oyj',
+        'identifier': '724500Y6DUVHQD6OXN27'
+        }])
+    _insert_many(con, cur, 'Filing', [
+        {
+            'api_id': '1',
+            'reporting_date': '2022-12-31',
+            'country': 'FI',
+            'language': 'fi',
+            'error_count': 1,
+            'inconsistency_count': 10,
+            'warning_count': 4,
+            'added_time': '2024-01-02 12:17:45.429521',
+            'processed_time': '2024-03-02 13:03:23.593280',
+            'entity_api_id': '10'
+        },
+        {
+            'api_id': '2',
+            'reporting_date': '2022-12-31',
+            'country': 'FI',
+            'language': None,
+            'error_count': 5,
+            'inconsistency_count': 0,
+            'warning_count': 3,
+            'added_time': '2024-02-01 12:17:45.429217',
+            'processed_time': '2024-03-01 13:03:23.593280',
+            'entity_api_id': '10'
+        },
+        {
+            'api_id': '3',
+            'reporting_date': '2022-12-31',
+            'country': 'FI',
+            'language': 'en',
+            'error_count': 2,
+            'inconsistency_count': 1,
+            'warning_count': 15,
+            'added_time': '2024-01-31 12:17:45.429217',
+            'processed_time': '2024-03-14 13:03:23.593521',
+            'entity_api_id': '10'
+        },
+        ])
+
+    assert _view_row_count(cur, 'ViewEnclosure') == 1
+    cur.execute(
+        'SELECT entity_name, reporting_date, country, filing_count, '
+        'languages, filingApiIds, error_count, inconsistency_count, '
+        'warning_count, added_time, processed_time, entity_identifier, '
+        'entity_api_id '
+        'FROM ViewEnclosure'
+        )
+    res = cur.fetchone()
+    con.close()
+    assert res[0] == 'Example Group Oyj' # entity_name
+    assert res[1] == '2022-12-31' # reporting_date
+    assert res[2] == 'FI' # country
+    assert res[3] == 3 # filing_count
+    assert res[4] == 'en, fi' # languages
+    assert res[5] == '3, 1, 2' # filingApiIds
+    assert res[6] == 5 # error_count
+    assert res[7] == 10 # inconsistency_count
+    assert res[8] == 15 # warning_count
+    assert res[9] == '2024-01-02 12:17:45.429521' # added_time
+    assert res[10] == '2024-03-14 13:03:23.593521' # processed_time
+    assert res[11] == '724500Y6DUVHQD6OXN27' # entity_identifier
+    assert res[12] == '10' # entity_api_id
+
+
 # next(v for v in xf.default_views.DEFAULT_VIEWS if v.name == 'ViewFilingAge')

@@ -186,7 +186,11 @@ ORDER BY errorPercent DESC NULLS FIRST
         doc="""
         Examine multi-language enclosures in an easy to read listing.
 
-        Ordered ascending on ``name``, ``reporting_date``.
+        Filings in a single enclosure are defined to have the same
+        ``Filing.entity_api_id``, ``Filing.reporting_date`` and
+        ``Filing.country``.
+
+        Ordered ascending on ``entity_name``, ``reporting_date``.
 
         Columns
         -------
@@ -196,45 +200,54 @@ ORDER BY errorPercent DESC NULLS FIRST
             From ``Filing.reporting_date``.
         country : TEXT or NULL
             From ``Filing.country``.
+        filing_count : INTEGER
+            Count of filings in the enclosure.
         languages : TEXT or NULL
-            Comma-separated list from ``Filing.language`` in arbitrary
-            order.
-        filing_api_ids : TEXT or NULL
-            Comma-separated list from ``Filing.api_id`` in arbitrary
-            order.
-        error_count : REAL or NULL
-            Average from ``Filing.error_count`` values.
-        inconsistency_count : REAL or NULL
-            Average from ``Filing.inconsistency_count`` values.
-        warning_count : REAL or NULL
-            Average from ``Filing.warning_count`` values.
+            Comma-separated list from ``Filing.language`` ordered
+            alphabetically ascending. As the the values may be NULL,
+            this list may have fewer languages than there are actual
+            filings.
+        filingApiIds : TEXT or NULL
+            Comma-separated list from ``Filing.api_id`` is the same
+            order as ``languages``.
+        error_count : INTEGER or NULL
+            Maximum from ``Filing.error_count`` values.
+        inconsistency_count : INTEGER or NULL
+            Maximum from ``Filing.inconsistency_count`` values.
+        warning_count : INTEGER or NULL
+            Maximum from ``Filing.warning_count`` values.
         added_time : TEXT or NULL
-            From ``Filing.added_time``.
+            Earliest date from ``Filing.added_time``.
         processed_time : TEXT or NULL
-            From ``Filing.processed_time``.
-        identifier : TEXT or NULL
+            Latest date from ``Filing.processed_time``.
+        entity_identifier : TEXT or NULL
             From ``Entity.identifier``.
         entity_api_id : TEXT
             From ``Entity.api_id``.
         """,
         sql="""
+WITH f AS (
+  SELECT * FROM Filing
+  ORDER BY entity_api_id, reporting_date, country, language ASC NULLS LAST
+)
 SELECT
   name AS entity_name,
   reporting_date,
   country,
+  count(*) AS filing_count,
   group_concat(language, ', ') AS languages,
-  group_concat(f.api_id, ', ') AS filing_api_ids,
-  avg(error_count) AS error_count,
-  avg(inconsistency_count) AS inconsistency_count,
-  avg(warning_count) AS warning_count,
-  added_time,
-  processed_time,
-  identifier,
-  e.api_id AS entity_api_id
-FROM Filing AS f
-  JOIN Entity AS e ON f.entity_api_id = e.api_id
-GROUP BY e.api_id, reporting_date
-ORDER BY name, reporting_date
+  group_concat(f.api_id, ', ') AS filingApiIds,
+  max(error_count) AS error_count,
+  max(inconsistency_count) AS inconsistency_count,
+  max(warning_count) AS warning_count,
+  min(added_time) AS added_time,
+  max(processed_time) AS processed_time,
+  identifier AS entity_identifier,
+  entity_api_id
+FROM f
+  JOIN Entity ON entity_api_id = Entity.api_id
+GROUP BY entity_api_id, reporting_date, country
+ORDER BY name, reporting_date, country
 """
         ),
     SQLiteView(
