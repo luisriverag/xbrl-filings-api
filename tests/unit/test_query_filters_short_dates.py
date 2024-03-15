@@ -4,10 +4,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-# Allow unnecessary double quotes as file includes SQL statements.
-# ruff: noqa: Q000
-
-import sqlite3
 from datetime import date, datetime, timezone
 
 import pytest
