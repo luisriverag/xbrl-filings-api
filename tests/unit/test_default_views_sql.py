@@ -11,6 +11,8 @@ import pytest
 import xbrl_filings_api as xf
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
 
+pytestmark = pytest.mark.sqlite
+
 
 def _db_with_view(view, schema):
     con = sqlite3.connect(':memory:')
@@ -141,7 +143,6 @@ def db_ViewFilingAge(tmp_path):
     return con, cur
 
 
-@pytest.mark.sqlite
 def test_ViewNumericErrors_calc(db_ViewNumericErrors):
     """Test typical ViewNumericErrors problem=calc."""
     e_reported = 35_641_000.0
@@ -187,7 +188,6 @@ def test_ViewNumericErrors_calc(db_ViewNumericErrors):
     assert res[12] == '10' # entity_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewNumericErrors_duplicate(db_ViewNumericErrors):
     """Test typical ViewNumericErrors problem=duplicate."""
     e_lesser = 31_821_000.0
@@ -233,7 +233,6 @@ def test_ViewNumericErrors_duplicate(db_ViewNumericErrors):
     assert res[12] == '10' # entity_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewNumericErrors_select_language_fi_not_gi(db_ViewNumericErrors):
     """Test ViewNumericErrors selects language version 'fi', not 'gi'."""
     cur: sqlite3.Cursor
@@ -260,7 +259,6 @@ def test_ViewNumericErrors_select_language_fi_not_gi(db_ViewNumericErrors):
     assert res[2] == '102' # validation_message_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewNumericErrors_select_language_ei_not_fi(db_ViewNumericErrors):
     """Test ViewNumericErrors selects language version 'ei', not 'fi'."""
     cur: sqlite3.Cursor
@@ -287,7 +285,6 @@ def test_ViewNumericErrors_select_language_ei_not_fi(db_ViewNumericErrors):
     assert res[2] == '103' # validation_message_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewNumericErrors_select_language_null_not_fi(db_ViewNumericErrors):
     """Test ViewNumericErrors selects language version NULL, not 'fi'."""
     cur: sqlite3.Cursor
@@ -314,7 +311,6 @@ def test_ViewNumericErrors_select_language_null_not_fi(db_ViewNumericErrors):
     assert res[2] == '103' # validation_message_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewNumericErrors_duplicate_reduce_multiples(db_ViewNumericErrors):
     """Test ViewNumericErrors problem=duplicate when same duplicate recorded multiple times."""
     cur: sqlite3.Cursor
@@ -338,7 +334,6 @@ def test_ViewNumericErrors_duplicate_reduce_multiples(db_ViewNumericErrors):
     assert res[3] in ('100', '101', '102') # validation_message_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewNumericErrors_calc_dont_reduce_multiples(db_ViewNumericErrors):
     """Test ViewNumericErrors problem=calc when similar errors recorded multiple times."""
     cur: sqlite3.Cursor
@@ -363,7 +358,6 @@ def test_ViewNumericErrors_calc_dont_reduce_multiples(db_ViewNumericErrors):
     con.close()
 
 
-@pytest.mark.sqlite
 def test_ViewEnclosure_one_filing(db_ViewEnclosure):
     """Test ViewEnclosure with a single language filing."""
     cur: sqlite3.Cursor
@@ -411,7 +405,6 @@ def test_ViewEnclosure_one_filing(db_ViewEnclosure):
     assert res[12] == '10' # entity_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewEnclosure_3_filings(db_ViewEnclosure):
     """Test ViewEnclosure with three language filings."""
     cur: sqlite3.Cursor
@@ -485,7 +478,6 @@ def test_ViewEnclosure_3_filings(db_ViewEnclosure):
     assert res[12] == '10' # entity_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewFilingAge(db_ViewFilingAge):
     """Test typical ViewFilingAge case."""
     cur: sqlite3.Cursor
@@ -526,7 +518,6 @@ def test_ViewFilingAge(db_ViewFilingAge):
     assert res[9] == '10' # entity_api_id
 
 
-@pytest.mark.sqlite
 def test_ViewFilingAge_addedToProcessedDays_nearly_one(db_ViewFilingAge):
     """Test ViewFilingAge addedToProcessedDays=0 due to not quite 1."""
     cur: sqlite3.Cursor
@@ -559,7 +550,6 @@ def test_ViewFilingAge_addedToProcessedDays_nearly_one(db_ViewFilingAge):
     assert res[2] == 0 # addedToProcessedDays
 
 
-@pytest.mark.sqlite
 def test_ViewFilingAge_addedToProcessedDays_one_and_half(db_ViewFilingAge):
     """Test ViewFilingAge addedToProcessedDays=1 when its 1.5."""
     cur: sqlite3.Cursor

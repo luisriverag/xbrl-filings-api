@@ -20,7 +20,3 @@ def test_get_filings_override_max_size(asml22en_response):
         add_api_params={'page[size]': '1'}
         )
     assert len(fs) == 1, 'Parameter max_size override as 1'
-
-
-# to_sqlite
-# filing_page_iter

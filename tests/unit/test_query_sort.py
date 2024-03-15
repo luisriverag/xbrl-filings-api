@@ -9,11 +9,14 @@
 
 from datetime import datetime, timezone
 
+import pytest
+
 import xbrl_filings_api as xf
 
 UTC = timezone.utc
 
 
+@pytest.mark.datetime
 def test_sort_oldest_finnish_str(oldest3_fi_response, monkeypatch):
     """Sort by `added_time` for filings from Finland."""
     fs = xf.get_filings(
@@ -29,6 +32,7 @@ def test_sort_oldest_finnish_str(oldest3_fi_response, monkeypatch):
         assert f.added_time < date_max, 'Before 2021-05-18T00:00:01Z'
 
 
+@pytest.mark.datetime
 def test_sort_oldest_finnish_list(oldest3_fi_response, monkeypatch):
     """Sort by `added_time` for filings from Finland."""
     fs = xf.get_filings(
@@ -70,7 +74,3 @@ def test_sort_two_fields(sort_two_fields_response):
     assert neste20en_fxo in filing_indexes
     neste20fi_fxo = '5493009GY1X8GQ66AM14-2020-12-31-ESEF-FI-1'
     assert neste20fi_fxo in filing_indexes
-
-
-# to_sqlite
-# filing_page_iter

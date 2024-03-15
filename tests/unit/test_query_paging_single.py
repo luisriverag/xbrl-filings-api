@@ -13,6 +13,7 @@ import requests
 import xbrl_filings_api as xf
 
 
+@pytest.mark.paging
 @pytest.mark.xfail(
     reason=(
         'Error in undelying API: redundant filings on pages. '
@@ -43,6 +44,8 @@ def test_filing_page_iter(multipage_lax_response, monkeypatch):
     assert page_none is None, 'No more than 3 pages are returned'
 
 
+@pytest.mark.date
+@pytest.mark.paging
 def test_no_limit(czechia20dec_response, monkeypatch):
     """Requested filings are available on 3 pages."""
     monkeypatch.setattr(xf.options, 'max_page_size', 10)

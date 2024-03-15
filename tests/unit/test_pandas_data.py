@@ -12,8 +12,8 @@ import pytest
 import xbrl_filings_api as xf
 
 
-def test_filings(oldest3_fi_filingset):
-    """Test exporting filings by `FilingSet.get_pandas_data`."""
+def test_filings_attributes(oldest3_fi_filingset):
+    """Test basic attributes by `FilingSet.get_pandas_data`."""
     fs: xf.FilingSet = oldest3_fi_filingset
     pd_data = fs.get_pandas_data(
         attr_names=None,
@@ -29,21 +29,16 @@ def test_filings(oldest3_fi_filingset):
     assert enento20en.at[i, 'country'] == 'FI'
     assert enento20en.at[i, 'filing_index'] == '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0'
     assert enento20en.at[i, 'language'] == 'en'
-    assert enento20en.at[i, 'last_end_date'] == pd.Timestamp('2020-12-31')
-    assert enento20en.at[i, 'reporting_date'] == pd.Timestamp('2020-12-31')
     assert enento20en.at[i, 'error_count'] == 0
     assert enento20en.at[i, 'inconsistency_count'] == 19
     assert enento20en.at[i, 'warning_count'] == 0
-    assert enento20en.at[i, 'added_time'] == pd.Timestamp('2021-05-18 00:00:00')
     assert 'added_time_str' not in enento20en.columns.array
-    assert enento20en.at[i, 'processed_time'] == pd.Timestamp('2023-01-18 11:02:18.936351')
     assert 'processed_time_str' not in enento20en.columns.array
     assert 'entity_api_id' not in enento20en.columns.array
     assert 'json_url' not in enento20en.columns.array
     assert 'package_url' not in enento20en.columns.array
     assert 'viewer_url' not in enento20en.columns.array
     assert 'xhtml_url' not in enento20en.columns.array
-    assert isinstance(enento20en.at[i, 'query_time'], pd.Timestamp)
     assert 'request_url' not in enento20en.columns.array
     assert 'json_download_path' not in enento20en.columns.array
     assert 'package_download_path' not in enento20en.columns.array
@@ -55,6 +50,47 @@ def test_filings(oldest3_fi_filingset):
     assert '1495' in df['api_id'].array
 
 
+@pytest.mark.date
+def test_filings_dates(oldest3_fi_filingset):
+    """Test datetime attributes by `FilingSet.get_pandas_data`."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert enento20en.at[i, 'last_end_date'] == pd.Timestamp('2020-12-31')
+    assert enento20en.at[i, 'reporting_date'] == pd.Timestamp('2020-12-31')
+    assert isinstance(enento20en.at[i, 'query_time'], pd.Timestamp)
+
+
+@pytest.mark.datetime
+def test_filings_datetimes(oldest3_fi_filingset):
+    """Test datetime attributes by `FilingSet.get_pandas_data`."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    pd_data = fs.get_pandas_data(
+        attr_names=None,
+        with_entity=False,
+        strip_timezone=True,
+        date_as_datetime=True,
+        include_urls=False,
+        include_paths=False
+        )
+    df = pd.DataFrame(data=pd_data)
+    enento20en = df[df['api_id'] == '710']
+    i = enento20en.index.array[0]
+    assert enento20en.at[i, 'added_time'] == pd.Timestamp('2021-05-18 00:00:00')
+    assert enento20en.at[i, 'processed_time'] == pd.Timestamp('2023-01-18 11:02:18.936351')
+    assert isinstance(enento20en.at[i, 'query_time'], pd.Timestamp)
+
+
+@pytest.mark.date
 def test_filings_attr_names(oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data` with attr_names."""
     fs: xf.FilingSet = oldest3_fi_filingset
@@ -76,6 +112,7 @@ def test_filings_attr_names(oldest3_fi_filingset):
     assert '1495' in df['api_id'].array
 
 
+@pytest.mark.date
 def test_filings_attr_names_entity(oldest3_fi_entities_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data` with attr_names with entity attr."""
     fs: xf.FilingSet = oldest3_fi_entities_filingset
@@ -152,6 +189,7 @@ def test_filings_with_entity_no_entity(oldest3_fi_filingset):
     assert '1495' in df['api_id'].array
 
 
+@pytest.mark.datetime
 def test_filings_strip_timezone_false(oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data`, strip_timezone=False."""
     fs: xf.FilingSet = oldest3_fi_filingset
@@ -171,6 +209,7 @@ def test_filings_strip_timezone_false(oldest3_fi_filingset):
     assert '1495' in pd_data['api_id']
 
 
+@pytest.mark.date
 def test_filings_date_as_datetime_false(oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data`, date_as_datetime=False."""
     fs: xf.FilingSet = oldest3_fi_filingset
@@ -326,6 +365,7 @@ def test_entities_attr_names(oldest3_fi_entities_filingset):
     assert '1120' in df['api_id'].array
 
 
+@pytest.mark.datetime
 def test_entities_strip_timezone_true(oldest3_fi_entities_filingset):
     """Test exporting entities by `ResourceCollection.get_pandas_data`, strip_timezone=True."""
     fs: xf.FilingSet = oldest3_fi_entities_filingset
@@ -339,6 +379,7 @@ def test_entities_strip_timezone_true(oldest3_fi_entities_filingset):
     assert pd_data['query_time'][0].tzinfo is None
 
 
+@pytest.mark.datetime
 def test_entities_strip_timezone_false(oldest3_fi_entities_filingset):
     """Test exporting entities by `ResourceCollection.get_pandas_data`, strip_timezone=False."""
     fs: xf.FilingSet = oldest3_fi_entities_filingset

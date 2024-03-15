@@ -90,7 +90,3 @@ def test_get_filings_flag_entities_vmessages(asml22en_ent_vmsg_response):
     vmsg = next(iter(asml22.validation_messages), None)
     assert isinstance(vmsg, xf.ValidationMessage), 'Messages available'
     assert isinstance(vmsg.text, str), 'Messages accessible'
-
-
-# to_sqlite
-# filing_page_iter

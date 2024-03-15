@@ -263,6 +263,7 @@ def test_to_sqlite_inconsistency_count(
     con.close()
 
 
+@pytest.mark.datetime
 def test_get_filings_processed_time_str(
         processed_time_multifilter_response):
     """Filtering by `processed_time` as str returns 2 filings."""
@@ -292,6 +293,7 @@ def test_get_filings_processed_time_str(
 
 
 @pytest.mark.sqlite
+@pytest.mark.datetime
 def test_to_sqlite_processed_time_str(
         processed_time_multifilter_response, db_record_count, tmp_path,
         monkeypatch):
@@ -326,6 +328,7 @@ def test_to_sqlite_processed_time_str(
     con.close()
 
 
+@pytest.mark.datetime
 def test_get_filings_processed_time_datetime_utc(
         processed_time_multifilter_response):
     """Filtering by `processed_time` as datetime (UTC) returns 2 filings."""
@@ -355,6 +358,7 @@ def test_get_filings_processed_time_datetime_utc(
         assert str_dt in received_strs
 
 
+@pytest.mark.datetime
 def test_get_filings_processed_time_datetime_naive(
         processed_time_multifilter_response):
     """Filtering by `processed_time` as datetime (naive) returns 2 filings."""

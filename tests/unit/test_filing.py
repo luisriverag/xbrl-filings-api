@@ -130,14 +130,23 @@ class TestFilingAsml22enNoEntity:
         ('api_id', '4261'),
         ('country', 'NL'),
         ('filing_index', '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'),
-        ('last_end_date', date(2022, 12, 31)),
+        pytest.param(
+            'last_end_date', date(2022, 12, 31), marks=pytest.mark.date),
         ('error_count', 0),
         ('inconsistency_count', 4),
         ('warning_count', 7),
-        ('added_time', datetime(2023, 2, 16, 14, 33, 58, 236220, tzinfo=UTC)),
-        ('added_time_str', '2023-02-16 14:33:58.236220'),
-        ('processed_time', datetime(2023, 4, 19, 10, 20, 23, 668110, tzinfo=UTC)),
-        ('processed_time_str', '2023-04-19 10:20:23.668110'),
+        pytest.param(
+            'added_time', datetime(2023, 2, 16, 14, 33, 58, 236220, tzinfo=UTC),
+            marks=pytest.mark.datetime),
+        pytest.param(
+            'added_time_str', '2023-02-16 14:33:58.236220',
+            marks=pytest.mark.datetime),
+        pytest.param(
+            'processed_time', datetime(2023, 4, 19, 10, 20, 23, 668110, tzinfo=UTC),
+            marks=pytest.mark.datetime),
+        pytest.param(
+            'processed_time_str', '2023-04-19 10:20:23.668110',
+            marks=pytest.mark.datetime),
         ('entity_api_id', None),
         ('json_url', 'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.json'),
         ('package_url', 'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'),
@@ -155,7 +164,8 @@ class TestFilingAsml22enNoEntity:
 
     @pytest.mark.parametrize('attr_name,expected', [
         ('language', 'en'),
-        ('reporting_date', date(2022, 12, 31)),
+        pytest.param(
+            'reporting_date', date(2022, 12, 31), marks=pytest.mark.date),
         ])
     def test_derived_attributes(
             self, asml22en_filing, attr_name, expected):
@@ -221,8 +231,12 @@ class TestFilingCreditsuisse21enWithEntity:
         assert str(creditsuisse21en_entity_filing) == e_str
 
     @pytest.mark.parametrize('attr_name,expected', [
-        ('processed_time', datetime(2023, 1, 18, 11, 2, 9, 42110, tzinfo=UTC)),
-        ('processed_time_str', '2023-01-18 11:02:09.042110'),
+        pytest.param(
+            'processed_time', datetime(2023, 1, 18, 11, 2, 9, 42110, tzinfo=UTC),
+            marks=pytest.mark.datetime),
+        pytest.param(
+            'processed_time_str', '2023-01-18 11:02:09.042110',
+            marks=pytest.mark.datetime),
         ('entity_api_id', '123'),
         ('json_url', None),
         ('package_url', 'https://filings.xbrl.org/E58DKGMJYYYJLN8C3868/2021-12-31/ESEF/LU/0/E58DKGMJYYYJLN8C3868-2021-12-31.zip'),
@@ -240,6 +254,7 @@ class TestFilingCreditsuisse21enWithEntity:
         assert isinstance(filing.entity, xf.Entity)
         assert filing.validation_messages is None
 
+@pytest.mark.date
 @pytest.mark.parametrize('date_obj,expected', [
     (date(2022, 12, 31), '2022'),
     (date(2022, 12, 1), '2022-12-01'),
@@ -260,7 +275,7 @@ def test_get_simple_filing_date(
     ])
 def test_search_entity_success(
         api_id, expected_name, asml22en_filing, entity_list):
-    """Test method `_get_simple_filing_date` used by `entity`."""
+    """Test method `_search_entity` used by `entity`."""
     filing: xf.Filing = asml22en_filing
     filing.entity_api_id = api_id
     found_entity = filing._search_entity(entity_list, {})
@@ -274,7 +289,7 @@ def test_search_entity_success(
     ])
 def test_search_entity_fail(
         api_id, caplog, asml22en_filing, entity_list):
-    """Test method `_get_simple_filing_date` used by `entity` for failures."""
+    """Test method `test_search_entity_fail` used by `entity` for failures."""
     caplog.set_level(logging.WARNING)
     filing: xf.Filing = asml22en_filing
     filing.entity_api_id = api_id

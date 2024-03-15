@@ -147,6 +147,7 @@ def test_to_sqlite_language(
     assert not db_path.is_file()
 
 
+@pytest.mark.date
 def test_get_filings_last_end_date_str(filter_last_end_date_response):
     """Querying `last_end_date` as str returns filing(s)."""
     date_str = '2021-02-28'
@@ -165,6 +166,7 @@ def test_get_filings_last_end_date_str(filter_last_end_date_response):
 
 
 @pytest.mark.sqlite
+@pytest.mark.date
 def test_to_sqlite_last_end_date_str(
         filter_last_end_date_response, db_record_count, tmp_path, monkeypatch):
     """Requested `last_end_date` is inserted into a database."""
@@ -194,6 +196,7 @@ def test_to_sqlite_last_end_date_str(
     con.close()
 
 
+@pytest.mark.date
 def test_get_filings_last_end_date_obj(filter_last_end_date_response):
     """Querying `last_end_date` as date returns filing(s)."""
     date_obj = date(2021, 2, 28)
@@ -211,6 +214,7 @@ def test_get_filings_last_end_date_obj(filter_last_end_date_response):
 
 
 @pytest.mark.sqlite
+@pytest.mark.date
 def test_to_sqlite_last_end_date_obj(
         filter_last_end_date_response, db_record_count, tmp_path, monkeypatch):
     """Requested `last_end_date` is inserted into a database."""
@@ -240,6 +244,7 @@ def test_to_sqlite_last_end_date_obj(
     con.close()
 
 
+@pytest.mark.date
 def test_get_filings_last_end_date_datetime(
         filter_last_end_date_lax_response):
     """Querying `last_end_date` as datetime raises ValueError."""
@@ -259,6 +264,7 @@ def test_get_filings_last_end_date_datetime(
 
 
 @pytest.mark.sqlite
+@pytest.mark.date
 def test_to_sqlite_last_end_date_datetime(
         filter_last_end_date_lax_response, tmp_path, monkeypatch
         ):
@@ -338,6 +344,7 @@ def test_to_sqlite_error_count(
     con.close()
 
 
+@pytest.mark.datetime
 def test_get_filings_added_time_str(
         filter_added_time_response, monkeypatch):
     """Querying `added_time` as str returns filing(s)."""
@@ -358,6 +365,7 @@ def test_get_filings_added_time_str(
     assert vtbbank20.added_time == time_utc
 
 
+@pytest.mark.datetime
 def test_get_filings_added_time_2_str(
         filter_added_time_2_response, monkeypatch):
     """Querying `added_time` as str returns filing(s)."""
@@ -379,6 +387,7 @@ def test_get_filings_added_time_2_str(
 
 
 @pytest.mark.sqlite
+@pytest.mark.datetime
 def test_to_sqlite_added_time_2_str(
         filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
     """Requested `added_time` as str is inserted into a database."""
@@ -409,6 +418,7 @@ def test_to_sqlite_added_time_2_str(
     con.close()
 
 
+@pytest.mark.datetime
 def test_get_filings_added_time_datetime_utc(
         filter_added_time_2_response, monkeypatch):
     """Querying `added_time` as datetime (UTC) returns filing(s)."""
@@ -430,6 +440,7 @@ def test_get_filings_added_time_datetime_utc(
 
 
 @pytest.mark.sqlite
+@pytest.mark.datetime
 def test_to_sqlite_added_time_datetime_utc(
         filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
     """Requested `added_time` as datetime (UTC) is inserted into a database."""
@@ -461,6 +472,7 @@ def test_to_sqlite_added_time_datetime_utc(
     con.close()
 
 
+@pytest.mark.datetime
 def test_get_filings_added_time_datetime_naive(
         filter_added_time_2_response, monkeypatch):
     """Querying `added_time` as datetime (naive) returns filing(s)."""
@@ -481,6 +493,7 @@ def test_get_filings_added_time_datetime_naive(
     assert vtbbank20.added_time_str == time_str
 
 
+@pytest.mark.datetime
 def test_get_filings_added_time_date(filter_added_time_lax_response):
     """Querying `added_time` as date raises ValueError."""
     date_obj = date(2021, 9, 23)
@@ -499,6 +512,7 @@ def test_get_filings_added_time_date(filter_added_time_lax_response):
 
 
 @pytest.mark.sqlite
+@pytest.mark.datetime
 def test_to_sqlite_added_time_date(
         filter_added_time_lax_response, tmp_path, monkeypatch):
     """Querying `added_time` as date for database raises ValueError."""
@@ -649,6 +663,7 @@ def test_to_sqlite_package_sha256(
     con.close()
 
 
+@pytest.mark.date
 def test_get_filings_2filters_country_last_end_date_str(
         finnish_jan22_response):
     """Filters `country` and `last_end_date` return 2 filings."""
@@ -667,6 +682,7 @@ def test_get_filings_2filters_country_last_end_date_str(
 
 
 @pytest.mark.sqlite
+@pytest.mark.date
 def test_to_sqlite_2filters_country_last_end_date_str(
         finnish_jan22_response, db_record_count, tmp_path, monkeypatch):
     """Filters `country` and `last_end_date` insert 2 filings to db."""
@@ -700,6 +716,7 @@ def test_to_sqlite_2filters_country_last_end_date_str(
     con.close()
 
 
+@pytest.mark.date
 def test_get_filings_2filters_country_last_end_date_date(finnish_jan22_response):
     """Filters `country` and `last_end_date` as date work."""
     fs = xf.get_filings(
@@ -717,6 +734,7 @@ def test_get_filings_2filters_country_last_end_date_date(finnish_jan22_response)
 
 
 @pytest.mark.sqlite
+@pytest.mark.date
 def test_to_sqlite_2filters_country_last_end_date_date(
     finnish_jan22_response, db_record_count, tmp_path, monkeypatch):
     """Filters `country` and `last_end_date` as date insert to db."""

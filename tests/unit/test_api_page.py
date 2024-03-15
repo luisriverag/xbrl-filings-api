@@ -44,6 +44,7 @@ def oldest3_fi_entities_filingspage(oldest3_fi_entities_response):
     return next(piter)
 
 
+@pytest.mark.paging
 def test_attributes(multipage_2nd_filingspage):
     """Test _APIPage attributes."""
     fpage: xf.FilingsPage = multipage_2nd_filingspage

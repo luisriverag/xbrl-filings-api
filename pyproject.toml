@@ -131,6 +131,8 @@ exclude_lines = [
 markers = [
     "sqlite: test has sqlite3 operations",
     "paging: paging iterations",
+    "date: processing date objects",
+    "datetime: processing datetime objects",
 ]
 
 [tool.isort]
