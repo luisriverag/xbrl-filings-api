@@ -31,6 +31,7 @@ def test_get_filings(asml22en_response):
     asml22 = next(iter(fs), None)
     assert isinstance(asml22, xf.Filing), 'Filing is returned'
 
+
 @pytest.mark.sqlite
 def test_to_sqlite(asml22en_response, db_record_count, tmp_path, monkeypatch):
     """Requested filing is inserted into a database."""
@@ -57,6 +58,7 @@ def test_to_sqlite(asml22en_response, db_record_count, tmp_path, monkeypatch):
     assert cur.fetchone() == (1,), 'Fetched record ends up in the database'
     assert db_record_count(cur) == 1
     con.close()
+
 
 @pytest.mark.paging
 def test_filing_page_iter(asml22en_response):

@@ -433,3 +433,11 @@ def fortum23fi_xhtml_language_response():
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('fortum23fi_xhtml_language'))
         yield rsps
+
+
+@pytest.fixture
+def czechia20dec_response():
+    """Fortum 2023 Finnish AFR filing with language in xhtml_url."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('czechia20dec'))
+        yield rsps

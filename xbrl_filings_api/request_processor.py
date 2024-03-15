@@ -104,10 +104,14 @@ def generate_pages(
 
     query_time = datetime.now(UTC)
 
+    # For each separate simple query
+    # Multifilters and short dates cause multiple simple queries
     received_size = 0
     for qparam_i, query_params in enumerate(params_list):
         next_url: Union[str, None] = options.entry_point_url
         req_params: Union[dict[str, str], None] = query_params
+
+        # For each page in the query
         while next_url:
             page_json, api_request = _retrieve_page_json(
                 next_url, req_params, query_time)
@@ -119,6 +123,8 @@ def generate_pages(
                 break
             next_url = page.api_next_page_url
 
+            # Last page on multipage query typically has more results
+            # than the query `max_size`
             received_size += filing_count
             if max_size != NO_LIMIT and received_size > max_size:
                 del_count = received_size - max_size
@@ -126,8 +132,9 @@ def generate_pages(
 
             yield page
 
-            if not next_url or received_size >= max_size:
-                # Query exhausted
+            if not next_url or (
+                    max_size != NO_LIMIT and received_size >= max_size):
+                # Query `max_size` reached
                 break
             req_params = None
 

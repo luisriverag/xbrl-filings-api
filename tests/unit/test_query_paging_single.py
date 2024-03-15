@@ -41,3 +41,20 @@ def test_filing_page_iter(multipage_lax_response, monkeypatch):
     assert isinstance(page3, xf.FilingsPage), '3 pages are returned'
     page_none = next(piter, None)
     assert page_none is None, 'No more than 3 pages are returned'
+
+
+def test_no_limit(czechia20dec_response, monkeypatch):
+    """Requested filings are available on 3 pages."""
+    monkeypatch.setattr(xf.options, 'max_page_size', 10)
+    # The database has 29 records for this query
+    fs = xf.get_filings(
+        filters={
+            'country': 'CZ',
+            'last_end_date': '2020-12-31',
+            },
+        sort=None,
+        max_size=xf.NO_LIMIT,
+        flags=xf.GET_ONLY_FILINGS,
+        add_api_params=None
+        )
+    assert len(fs) >= 29

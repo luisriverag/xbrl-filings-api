@@ -641,13 +641,50 @@ def _fetch_fortum23fi_xhtml_language():
         url=ENTRY_POINT_URL,
         params={
             'page[size]': 1,
-            # id = api_id
-            'filter[id]': '12366',
+            'filter[id]': '12366', # api_id
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
 _addmock('fortum23fi_xhtml_language')
+
+
+@_recorder.record(file_path=_get_path('czechia20dec'))
+def _fetch_czechia20dec():
+    """Fortum 2023 Finnish AFR filing with language in xhtml_url."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 10,
+            'filter[country]': 'CZ',
+            'filter[period_end]': '2020-12-31', # last_end_date
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 10,
+            'filter[country]': 'CZ',
+            'filter[period_end]': '2020-12-31',
+            'page[number]': 2
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 10,
+            'filter[country]': 'CZ',
+            'filter[period_end]': '2020-12-31',
+            'page[number]': 3
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('czechia20dec')
 
 
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
