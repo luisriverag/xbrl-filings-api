@@ -437,7 +437,15 @@ def fortum23fi_xhtml_language_response():
 
 @pytest.fixture
 def czechia20dec_response():
-    """Fortum 2023 Finnish AFR filing with language in xhtml_url."""
+    """Czech 2020-12-31 AFRs."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('czechia20dec'))
+        yield rsps
+
+
+@pytest.fixture
+def belgium20_short_date_year_response():
+    """Belgian 2020 AFRs querying with short date filter year."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('belgium20_short_date_year'))
         yield rsps

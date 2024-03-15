@@ -651,7 +651,7 @@ _addmock('fortum23fi_xhtml_language')
 
 @_recorder.record(file_path=_get_path('czechia20dec'))
 def _fetch_czechia20dec():
-    """Fortum 2023 Finnish AFR filing with language in xhtml_url."""
+    """Czech 2020-12-31 AFRs."""
     _ = requests.get(
         url=ENTRY_POINT_URL,
         params={
@@ -685,6 +685,43 @@ def _fetch_czechia20dec():
         timeout=REQUEST_TIMEOUT
         )
 _addmock('czechia20dec')
+
+
+@_recorder.record(file_path=_get_path('belgium20_short_date_year'))
+def _fetch_belgium20_short_date_year():
+    """Belgian 2020 AFRs querying with short date filter year."""
+    date_list = (
+        '2020-08-31',
+        '2020-09-30',
+        '2020-10-31',
+        '2020-11-30',
+        '2020-12-31', # 21 filings
+        '2021-01-31',
+        '2021-02-28',
+        '2021-03-31', # 10 filings
+        '2021-04-30',
+        '2021-05-31',
+        '2021-06-30',
+        '2021-07-31',
+        )
+    filings_left = 100 # min(options.max_page_size, max_size)
+    for date_str in date_list:
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': filings_left,
+                'filter[country]': 'BE',
+                'filter[period_end]': date_str, # last_end_date
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+        if date_str == '2020-12-31':
+            filings_left -= 21
+        elif date_str == '2021-03-31':
+            filings_left -= 10
+_addmock('belgium20_short_date_year')
+
 
 
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
