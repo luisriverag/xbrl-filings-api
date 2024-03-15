@@ -321,7 +321,10 @@ def _process_time_filter(
 
     proc_dt: datetime
     if istime:
-        proc_dt = val.astimezone(UTC) # type: ignore
+        if val.tzinfo is None:
+            proc_dt = val.replace(tzinfo=UTC)
+        else:
+            proc_dt = val.astimezone(UTC) # type: ignore
     else:
         val_str = str(val)
         for dtparse in reversed(time_formats.values()):

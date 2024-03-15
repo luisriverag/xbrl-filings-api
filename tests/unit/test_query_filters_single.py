@@ -409,9 +409,9 @@ def test_to_sqlite_added_time_2_str(
     con.close()
 
 
-def test_get_filings_added_time_datetime(
+def test_get_filings_added_time_datetime_utc(
         filter_added_time_2_response, monkeypatch):
-    """Querying `added_time` as datetime returns filing(s)."""
+    """Querying `added_time` as datetime (UTC) returns filing(s)."""
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
     time_str = '2023-05-09 13:27:02.676029'
@@ -430,9 +430,9 @@ def test_get_filings_added_time_datetime(
 
 
 @pytest.mark.sqlite
-def test_to_sqlite_added_time_datetime(
+def test_to_sqlite_added_time_datetime_utc(
         filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
-    """Requested `added_time` as datetime is inserted into a database."""
+    """Requested `added_time` as datetime (UTC) is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
@@ -459,6 +459,26 @@ def test_to_sqlite_added_time_datetime(
     assert count_num == 1, 'Inserted requested filing(s)'
     assert db_record_count(cur) == 1
     con.close()
+
+
+def test_get_filings_added_time_datetime_naive(
+        filter_added_time_2_response, monkeypatch):
+    """Querying `added_time` as datetime (naive) returns filing(s)."""
+    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
+    dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029)
+    time_str = '2023-05-09 13:27:02.676029'
+    fs = xf.get_filings(
+        filters={
+            'added_time': dt_obj
+            },
+        sort=None,
+        max_size=1,
+        flags=xf.GET_ONLY_FILINGS
+        )
+    vtbbank20 = next(iter(fs), None)
+    assert isinstance(vtbbank20, xf.Filing)
+    assert vtbbank20.added_time == dt_obj.replace(tzinfo=UTC)
+    assert vtbbank20.added_time_str == time_str
 
 
 def test_get_filings_added_time_date(filter_added_time_lax_response):

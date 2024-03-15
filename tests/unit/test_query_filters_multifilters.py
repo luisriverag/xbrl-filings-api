@@ -326,4 +326,61 @@ def test_to_sqlite_processed_time_str(
     con.close()
 
 
+def test_get_filings_processed_time_datetime_utc(
+        processed_time_multifilter_response):
+    """Filtering by `processed_time` as datetime (UTC) returns 2 filings."""
+    cloetta_sv_objs = (
+        datetime(2023, 1, 18, 11, 2, 6, 724768, tzinfo=UTC),
+        datetime(2023, 5, 16, 21, 7, 17, 825836, tzinfo=UTC)
+        )
+    cloetta_sv_strs = (
+        '2023-01-18 11:02:06.724768',
+        '2023-05-16 21:07:17.825836'
+        )
+    fs = xf.get_filings(
+        filters={
+            'processed_time': cloetta_sv_objs
+            },
+        sort=None,
+        max_size=2,
+        flags=xf.GET_ONLY_FILINGS
+        )
+    received_dts = {filing.processed_time for filing in fs}
+    assert len(received_dts) == 2
+    for utc_dt in cloetta_sv_objs:
+        assert utc_dt in received_dts
+    received_strs = {filing.processed_time_str for filing in fs}
+    assert len(received_strs) == 2
+    for str_dt in received_strs:
+        assert str_dt in received_strs
+
+
+def test_get_filings_processed_time_datetime_naive(
+        processed_time_multifilter_response):
+    """Filtering by `processed_time` as datetime (naive) returns 2 filings."""
+    cloetta_sv_objs = (
+        datetime(2023, 1, 18, 11, 2, 6, 724768),
+        datetime(2023, 5, 16, 21, 7, 17, 825836)
+        )
+    cloetta_sv_strs = (
+        '2023-01-18 11:02:06.724768',
+        '2023-05-16 21:07:17.825836'
+        )
+    fs = xf.get_filings(
+        filters={
+            'processed_time': cloetta_sv_objs
+            },
+        sort=None,
+        max_size=2,
+        flags=xf.GET_ONLY_FILINGS
+        )
+    received_dts = {filing.processed_time for filing in fs}
+    assert len(received_dts) == 2
+    for naive_dt in cloetta_sv_objs:
+        assert naive_dt.replace(tzinfo=UTC) in received_dts
+    received_strs = {filing.processed_time_str for filing in fs}
+    for str_dt in cloetta_sv_strs:
+        assert str_dt in received_strs
+
+
 # filing_page_iter
