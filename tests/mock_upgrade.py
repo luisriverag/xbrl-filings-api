@@ -689,7 +689,7 @@ _addmock('paging_czechia20dec')
 
 @_recorder.record(file_path=_get_path('multifilter_belgium20_short_date_year'))
 def _fetch_multifilter_belgium20_short_date_year():
-    """Belgian 2020 AFRs querying with short date filter year."""
+    """Belgian 2020 AFRs querying with short date filter year, max_size=100."""
     date_list = (
         '2020-08-31',
         '2020-09-30',
@@ -721,6 +721,38 @@ def _fetch_multifilter_belgium20_short_date_year():
         elif date_str == '2021-03-31':
             filings_left -= 10
 _addmock('multifilter_belgium20_short_date_year')
+
+
+@_recorder.record(file_path=_get_path('multifilter_belgium20_short_date_year_no_limit'))
+def _fetch_multifilter_belgium20_short_date_year_no_limit():
+    """Belgian 2020 AFRs querying with short date filter year, max_size=NO_LIMIT, options.max_page_size=200."""
+    date_list = (
+        '2020-08-31',
+        '2020-09-30',
+        '2020-10-31',
+        '2020-11-30',
+        '2020-12-31', # 21 filings
+        '2021-01-31',
+        '2021-02-28',
+        '2021-03-31', # 10 filings
+        '2021-04-30',
+        '2021-05-31',
+        '2021-06-30',
+        '2021-07-31',
+        )
+    filings_left = 200 # min(options.max_page_size, max_size)
+    for date_str in date_list:
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': filings_left,
+                'filter[country]': 'BE',
+                'filter[period_end]': date_str, # last_end_date
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+_addmock('multifilter_belgium20_short_date_year_no_limit')
 
 
 

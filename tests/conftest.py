@@ -445,7 +445,15 @@ def paging_czechia20dec_response():
 
 @pytest.fixture
 def multifilter_belgium20_short_date_year_response():
-    """Belgian 2020 AFRs querying with short date filter year."""
+    """Belgian 2020 AFRs querying with short date filter year, max_size=100."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('multifilter_belgium20_short_date_year'))
+        yield rsps
+
+
+@pytest.fixture
+def multifilter_belgium20_short_date_year_no_limit_response():
+    """Belgian 2020 AFRs querying with short date filter year, max_size=NO_LIMIT, options.max_page_size=200."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('multifilter_belgium20_short_date_year_no_limit'))
         yield rsps

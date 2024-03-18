@@ -99,7 +99,8 @@ def generate_pages(
     if add_api_params:
         params.update(add_api_params)
 
-    params_list = _get_params_list_on_filters(params, filters)
+    req_1st_num = stats.page_counter + 1
+    params_list = _get_params_list_on_filters(params, filters, req_1st_num)
     params_list_len = len(params_list)
 
     query_time = datetime.now(UTC)
@@ -113,8 +114,9 @@ def generate_pages(
 
         # For each page in the query
         while next_url:
+            request_num = req_1st_num + qparam_i
             page_json, api_request = _retrieve_page_json(
-                next_url, req_params, query_time)
+                next_url, req_params, query_time, request_num)
 
             page = FilingsPage(
                 page_json, api_request, flags, received_api_ids, res_colls)
@@ -143,9 +145,10 @@ def generate_pages(
             # short date query
             break
 
-        # Lower requested count of filings for further requests
-        for update_i in range(qparam_i + 1, params_list_len):
-            params_list[update_i]['page[size]'] -= filing_count
+        if max_size != NO_LIMIT:
+            # Lower requested count of filings for further requests
+            for update_i in range(qparam_i + 1, params_list_len):
+                params_list[update_i]['page[size]'] -= filing_count
 
 
 def _remove_excess_resources(page: FilingsPage, del_count: int):
@@ -179,7 +182,8 @@ def _raise_for_none_filters(
 
 def _get_params_list_on_filters(
         params: dict[str, str],
-        filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None]
+        filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None],
+        req_1st_num: int
         ) -> list[dict[str, str]]:
     """Append filter keys to `params` dict."""
     if not filters:
@@ -222,7 +226,8 @@ def _get_params_list_on_filters(
     if fgroup:
         params_lists = _expand_params_on_multifilters(params, fgroup)
         for pset_i, pset in enumerate(params_lists):
-            logger.info(f'Parameter set #{pset_i+1}: {pset}')
+            pset_num = req_1st_num + pset_i
+            logger.info(f'Request #{pset_num} parameter set: {pset}')
         return params_lists
     else:
         logger.info(f'Parameter set: {params}')
@@ -467,7 +472,8 @@ def _get_sort_query_param(sort: Sequence[str]) -> str:
 
 
 def _retrieve_page_json(
-        url: str, params: Union[dict, None], query_time: datetime
+        url: str, params: Union[dict, None], query_time: datetime,
+        request_num: int
         ) -> tuple[dict, _APIRequest]:
     """
     Execute an API request and return the deserialized JSON object.
@@ -478,25 +484,26 @@ def _retrieve_page_json(
     HTTPStatusError
     requests.ConnectionError
     """
-    req_i = stats.page_counter + 1
     furl = url
     if params and len(params) > 0:
         furl += '?' + '&'.join([f'{key}={val}' for key, val in params.items()])
     furl = urllib.parse.unquote(furl)
-    logger.info(f'GET Req#{req_i} {furl}')
+    logger.info(f'GET request #{request_num} {furl}')
 
     res = requests.get(
         url, params, headers={'Content-Type': 'application/vnd.api+json'},
         timeout=options.timeout_sec
         )
-    stats.page_counter = req_i
+    stats.page_counter = request_num
     api_request = _APIRequest(res.url, query_time)
 
     if res.status_code == 200:  # noqa: PLR2004
-        logger.info(f'Success for Req#{req_i}')
+        logger.info(f'Success for request #{request_num}')
     else:
         logger.error(
-            f'Error with Req#{req_i}, status {res.status_code} {res.reason}')
+            f'Error with request #{request_num}, status {res.status_code} '
+            f'{res.reason}'
+            )
 
     json_frag = res.json()
     if json_frag.get('errors'):
