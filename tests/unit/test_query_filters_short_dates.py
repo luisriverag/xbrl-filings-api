@@ -12,9 +12,11 @@ import xbrl_filings_api as xf
 
 UTC = timezone.utc
 
+pytestmark = pytest.mark.multifilter
+
 
 @pytest.mark.date
-def test_last_end_date_only_year(belgium20_short_date_year_response, monkeypatch):
+def test_last_end_date_only_year(multifilter_belgium20_short_date_year_response, monkeypatch):
     """Filtering by `processed_time` as str returns 2 filings."""
     e_dates_with_filings = {date(2020, 12, 31), date(2021, 3, 31)}
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (1, 8)))

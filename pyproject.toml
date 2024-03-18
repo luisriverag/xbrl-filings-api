@@ -130,7 +130,8 @@ exclude_lines = [
 [tool.pytest.ini_options]
 markers = [
     "sqlite: test has sqlite3 operations",
-    "paging: paging iterations",
+    "paging: paging a single query",
+    "multifilter: multiple queries in the same call",
     "date: processing date objects",
     "datetime: processing datetime objects",
 ]

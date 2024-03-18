@@ -16,6 +16,8 @@ import xbrl_filings_api as xf
 
 UTC = timezone.utc
 
+pytestmark = pytest.mark.multifilter
+
 
 def test_get_filings_api_id(multifilter_api_id_response):
     """Requested `api_id` filings are returned."""
