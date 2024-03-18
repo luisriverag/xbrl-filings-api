@@ -465,8 +465,8 @@ def _fetch_sort_two_fields():
 _addmock('sort_two_fields')
 
 
-@_recorder.record(file_path=_get_path('multipage'))
-def _fetch_multipage():
+@_recorder.record(file_path=_get_path('paging_swedish_size2_pg3'))
+def _fetch_paging_swedish_size2_pg3():
     """Get 3 pages (2pc) of oldest Swedish filings."""
     _ = requests.get(
         url=ENTRY_POINT_URL,
@@ -500,11 +500,11 @@ def _fetch_multipage():
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
-_addmock('multipage', lax_fixture=True)
+_addmock('paging_swedish_size2_pg3', lax_fixture=True)
 
 
-@_recorder.record(file_path=_get_path('api_id_multifilter'))
-def _fetch_api_id_multifilter():
+@_recorder.record(file_path=_get_path('multifilter_api_id'))
+def _fetch_multifilter_api_id():
     """Get 4 Shell filings for 2021 and 2022."""
     for id_i, api_id in enumerate(('1134', '1135', '4496', '4529')):
         _ = requests.get(
@@ -516,11 +516,11 @@ def _fetch_api_id_multifilter():
             headers=JSON_API_HEADERS,
             timeout=REQUEST_TIMEOUT
             )
-_addmock('api_id_multifilter')
+_addmock('multifilter_api_id')
 
 
-@_recorder.record(file_path=_get_path('country_multifilter'))
-def _fetch_country_multifilter():
+@_recorder.record(file_path=_get_path('multifilter_country'))
+def _fetch_multifilter_country():
     """Get three filings for the first country `FI`."""
     _ = requests.get(
         url=ENTRY_POINT_URL,
@@ -531,11 +531,11 @@ def _fetch_country_multifilter():
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
-_addmock('country_multifilter')
+_addmock('multifilter_country')
 
 
-@_recorder.record(file_path=_get_path('filing_index_multifilter'))
-def _fetch_filing_index_multifilter():
+@_recorder.record(file_path=_get_path('multifilter_filing_index'))
+def _fetch_multifilter_filing_index():
     """Get three filings for the first country `FI`."""
     fxo_codes = (
         '21380068P1DRHMJ8KU70-2021-12-31-ESEF-GB-0',
@@ -551,11 +551,11 @@ def _fetch_filing_index_multifilter():
             headers=JSON_API_HEADERS,
             timeout=REQUEST_TIMEOUT
             )
-_addmock('filing_index_multifilter')
+_addmock('multifilter_filing_index')
 
 
-@_recorder.record(file_path=_get_path('reporting_date_multifilter'))
-def _fetch_reporting_date_multifilter():
+@_recorder.record(file_path=_get_path('multifilter_reporting_date'))
+def _fetch_multifilter_reporting_date():
     """Return an error for filtering with `reporting_date`."""
     _ = requests.get(
         url=ENTRY_POINT_URL,
@@ -566,11 +566,11 @@ def _fetch_reporting_date_multifilter():
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
-_addmock('reporting_date_multifilter')
+_addmock('multifilter_reporting_date')
 
 
-@_recorder.record(file_path=_get_path('inconsistency_count_multifilter'))
-def _fetch_inconsistency_count_multifilter():
+@_recorder.record(file_path=_get_path('multifilter_inconsistency_count'))
+def _fetch_multifilter_inconsistency_count():
     """Return an error for filtering with `inconsistency_count`."""
     _ = requests.get(
         url=ENTRY_POINT_URL,
@@ -581,11 +581,11 @@ def _fetch_inconsistency_count_multifilter():
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
-_addmock('inconsistency_count_multifilter')
+_addmock('multifilter_inconsistency_count')
 
 
-@_recorder.record(file_path=_get_path('processed_time_multifilter'))
-def _fetch_processed_time_multifilter():
+@_recorder.record(file_path=_get_path('multifilter_processed_time'))
+def _fetch_multifilter_processed_time():
     """Get two filings filtered with `processed_time`."""
     cloetta_sv_strs = (
         '2023-01-18 11:02:06.724768',
@@ -601,7 +601,7 @@ def _fetch_processed_time_multifilter():
             headers=JSON_API_HEADERS,
             timeout=REQUEST_TIMEOUT
             )
-_addmock('processed_time_multifilter')
+_addmock('multifilter_processed_time')
 
 
 @_recorder.record(file_path=_get_path('unknown_filter_error'))
@@ -649,8 +649,8 @@ def _fetch_fortum23fi_xhtml_language():
 _addmock('fortum23fi_xhtml_language')
 
 
-@_recorder.record(file_path=_get_path('czechia20dec'))
-def _fetch_czechia20dec():
+@_recorder.record(file_path=_get_path('paging_czechia20dec'))
+def _fetch_paging_czechia20dec():
     """Czech 2020-12-31 AFRs."""
     _ = requests.get(
         url=ENTRY_POINT_URL,
@@ -684,11 +684,11 @@ def _fetch_czechia20dec():
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
-_addmock('czechia20dec')
+_addmock('paging_czechia20dec')
 
 
-@_recorder.record(file_path=_get_path('belgium20_short_date_year'))
-def _fetch_belgium20_short_date_year():
+@_recorder.record(file_path=_get_path('multifilter_belgium20_short_date_year'))
+def _fetch_multifilter_belgium20_short_date_year():
     """Belgian 2020 AFRs querying with short date filter year."""
     date_list = (
         '2020-08-31',
@@ -720,7 +720,7 @@ def _fetch_belgium20_short_date_year():
             filings_left -= 21
         elif date_str == '2021-03-31':
             filings_left -= 10
-_addmock('belgium20_short_date_year')
+_addmock('multifilter_belgium20_short_date_year')
 
 
 

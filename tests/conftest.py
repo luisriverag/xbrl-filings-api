@@ -348,66 +348,66 @@ def sort_two_fields_response():
 
 
 @pytest.fixture
-def multipage_response():
+def paging_swedish_size2_pg3_response():
     """Get 3 pages (2pc) of oldest Swedish filings."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('multipage'))
+        rsps._add_from_file(_get_path('paging_swedish_size2_pg3'))
         yield rsps
 
 
 @pytest.fixture
-def multipage_lax_response():
+def paging_swedish_size2_pg3_lax_response():
     """Get 3 pages (2pc) of oldest Swedish filings."""
     with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
-        rsps._add_from_file(_get_path('multipage'))
+        rsps._add_from_file(_get_path('paging_swedish_size2_pg3'))
         yield rsps
 
 
 @pytest.fixture
-def api_id_multifilter_response():
+def multifilter_api_id_response():
     """Get 4 Shell filings for 2021 and 2022."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('api_id_multifilter'))
+        rsps._add_from_file(_get_path('multifilter_api_id'))
         yield rsps
 
 
 @pytest.fixture
-def country_multifilter_response():
+def multifilter_country_response():
     """Get three filings for the first country `FI`."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('country_multifilter'))
+        rsps._add_from_file(_get_path('multifilter_country'))
         yield rsps
 
 
 @pytest.fixture
-def filing_index_multifilter_response():
+def multifilter_filing_index_response():
     """Get three filings for the first country `FI`."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('filing_index_multifilter'))
+        rsps._add_from_file(_get_path('multifilter_filing_index'))
         yield rsps
 
 
 @pytest.fixture
-def reporting_date_multifilter_response():
+def multifilter_reporting_date_response():
     """Return an error for filtering with `reporting_date`."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('reporting_date_multifilter'))
+        rsps._add_from_file(_get_path('multifilter_reporting_date'))
         yield rsps
 
 
 @pytest.fixture
-def inconsistency_count_multifilter_response():
+def multifilter_inconsistency_count_response():
     """Return an error for filtering with `inconsistency_count`."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('inconsistency_count_multifilter'))
+        rsps._add_from_file(_get_path('multifilter_inconsistency_count'))
         yield rsps
 
 
 @pytest.fixture
-def processed_time_multifilter_response():
+def multifilter_processed_time_response():
     """Get two filings filtered with `processed_time`."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('processed_time_multifilter'))
+        rsps._add_from_file(_get_path('multifilter_processed_time'))
         yield rsps
 
 
@@ -436,16 +436,16 @@ def fortum23fi_xhtml_language_response():
 
 
 @pytest.fixture
-def czechia20dec_response():
+def paging_czechia20dec_response():
     """Czech 2020-12-31 AFRs."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('czechia20dec'))
+        rsps._add_from_file(_get_path('paging_czechia20dec'))
         yield rsps
 
 
 @pytest.fixture
-def belgium20_short_date_year_response():
+def multifilter_belgium20_short_date_year_response():
     """Belgian 2020 AFRs querying with short date filter year."""
     with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('belgium20_short_date_year'))
+        rsps._add_from_file(_get_path('multifilter_belgium20_short_date_year'))
         yield rsps

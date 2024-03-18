@@ -123,7 +123,7 @@ def generate_pages(
                 break
             next_url = page.api_next_page_url
 
-            # Last page on multipage query typically has more results
+            # Last page on paged query typically has more results
             # than the query `max_size`
             received_size += filing_count
             if max_size != NO_LIMIT and received_size > max_size:

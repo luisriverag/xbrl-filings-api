@@ -16,8 +16,8 @@ from xbrl_filings_api.api_page import _APIPage, _IncludedResource
 
 
 @pytest.fixture
-def multipage_2nd_filingspage(multipage_lax_response, res_colls, monkeypatch):
-    """FilingsPage for the second `multipage` mock URL response."""
+def paging_swedish_size2_pg3_2nd_filingspage(paging_swedish_size2_pg3_lax_response, res_colls, monkeypatch):
+    """FilingsPage for 2nd page (2pc) of oldest Swedish filings."""
     monkeypatch.setattr(xf.options, 'max_page_size', 2)
     piter = xf.filing_page_iter(
         filters={
@@ -45,9 +45,9 @@ def oldest3_fi_entities_filingspage(oldest3_fi_entities_response):
 
 
 @pytest.mark.paging
-def test_attributes(multipage_2nd_filingspage):
+def test_attributes(paging_swedish_size2_pg3_2nd_filingspage):
     """Test _APIPage attributes."""
-    fpage: xf.FilingsPage = multipage_2nd_filingspage
+    fpage: xf.FilingsPage = paging_swedish_size2_pg3_2nd_filingspage
     assert isinstance(fpage, _APIPage)
     def pmatch(s, isbigpage=False):
         return (

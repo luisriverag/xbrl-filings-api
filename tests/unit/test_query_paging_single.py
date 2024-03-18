@@ -23,7 +23,7 @@ import xbrl_filings_api as xf
         ),
     raises=requests.ConnectionError
     )
-def test_filing_page_iter(multipage_lax_response, monkeypatch):
+def test_filing_page_iter(paging_swedish_size2_pg3_lax_response, monkeypatch):
     """Requested filings are available on 3 pages."""
     monkeypatch.setattr(xf.options, 'max_page_size', 2)
     piter = xf.filing_page_iter(
@@ -46,7 +46,7 @@ def test_filing_page_iter(multipage_lax_response, monkeypatch):
 
 @pytest.mark.date
 @pytest.mark.paging
-def test_no_limit(czechia20dec_response, monkeypatch):
+def test_no_limit(paging_czechia20dec_response, monkeypatch):
     """Requested filings are available on 3 pages."""
     monkeypatch.setattr(xf.options, 'max_page_size', 10)
     # The database has 29 records for this query

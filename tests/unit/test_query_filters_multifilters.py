@@ -17,7 +17,7 @@ import xbrl_filings_api as xf
 UTC = timezone.utc
 
 
-def test_get_filings_api_id(api_id_multifilter_response):
+def test_get_filings_api_id(multifilter_api_id_response):
     """Requested `api_id` filings are returned."""
     shell_api_ids = '1134', '1135', '4496', '4529'
     fs = xf.get_filings(
@@ -34,7 +34,7 @@ def test_get_filings_api_id(api_id_multifilter_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_api_id(
-        api_id_multifilter_response, db_record_count, tmp_path, monkeypatch):
+        multifilter_api_id_response, db_record_count, tmp_path, monkeypatch):
     """Filtering by `api_id` inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     shell_api_ids = '1134', '1135', '4496', '4529'
@@ -63,7 +63,7 @@ def test_to_sqlite_api_id(
     con.close()
 
 
-def test_get_filings_country_only_first(country_multifilter_response):
+def test_get_filings_country_only_first(multifilter_country_response):
     """Requested `country` filings are returned."""
     country_codes = ['FI', 'SE', 'NO']
     fs = xf.get_filings(
@@ -83,7 +83,7 @@ def test_get_filings_country_only_first(country_multifilter_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_country_only_first(
-        country_multifilter_response, db_record_count, tmp_path, monkeypatch):
+        multifilter_country_response, db_record_count, tmp_path, monkeypatch):
     """Filtering by `country` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     country_codes = ['FI', 'SE', 'NO']
@@ -113,7 +113,7 @@ def test_to_sqlite_country_only_first(
 
 
 def test_get_filings_filing_index(
-        filing_index_multifilter_response):
+        multifilter_filing_index_response):
     """Requested `filing_index` filings are returned."""
     filing_index_codes = (
         '21380068P1DRHMJ8KU70-2021-12-31-ESEF-GB-0',
@@ -133,7 +133,7 @@ def test_get_filings_filing_index(
 
 @pytest.mark.sqlite
 def test_to_sqlite_filing_index(
-        filing_index_multifilter_response, db_record_count, tmp_path,
+        multifilter_filing_index_response, db_record_count, tmp_path,
         monkeypatch):
     """Filtering by `filing_index` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
@@ -166,7 +166,7 @@ def test_to_sqlite_filing_index(
     con.close()
 
 
-def test_get_filings_reporting_date(reporting_date_multifilter_response):
+def test_get_filings_reporting_date(multifilter_reporting_date_response):
     """APIError raised for filtering with `reporting_date`."""
     dates = '2020-12-31', '2021-12-31', '2022-12-31'
     with pytest.raises(xf.APIError, match='FilingSchema has no attribute'):
@@ -183,7 +183,7 @@ def test_get_filings_reporting_date(reporting_date_multifilter_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_reporting_date(
-        reporting_date_multifilter_response, tmp_path, monkeypatch):
+        multifilter_reporting_date_response, tmp_path, monkeypatch):
     """Filtering by `reporting_date` raises exception."""
     monkeypatch.setattr(xf.options, 'views', None)
     dates = '2020-12-31', '2021-12-31', '2022-12-31'
@@ -210,7 +210,7 @@ def test_to_sqlite_reporting_date(
         ),
     raises=xf.APIError)
 def test_get_filings_inconsistency_count(
-        inconsistency_count_multifilter_response):
+        multifilter_inconsistency_count_response):
     """Requested `inconsistency_count` filings are returned."""
     ic_counts = 1, 2
     fs = xf.get_filings(
@@ -233,7 +233,7 @@ def test_get_filings_inconsistency_count(
     raises=xf.APIError)
 @pytest.mark.sqlite
 def test_to_sqlite_inconsistency_count(
-        inconsistency_count_multifilter_response, db_record_count, tmp_path,
+        multifilter_inconsistency_count_response, db_record_count, tmp_path,
         monkeypatch):
     """Filtering by `inconsistency_count` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
@@ -265,7 +265,7 @@ def test_to_sqlite_inconsistency_count(
 
 @pytest.mark.datetime
 def test_get_filings_processed_time_str(
-        processed_time_multifilter_response):
+        multifilter_processed_time_response):
     """Filtering by `processed_time` as str returns 2 filings."""
     cloetta_sv_strs = (
         '2023-01-18 11:02:06.724768',
@@ -295,7 +295,7 @@ def test_get_filings_processed_time_str(
 @pytest.mark.sqlite
 @pytest.mark.datetime
 def test_to_sqlite_processed_time_str(
-        processed_time_multifilter_response, db_record_count, tmp_path,
+        multifilter_processed_time_response, db_record_count, tmp_path,
         monkeypatch):
     """Filtering by `processed_time` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
@@ -330,7 +330,7 @@ def test_to_sqlite_processed_time_str(
 
 @pytest.mark.datetime
 def test_get_filings_processed_time_datetime_utc(
-        processed_time_multifilter_response):
+        multifilter_processed_time_response):
     """Filtering by `processed_time` as datetime (UTC) returns 2 filings."""
     cloetta_sv_objs = (
         datetime(2023, 1, 18, 11, 2, 6, 724768, tzinfo=UTC),
@@ -360,7 +360,7 @@ def test_get_filings_processed_time_datetime_utc(
 
 @pytest.mark.datetime
 def test_get_filings_processed_time_datetime_naive(
-        processed_time_multifilter_response):
+        multifilter_processed_time_response):
     """Filtering by `processed_time` as datetime (naive) returns 2 filings."""
     cloetta_sv_objs = (
         datetime(2023, 1, 18, 11, 2, 6, 724768),
