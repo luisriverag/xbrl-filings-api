@@ -92,16 +92,16 @@ class APIResource(APIObject):
         objects.
 
         For `Filing` objects this also means excluding attributes ending
-        ``_download_path`` if all filings have this column filled with
-        `None`. Additionally, if `GET_ENTITY` is not set filings will
-        exclude `entity_api_id`.
+        ``_download_path`` if all `filings` have this column filled with
+        `None`. Additionally, if `GET_ENTITY` is not included in
+        `flags`, filings will exclude `entity_api_id`.
 
         Parameters
         ----------
         flags : ScopeFlag, optional
-            Only relevant for `Filing` resource type.
+            Only relevant for `Filing` resource type. See remarks above.
         filings : iterable of Filing, optional
-            Only relevant for `Filing` resource type.
+            Only relevant for `Filing` resource type. See remarks above.
         """
         if cls is APIResource:
             raise NotImplementedError()
@@ -170,4 +170,4 @@ class APIResource(APIObject):
         if has_entities:
             flags = GET_ENTITY
         cols = cls.get_data_attributes(flags, filings)
-        return order_columns.order_columns(cols)
+        return cols

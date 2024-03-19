@@ -24,11 +24,13 @@ def test_raises_APIResource_get_data_attributes():
         xf.APIResource.get_data_attributes(flags=None, filings=None)
 
 
-def test_Filing_get_data_attributes():
+def test_Filing_get_data_attributes_sanity_check():
     """Test Filing.get_data_attributes, flags=None."""
     dattrs = xf.Filing.get_data_attributes(flags=None, filings=None)
     for dattr in dattrs:
         assert isinstance(dattr, str)
+    assert 'api_id' in dattrs
+    assert 'filing_index' in dattrs
     assert 'entity_api_id' not in dattrs
 
 
@@ -44,7 +46,65 @@ def test_Filing_get_data_attributes_GET_ENTITY():
     assert 'entity_api_id' in dattrs
 
 
+def test_Filing_get_data_attributes_filings_no_paths(oldest3_fi_filingset):
+    """Test Filing.get_data_attributes with a FilingSet, no paths."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    dattrs = xf.Filing.get_data_attributes(flags=None, filings=fs)
+    for dattr in dattrs:
+        assert not dattr.endswith('_download_path')
+
+
+def test_Filing_get_data_attributes_filings_xhtml_path(oldest3_fi_filingset):
+    """Test Filing.get_data_attributes with a FilingSet, has xhtml_download_path."""
+    fs: xf.FilingSet = oldest3_fi_filingset
+    fsiter = iter(fs)
+    next(fsiter)
+    f2 = next(fsiter)
+    f2.xhtml_download_path = 'test'
+
+    dattrs = xf.Filing.get_data_attributes(flags=None, filings=fs)
+    assert 'xhtml_download_path' in dattrs
+    dattrs.remove('xhtml_download_path')
+    for dattr in dattrs:
+        assert not dattr.endswith('_download_path')
+
+
+def test_ValidationMessage_get_data_attributes_sanity_check():
+    """Test ValidationMessage.get_data_attributes."""
+    dattrs = xf.ValidationMessage.get_data_attributes(flags=None, filings=None)
+    for dattr in dattrs:
+        assert isinstance(dattr, str)
+    assert 'api_id' in dattrs
+    assert 'code' in dattrs
+    assert 'filing_api_id' in dattrs
+
+
+def test_Entity_get_data_attributes_sanity_check():
+    """Test Entity.get_data_attributes."""
+    dattrs = xf.Entity.get_data_attributes(flags=None, filings=None)
+    for dattr in dattrs:
+        assert isinstance(dattr, str)
+    assert 'api_id' in dattrs
+    assert 'name' in dattrs
+
+
 def test_raises_APIResource_get_columns():
     """Test raising for APIResource.get_columns."""
     with pytest.raises(NotImplementedError):
         xf.APIResource.get_columns(filings=None, has_entities=False)
+
+
+def test_Filing_get_columns_sanity_check():
+    """Test Filing.get_columns, has_entities=False."""
+    dattrs = xf.Filing.get_columns(filings=None, has_entities=False)
+    for dattr in dattrs:
+        assert isinstance(dattr, str)
+    assert 'api_id' in dattrs
+    assert 'filing_index' in dattrs
+    assert 'entity_api_id' not in dattrs
+
+
+def test_Filing_get_columns_has_entities_true():
+    """Test Filing.get_columns, has_entities=True."""
+    dattrs = xf.Filing.get_columns(filings=None, has_entities=True)
+    assert 'entity_api_id' in dattrs
