@@ -42,8 +42,27 @@ class TestEntityAsml:
 
     def test_str(self, asml22en_entity):
         """Test __str__ method."""
-        e_str = 'ASML Holding N.V. (724500Y6DUVHQD6OXN27)'
-        assert str(asml22en_entity) == e_str
+        ent: xf.Entity = asml22en_entity
+        assert str(ent) == 'ASML Holding N.V. (724500Y6DUVHQD6OXN27)'
+
+    def test_str_no_identifier(self, asml22en_entity):
+        """Test __str__ method when `identifier` is None."""
+        ent: xf.Entity = asml22en_entity
+        ent.identifier = None
+        assert str(ent) == 'ASML Holding N.V.'
+
+    def test_str_no_name(self, asml22en_entity):
+        """Test __str__ method when `name` is None."""
+        ent: xf.Entity = asml22en_entity
+        ent.name = None
+        assert str(ent) == '724500Y6DUVHQD6OXN27'
+
+    def test_str_no_identifier_nor_name(self, asml22en_entity):
+        """Test __str__ method when `identifier` and `name` are None."""
+        ent: xf.Entity = asml22en_entity
+        ent.name = None
+        ent.identifier = None
+        assert str(ent) == ''
 
     @pytest.mark.parametrize('attr_name,expected', [
         ('api_id', '1969'),

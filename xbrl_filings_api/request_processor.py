@@ -10,6 +10,7 @@ import urllib.parse
 import warnings
 from collections.abc import Generator, Iterable, Mapping, Sequence
 from datetime import date, datetime, timedelta, timezone
+from json import JSONDecodeError
 from typing import Any, Literal, Union
 
 import requests
@@ -513,13 +514,19 @@ def _retrieve_page_json(
             f'{res.reason}'
             )
 
-    json_frag = res.json()
-    if json_frag.get('errors'):
+    json_frag = dcerr = None
+    try:
+        json_frag = res.json()
+    except JSONDecodeError as err:
+        dcerr = err
+    if not dcerr and json_frag.get('errors'):
         err_frag: Union[dict, None] = next(iter(json_frag['errors']), None)
         if err_frag:
             raise APIError(err_frag, api_request, res.status_code, res.reason)
     elif res.status_code != 200:  # noqa: PLR2004
         raise HTTPStatusError(res.status_code, res.reason, res.text)
+    if dcerr:
+        raise dcerr
 
     return json_frag, api_request
 

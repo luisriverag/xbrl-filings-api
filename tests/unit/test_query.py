@@ -11,8 +11,10 @@ import sqlite3
 from datetime import timezone
 
 import pytest
+import responses
 
 import xbrl_filings_api as xf
+import xbrl_filings_api.exceptions as xf_exceptions
 
 UTC = timezone.utc
 
@@ -76,3 +78,24 @@ def test_filing_page_iter(asml22en_response):
     assert isinstance(page, xf.FilingsPage), 'First iteration returns a page'
     asml22 = next(iter(page.filing_list), None)
     assert isinstance(asml22, xf.Filing), 'Filing is returned on a page'
+
+
+def test_get_filings_http_status_error():
+    """Test raising when HTTP status is not 200."""
+    with responses.RequestsMock() as rsps:
+        rsps.get(
+            url='https://filings.xbrl.org/api/filings',
+            body='Testing.',
+            status=404
+            )
+        with pytest.raises(xf_exceptions.HTTPStatusError) as exc_info:
+            _ = xf.get_filings(
+                filters=None,
+                sort=None,
+                max_size=100,
+                flags=xf.GET_ONLY_FILINGS
+                )
+        exc = exc_info.value
+        assert exc.status_code == 404
+        assert exc.status_text == 'Not Found'
+        assert exc.body == 'Testing.'
