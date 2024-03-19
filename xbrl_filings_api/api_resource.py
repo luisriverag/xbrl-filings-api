@@ -12,7 +12,12 @@ from xbrl_filings_api import order_columns
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
-from xbrl_filings_api.enums import GET_ENTITY, GET_ONLY_FILINGS, ScopeFlag
+from xbrl_filings_api.enums import (
+    GET_ENTITY,
+    GET_ONLY_FILINGS,
+    GET_VALIDATION_MESSAGES,
+    ScopeFlag,
+)
 
 EllipsisType = type(Ellipsis) # No valid solution for Python 3.9
 UTC = timezone.utc
@@ -69,10 +74,11 @@ class APIResource(APIObject):
             )
 
         self.api_id: Union[str, None] = None
+        """``id`` from JSON:API."""
+
         api_id = self._json.get('id')
         if isinstance(api_id, str):
             self.api_id = api_id
-        """``id`` from JSON:API."""
 
     @classmethod
     def get_data_attributes(
@@ -113,7 +119,7 @@ class APIResource(APIObject):
                 exclude_dlpaths = (
                     cls._get_unused_download_paths(filings))
                 attrs = [attr for attr in attrs if attr not in exclude_dlpaths]
-            if flags and GET_ENTITY not in flags:
+            if not flags or GET_ENTITY not in flags:
                 attrs.remove('entity_api_id')
         return order_columns.order_columns(attrs)
 
