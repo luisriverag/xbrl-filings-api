@@ -376,6 +376,14 @@ def _expand_short_date_filters(
             )
         raise ValueError(msg)
 
+    for rname, r_i in [('start', 0), ('stop', 1)]:
+        if not (1 <= options.year_filter_months[r_i][1] <= 12):
+            msg = (
+                f'options.year_filter_months {rname} month definition must be '
+                'in 1..12'
+                )
+            raise ValueError(msg)
+
     for field_name, date_list in fgroup['date'].items():
         resolved: list[str] = []
         for pos, date_filter in enumerate(date_list):

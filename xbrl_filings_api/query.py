@@ -39,15 +39,13 @@ required:
         }
 
 Date fields have a special functioning in `filters`. If you filter
-by a date that only has a year, a minimum of 12 requests are made
-for the end dates of each month. The months will start by default
-from August of the specified year and continue until July of the
-year following the specified year. Option `year_filter_months` can
-be used to change this behaviour. If you filter by a year and a
-month, the filter will assign the end date of that month to the
-filter automatically. So the following filter::
+by a date that only has a year, 12 requests are made by default for the
+end dates of each month. The months will start by default from August of
+the specified year and continue until July of the year following the
+specified year. Option `year_filter_months` can be used to change this
+behaviour. So the following filter::
 
-    filters={'last_end_date': '2022'}
+    filters={'last_end_date': 2022}
 
 Will yield the following requests::
 
@@ -56,6 +54,11 @@ Will yield the following requests::
     ...
     last_end_date=2023-06-30
     last_end_date=2023-07-31
+
+If you filter by a year and a month, the filter will assign the end date
+of that month to the filter automatically, so
+`filters={'last_end_date': '2022-12'}` becomes
+`filters={'last_end_date': '2022-12-31'}`.
 
 The parameter `sort` in functions/methods accepts a single attribute
 string or a sequence (e.g. list) of attribute strings. Normal sort order
