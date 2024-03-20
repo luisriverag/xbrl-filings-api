@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import copy
 import re
 
 import pytest
@@ -55,7 +56,7 @@ def test_get_unaccessed_key_paths(monkeypatch):
     monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
     monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
     monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
-    json_with_new_keys = ASML22EN_JSON_BASE.copy()
+    json_with_new_keys = copy.deepcopy(ASML22EN_JSON_BASE)
     json_with_new_keys['data'][0]['attributes']['new_attribute'] = 'new_value'
     json_with_new_keys['data'][0]['relationships']['new_rel'] = {
         'links': {'related': 'new_rel_link'}
@@ -120,17 +121,14 @@ def test_get_unexpected_resource_types_data(monkeypatch):
     monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
     monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
     monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
-    json_with_new_resource_types = ASML22EN_JSON_BASE.copy()
-    json_with_new_resource_types['data'] = [
-        json_with_new_resource_types['data'][0],
-        {
-            'type': 'alien_type',
-            'id': '123456789',
-            'attributes': {},
-            'relationships': {},
-            'links': { 'self': '/api/alien_types/123456789' }
-        }
-        ]
+    json_with_new_resource_types = copy.deepcopy(ASML22EN_JSON_BASE)
+    json_with_new_resource_types['data'].append({
+        'type': 'alien_type',
+        'id': '123456789',
+        'attributes': {},
+        'relationships': {},
+        'links': { 'self': '/api/alien_types/123456789' }
+        })
     with responses.RequestsMock() as rsps:
         rsps.add(
             method='GET',
@@ -152,7 +150,7 @@ def test_get_unexpected_resource_types_included(monkeypatch):
     monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
     monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
     monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
-    json_with_new_resource_types = ASML22EN_JSON_BASE.copy()
+    json_with_new_resource_types = copy.deepcopy(ASML22EN_JSON_BASE)
     json_with_new_resource_types['data'][0]['relationships']['entity']['data'] = {
         'type': 'entity',
         'id': '1969'

@@ -130,7 +130,7 @@ def test_add_entities(get_oldest3_fi_entities_filingset, asml22en_entities_filin
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert fs.entities.exist is True
     assert len(fs.entities) == 4
-    after_ents = before_ents.copy()
+    after_ents = [ent for ent in before_ents]
     for ent in fs.entities:
         assert isinstance(ent, xf.Entity)
         after_ents.append(ent)
@@ -143,6 +143,7 @@ def test_add_entities(get_oldest3_fi_entities_filingset, asml22en_entities_filin
     for col in fs.entities.columns:
         assert isinstance(col, str)
         after_cols.append(col)
+
     for col in before_cols:
         assert col in after_cols
 
