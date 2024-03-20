@@ -135,8 +135,7 @@ def generate_pages(
 
             yield page
 
-            if not next_url or (
-                    max_size != NO_LIMIT and received_size >= max_size):
+            if max_size != NO_LIMIT and received_size >= max_size:
                 # Query `max_size` reached
                 break
             req_params = None

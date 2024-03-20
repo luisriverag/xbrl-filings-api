@@ -389,4 +389,18 @@ def test_get_filings_processed_time_datetime_naive(
         assert str_dt in received_strs
 
 
-# filing_page_iter
+def test_raises_get_filings_none_filter():
+    """Test raising for None value in multifilter."""
+    api_ids = '1134', '1135', None, '4529'
+    with pytest.raises(
+            ValueError,
+            match=(r'Value None is not allowed for filters, field "api_id", '
+                   r'multifilter index 2')):
+        _ = xf.get_filings(
+            filters={
+                'api_id': api_ids
+                },
+            sort=None,
+            max_size=4,
+            flags=xf.GET_ONLY_FILINGS
+            )

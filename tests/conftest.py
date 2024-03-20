@@ -481,3 +481,19 @@ def multifilter_belgium20_short_date_year_no_limit_response():
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('multifilter_belgium20_short_date_year_no_limit'))
         yield rsps
+
+
+@pytest.fixture
+def sort_asc_package_sha256_latvia_response():
+    """Sorted ascending by package_sha256 from Latvian records."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('sort_asc_package_sha256_latvia'))
+        yield rsps
+
+
+@pytest.fixture
+def sort_desc_package_sha256_latvia_response():
+    """Sorted ascending by package_sha256 from Latvian records."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('sort_desc_package_sha256_latvia'))
+        yield rsps

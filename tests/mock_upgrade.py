@@ -755,6 +755,37 @@ def _fetch_multifilter_belgium20_short_date_year_no_limit():
 _addmock('multifilter_belgium20_short_date_year_no_limit')
 
 
+@_recorder.record(file_path=_get_path('sort_asc_package_sha256_latvia'))
+def _fetch_sort_asc_package_sha256_latvia():
+    """Sorted ascending by package_sha256 from Latvian records."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 4,
+            'filter[country]': 'LV',
+            'sort': 'sha256', # package_sha256
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('sort_asc_package_sha256_latvia')
+
+
+@_recorder.record(file_path=_get_path('sort_desc_package_sha256_latvia'))
+def _fetch_sort_desc_package_sha256_latvia():
+    """Sorted ascending by package_sha256 from Latvian records."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 4,
+            'filter[country]': 'LV',
+            'sort': '-sha256', # package_sha256
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('sort_desc_package_sha256_latvia')
+
 
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 

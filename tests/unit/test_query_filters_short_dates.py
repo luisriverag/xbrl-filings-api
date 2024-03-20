@@ -254,3 +254,37 @@ def test_raises_last_end_date_year_and_month_month0(monkeypatch):
             max_size=100,
             flags=xf.GET_ONLY_FILINGS
             )
+
+
+def test_raises_bad_options_year_filter_months(monkeypatch):
+    """Test raising for bad options.year_filter_months."""
+    monkeypatch.setattr(xf.options, 'year_filter_months', ((1, 8), (0, 8)))
+    with pytest.raises(
+            ValueError,
+            match=(r'The option year_filter_months stop \(2nd item\) is '
+                   r'before or equal to start \(1st item\)')):
+        _ = xf.get_filings(
+            filters={
+                'last_end_date': '2020'
+                },
+            sort=None,
+            max_size=100,
+            flags=xf.GET_ONLY_FILINGS
+            )
+
+
+def test_raises_too_many_date_parts(monkeypatch):
+    """Test raising for date query of '2021-01-01-12'."""
+    monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (1, 8)))
+    with pytest.raises(
+            ValueError,
+            match=(r'Date in filter field "last_end_date" is not a valid date '
+                   r'or short date, value: "2021-01-01-12"')):
+        _ = xf.get_filings(
+            filters={
+                'last_end_date': '2021-01-01-12'
+                },
+            sort=None,
+            max_size=100,
+            flags=xf.GET_ONLY_FILINGS
+            )

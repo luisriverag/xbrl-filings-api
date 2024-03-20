@@ -10,6 +10,7 @@
 from datetime import datetime, timezone
 
 import pytest
+import responses
 
 import xbrl_filings_api as xf
 
@@ -74,3 +75,35 @@ def test_sort_two_fields(sort_two_fields_response):
     assert neste20en_fxo in filing_indexes
     neste20fi_fxo = '5493009GY1X8GQ66AM14-2020-12-31-ESEF-FI-1'
     assert neste20fi_fxo in filing_indexes
+
+
+def test_sort_asc_package_sha256(sort_asc_package_sha256_latvia_response):
+    """Sort ascending by `package_sha256` for filings from Latvia."""
+    pageiter = xf.filing_page_iter(
+        filters={
+            'country': 'LV'
+            },
+        sort='package_sha256',
+        max_size=4,
+        flags=xf.GET_ONLY_FILINGS
+        )
+    fpage: xf.FilingsPage = next(iter(pageiter))
+    assert fpage.filing_list[0].package_sha256 <= fpage.filing_list[1].package_sha256
+    assert fpage.filing_list[1].package_sha256 <= fpage.filing_list[2].package_sha256
+    assert fpage.filing_list[2].package_sha256 <= fpage.filing_list[3].package_sha256
+
+
+def test_sort_desc_package_sha256(sort_desc_package_sha256_latvia_response):
+    """Sort descending by `package_sha256` for filings from Latvia."""
+    pageiter = xf.filing_page_iter(
+        filters={
+            'country': 'LV'
+            },
+        sort='-package_sha256',
+        max_size=4,
+        flags=xf.GET_ONLY_FILINGS
+        )
+    fpage: xf.FilingsPage = next(iter(pageiter))
+    assert fpage.filing_list[0].package_sha256 >= fpage.filing_list[1].package_sha256
+    assert fpage.filing_list[1].package_sha256 >= fpage.filing_list[2].package_sha256
+    assert fpage.filing_list[2].package_sha256 >= fpage.filing_list[3].package_sha256

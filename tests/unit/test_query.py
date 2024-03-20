@@ -12,6 +12,7 @@ from datetime import timezone
 
 import pytest
 import responses
+from requests import JSONDecodeError
 
 import xbrl_filings_api as xf
 import xbrl_filings_api.exceptions as xf_exceptions
@@ -99,3 +100,34 @@ def test_get_filings_http_status_error():
         assert exc.status_code == 404
         assert exc.status_text == 'Not Found'
         assert exc.body == 'Testing.'
+
+
+def test_get_filings_max_size_minus():
+    """Test raising when max_size=-1."""
+    with pytest.raises(
+            ValueError,
+            match=r'Parameter "max_size" may not be negative'):
+        _ = xf.get_filings(
+            filters=None,
+            sort=None,
+            max_size=-1,
+            flags=xf.GET_ONLY_FILINGS
+            )
+
+
+def test_get_filings_bad_json(monkeypatch):
+    """Test raising when API returns bad JSON."""
+    monkeypatch.setattr(
+        xf.options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+    with responses.RequestsMock() as rsps:
+        rsps.get(
+            url='https://filings.xbrl.org/api/filings',
+            body='{"errors: null}'
+            )
+        with pytest.raises(JSONDecodeError):
+            _ = xf.get_filings(
+                filters=None,
+                sort=None,
+                max_size=100,
+                flags=xf.GET_ONLY_FILINGS
+                )

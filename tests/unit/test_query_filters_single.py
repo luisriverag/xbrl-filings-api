@@ -536,6 +536,25 @@ def test_to_sqlite_added_time_date(
     assert not db_path.is_file()
 
 
+@pytest.mark.datetime
+def test_get_filings_added_time_bad_datetime(monkeypatch):
+    """Test raising for `added_time` as bad datetime str."""
+    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
+    time_str = '2021-99-99 99:99:99'
+    with pytest.raises(
+            ValueError,
+            match=(r'Not possible to parse datetime in filter field '
+                   r'"added_time" string "2021-99-99 99:99:99"')):
+        _ = xf.get_filings(
+            filters={
+                'added_time': time_str
+                },
+            sort=None,
+            max_size=1,
+            flags=xf.GET_ONLY_FILINGS
+            )
+
+
 def test_get_filings_entity_api_id(filter_entity_api_id_lax_response):
     """Querying `entity_api_id` raises APIError."""
     kone_id = '2499'
@@ -766,3 +785,18 @@ def test_to_sqlite_2filters_country_last_end_date_date(
     assert cur.fetchone() is None, 'Two filings inserted'
     assert db_record_count(cur) == 2
     con.close()
+
+
+def test_raises_get_filings_none_filter():
+    """Test raising for None value in multifilter."""
+    with pytest.raises(
+            ValueError,
+            match=r'Value None is not allowed for filters, field "api_id"'):
+        _ = xf.get_filings(
+            filters={
+                'api_id': None
+                },
+            sort=None,
+            max_size=4,
+            flags=xf.GET_ONLY_FILINGS
+            )
