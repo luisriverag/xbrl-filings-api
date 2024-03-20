@@ -114,7 +114,7 @@ def test_to_sqlite_filing_index(
 
 def test_get_filings_language(filter_language_response):
     """Filter `language` raises an `APIError`."""
-    with pytest.raises(xf.APIError, match='Bad filter value'):
+    with pytest.raises(xf.APIError, match=r'Bad filter value'):
         with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
             _ = xf.get_filings(
                 filters={
@@ -132,7 +132,7 @@ def test_to_sqlite_language(
     """Filter `language` raises an `APIError`."""
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = tmp_path / 'test_to_sqlite_language.db'
-    with pytest.raises(xf.APIError, match='Bad filter value'):
+    with pytest.raises(xf.APIError, match=r'Bad filter value'):
         with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
             xf.to_sqlite(
                 path=db_path,

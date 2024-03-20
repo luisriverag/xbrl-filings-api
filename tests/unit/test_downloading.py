@@ -422,7 +422,7 @@ def test_download_viewer_raise(
     """Test raising when downloading `viewer_url` by `download`."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
-    with pytest.raises(ValueError, match="File 'viewer' is not among"):
+    with pytest.raises(ValueError, match=r"File 'viewer' is not among"):
         target.download(
             files='viewer',
             to_dir=tmp_path,
@@ -449,7 +449,7 @@ async def test_download_aiter_viewer_raise(
         check_corruption=True,
         max_concurrent=None
         )
-    with pytest.raises(ValueError, match="File 'viewer' is not among"):
+    with pytest.raises(ValueError, match=r"File 'viewer' is not among"):
         async for _ in dliter:
             pass
     for filing in filings:
@@ -465,7 +465,7 @@ def test_download_files_as_int_raise(
     filing: xf.Filing
     with pytest.raises(
             ValueError,
-            match="Parameter 'files' is none of str, Iterable or Mapping" ):
+            match=r"Parameter 'files' is none of str, Iterable or Mapping" ):
         target.download(
             files=2,
             to_dir=tmp_path,
@@ -494,7 +494,7 @@ async def test_download_aiter_files_as_int_raise(
         )
     with pytest.raises(
             ValueError,
-            match="Parameter 'files' is none of str, Iterable or Mapping" ):
+            match=r"Parameter 'files' is none of str, Iterable or Mapping" ):
         async for _ in dliter:
             pass
     for filing in filings:
@@ -785,7 +785,9 @@ def test_download_json_FilingSet_DownloadItem_rename_raise(
     filingset: xf.FilingSet
     filingset, filings = get_asml22en_or_oldest3_fi(xf.FilingSet)
     filing: xf.Filing
-    with pytest.raises(ValueError, match='The attribute DownloadItem.filename may not be other than None'):
+    with pytest.raises(
+            ValueError,
+            match=r'The attribute DownloadItem\.filename may not be other than None'):
         filingset.download(
             files={
                 'json': xf.DownloadItem(
@@ -859,7 +861,9 @@ async def test_download_aiter_json_FilingSet_DownloadItem_rename_raise(
         check_corruption=True,
         max_concurrent=None
         )
-    with pytest.raises(ValueError, match='The attribute DownloadItem.filename may not be other than None'):
+    with pytest.raises(
+            ValueError,
+            match=r'The attribute DownloadItem\.filename may not be other than None'):
         async for _ in dliter:
             pass
     for filing in filings:

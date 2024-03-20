@@ -188,8 +188,8 @@ def test_raises_only_year_options_year_filter_months_start_month0(monkeypatch):
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 0), (1, 12)))
     with pytest.raises(
             expected_exception=ValueError,
-            match='options.year_filter_months start month definition must be '
-                  'in 1..12'):
+            match=r'options\.year_filter_months start month definition must be '
+                  r'in 1\.\.12'):
         _ = xf.get_filings(
             filters={
                 'last_end_date': '2024'
@@ -205,8 +205,8 @@ def test_raises_only_year_options_year_filter_months_stop_month13(monkeypatch):
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 1), (1, 13)))
     with pytest.raises(
             expected_exception=ValueError,
-            match='options.year_filter_months stop month definition must be '
-                  'in 1..12'):
+            match=r'options\.year_filter_months stop month definition must be '
+                  r'in 1\.\.12'):
         _ = xf.get_filings(
             filters={
                 'last_end_date': '2024'

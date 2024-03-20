@@ -9,6 +9,7 @@ from datetime import datetime
 import pytest
 
 import xbrl_filings_api as xf
+import xbrl_filings_api.options as options
 import xbrl_filings_api.request_processor as request_processor
 
 
@@ -68,12 +69,20 @@ class TestEntityAsml:
         ('api_id', '1969'),
         ('identifier', '724500Y6DUVHQD6OXN27'),
         ('name', 'ASML Holding N.V.'),
-        ('api_entity_filings_url', 'https://filings.xbrl.org/api/entities/724500Y6DUVHQD6OXN27/filings'),
         ])
-    def test_data_attributes(
-            self, asml22en_entity, attr_name, expected):
+    def test_data_attributes(self, asml22en_entity, attr_name, expected):
         """Test non-derived data attributes."""
         assert getattr(asml22en_entity, attr_name) == expected
+
+    def test_api_entity_filings_url(self, asml22en_entity, monkeypatch):
+        """Test non-derived data attributes."""
+        monkeypatch.setattr(
+            options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+        e_url = (
+            'https://filings.xbrl.org/api/entities/724500Y6DUVHQD6OXN27/filings'
+            )
+        ent: xf.Entity = asml22en_entity
+        assert ent.api_entity_filings_url == e_url
 
     def test_other_attributes(self, asml22en_entity):
         """Test the meta and object reference attributes."""

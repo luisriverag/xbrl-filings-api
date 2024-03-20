@@ -92,49 +92,73 @@ def mock_url_response(mock_response_data):
     return _mock_url_response
 
 
-@pytest.fixture
-def oldest3_fi_filingset(oldest3_fi_response):
-    """FilingSet from mock response ``oldest3_fi``."""
-    return xf.get_filings(
-        filters={'country': 'FI'},
-        sort='date_added',
-        max_size=3,
-        flags=xf.GET_ONLY_FILINGS,
-        add_api_params=None
-        )
+@pytest.fixture(scope='package')
+def get_oldest3_fi_filingset():
+    """Get FilingSet from mock response ``oldest3_fi``."""
+    def _get_oldest3_fi_filingset():
+        fs = None
+        with responses.RequestsMock() as rsps:
+            rsps._add_from_file(_get_path('oldest3_fi'))
+            fs = xf.get_filings(
+                filters={'country': 'FI'},
+                sort='date_added',
+                max_size=3,
+                flags=xf.GET_ONLY_FILINGS,
+                add_api_params=None
+                )
+        return fs
+    return _get_oldest3_fi_filingset
 
 
-@pytest.fixture
-def oldest3_fi_entities_filingset(oldest3_fi_entities_response):
-    """FilingSet from mock response ``oldest3_fi_entities`` with entities."""
-    return xf.get_filings(
-        filters={'country': 'FI'},
-        sort='date_added',
-        max_size=3,
-        flags=xf.GET_ENTITY,
-        add_api_params=None
-        )
+@pytest.fixture(scope='package')
+def get_oldest3_fi_entities_filingset():
+    """Get FilingSet from mock response ``oldest3_fi_entities`` with entities."""
+    def _get_oldest3_fi_entities_filingset():
+        fs = None
+        with responses.RequestsMock() as rsps:
+            rsps._add_from_file(_get_path('oldest3_fi_entities'))
+            fs = xf.get_filings(
+                filters={'country': 'FI'},
+                sort='date_added',
+                max_size=3,
+                flags=xf.GET_ENTITY,
+                add_api_params=None
+                )
+        return fs
+    return _get_oldest3_fi_entities_filingset
 
 
-@pytest.fixture
-def oldest3_fi_vmessages_filingset(oldest3_fi_vmessages_response):
-    """FilingSet from mock response ``oldest3_fi_vmessages`` with validation messages."""
-    return xf.get_filings(
-        filters={'country': 'FI'},
-        sort='date_added',
-        max_size=3,
-        flags=xf.GET_VALIDATION_MESSAGES,
-        add_api_params=None
-        )
+@pytest.fixture(scope='package')
+def get_oldest3_fi_vmessages_filingset():
+    """Get FilingSet from mock response ``oldest3_fi_vmessages`` with validation messages."""
+    def _get_oldest3_fi_vmessages_filingset():
+        fs = None
+        with responses.RequestsMock() as rsps:
+            rsps._add_from_file(_get_path('oldest3_fi_vmessages'))
+            fs = xf.get_filings(
+                filters={'country': 'FI'},
+                sort='date_added',
+                max_size=3,
+                flags=xf.GET_VALIDATION_MESSAGES,
+                add_api_params=None
+                )
+        return fs
+    return _get_oldest3_fi_vmessages_filingset
 
 
-@pytest.fixture
-def oldest3_fi_ent_vmessages_filingset(oldest3_fi_ent_vmessages_response):
-    """FilingSet from mock response ``oldest3_fi_ent_vmessages`` with entities and validation messages."""
-    return xf.get_filings(
-        filters={'country': 'FI'},
-        sort='date_added',
-        max_size=3,
-        flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES),
-        add_api_params=None
-        )
+@pytest.fixture(scope='package')
+def get_oldest3_fi_ent_vmessages_filingset():
+    """Get FilingSet from mock response ``oldest3_fi_ent_vmessages`` with entities and validation messages."""
+    def _get_oldest3_fi_ent_vmessages_filingset():
+        fs = None
+        with responses.RequestsMock() as rsps:
+            rsps._add_from_file(_get_path('oldest3_fi_ent_vmessages'))
+            fs = xf.get_filings(
+                filters={'country': 'FI'},
+                sort='date_added',
+                max_size=3,
+                flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES),
+                add_api_params=None
+                )
+        return fs
+    return _get_oldest3_fi_ent_vmessages_filingset

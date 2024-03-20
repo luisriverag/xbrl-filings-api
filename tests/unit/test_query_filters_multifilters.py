@@ -171,7 +171,7 @@ def test_to_sqlite_filing_index(
 def test_get_filings_reporting_date(multifilter_reporting_date_response):
     """APIError raised for filtering with `reporting_date`."""
     dates = '2020-12-31', '2021-12-31', '2022-12-31'
-    with pytest.raises(xf.APIError, match='FilingSchema has no attribute'):
+    with pytest.raises(xf.APIError, match=r'FilingSchema has no attribute'):
         with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
             _ = xf.get_filings(
                 filters={
@@ -190,7 +190,7 @@ def test_to_sqlite_reporting_date(
     monkeypatch.setattr(xf.options, 'views', None)
     dates = '2020-12-31', '2021-12-31', '2022-12-31'
     db_path = tmp_path / 'test_to_sqlite_reporting_date.db'
-    with pytest.raises(xf.APIError, match='FilingSchema has no attribute'):
+    with pytest.raises(xf.APIError, match=r'FilingSchema has no attribute'):
         with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
             xf.to_sqlite(
                 path=db_path,

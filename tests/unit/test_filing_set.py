@@ -37,9 +37,9 @@ def asml22en_filingset(asml22en_response):
         )
 
 
-def test_attributes(oldest3_fi_filingset):
+def test_attributes(get_oldest3_fi_filingset):
     """Test FilingSet attributes."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert isinstance(fs.validation_messages, xf.ResourceCollection)
     assert isinstance(fs.columns, list)
@@ -48,7 +48,7 @@ def test_attributes(oldest3_fi_filingset):
 
 
 @pytest.mark.sqlite
-def test_to_sqlite(oldest3_fi_filingset, db_record_count, tmp_path, monkeypatch):
+def test_to_sqlite(get_oldest3_fi_filingset, db_record_count, tmp_path, monkeypatch):
     """Test method `to_sqlite`."""
     monkeypatch.setattr(xf.options, 'views', None)
     e_fxo_ids = {
@@ -56,7 +56,7 @@ def test_to_sqlite(oldest3_fi_filingset, db_record_count, tmp_path, monkeypatch)
         '549300UWB1AIR85BM957-2020-12-31-ESEF-FI-0',
         '7437007N96FK4N3WHT09-2020-12-31-ESEF-FI-0',
         }
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     db_path = tmp_path / 'test_to_sqlite.db'
     fs.to_sqlite(
         path=db_path,
@@ -75,7 +75,7 @@ def test_to_sqlite(oldest3_fi_filingset, db_record_count, tmp_path, monkeypatch)
 
 @pytest.mark.sqlite
 def test_to_sqlite_update_same_add_entities(
-        oldest3_fi_filingset, oldest3_fi_entities_filingset, db_record_count,
+        get_oldest3_fi_filingset, get_oldest3_fi_entities_filingset, db_record_count,
         tmp_path, monkeypatch):
     """Test method `to_sqlite` with update=True updating same records, adding Entity."""
     monkeypatch.setattr(xf.options, 'views', None)
@@ -86,7 +86,7 @@ def test_to_sqlite_update_same_add_entities(
         }
     db_path = tmp_path / 'test_to_sqlite_update_same_add_entities.db'
 
-    fs_a: xf.FilingSet = oldest3_fi_filingset
+    fs_a: xf.FilingSet = get_oldest3_fi_filingset()
     fs_a.to_sqlite(
         path=db_path,
         update=False,
@@ -96,18 +96,18 @@ def test_to_sqlite_update_same_add_entities(
     con_a = sqlite3.connect(db_path)
     cur_a = con_a.cursor()
     assert db_record_count(cur_a) == 3
-    with pytest.raises(sqlite3.OperationalError, match='no such column'):
+    with pytest.raises(sqlite3.OperationalError, match=r'no such column'):
         cur_a.execute("SELECT entity_api_id FROM Filing")
     cur_a.execute("SELECT api_id, filing_index FROM Filing")
     resultzip = zip(*cur_a.fetchall())
     before_api_ids = set(next(resultzip))
     before_filing_indexes = set(next(resultzip))
     assert before_filing_indexes == e_fxo_ids
-    with pytest.raises(sqlite3.OperationalError, match='no such table'):
+    with pytest.raises(sqlite3.OperationalError, match=r'no such table'):
         cur_a.execute("SELECT * FROM Entity")
     con_a.close()
 
-    fs_b: xf.FilingSet = oldest3_fi_entities_filingset
+    fs_b: xf.FilingSet = get_oldest3_fi_entities_filingset()
     fs_b.to_sqlite(
         path=db_path,
         update=True,
@@ -135,7 +135,7 @@ def test_to_sqlite_update_same_add_entities(
 
 @pytest.mark.sqlite
 def test_to_sqlite_update_same_add_vmessages(
-        oldest3_fi_filingset, oldest3_fi_vmessages_filingset, db_record_count,
+        get_oldest3_fi_filingset, get_oldest3_fi_vmessages_filingset, db_record_count,
         tmp_path, monkeypatch):
     """Test method `to_sqlite` with update=True updating same records, adding ValidationMessage."""
     monkeypatch.setattr(xf.options, 'views', None)
@@ -146,7 +146,7 @@ def test_to_sqlite_update_same_add_vmessages(
         }
     db_path = tmp_path / 'test_to_sqlite_update_same_add_vmessages.db'
 
-    fs_a: xf.FilingSet = oldest3_fi_filingset
+    fs_a: xf.FilingSet = get_oldest3_fi_filingset()
     fs_a.to_sqlite(
         path=db_path,
         update=False,
@@ -161,11 +161,11 @@ def test_to_sqlite_update_same_add_vmessages(
     before_api_ids = set(next(resultzip))
     before_filing_indexes = set(next(resultzip))
     assert before_filing_indexes == e_fxo_ids
-    with pytest.raises(sqlite3.OperationalError, match='no such table'):
+    with pytest.raises(sqlite3.OperationalError, match=r'no such table'):
         cur_a.execute("SELECT * FROM ValidationMessage")
     con_a.close()
 
-    fs_b: xf.FilingSet = oldest3_fi_vmessages_filingset
+    fs_b: xf.FilingSet = get_oldest3_fi_vmessages_filingset()
     fs_b.to_sqlite(
         path=db_path,
         update=True,
@@ -193,7 +193,7 @@ def test_to_sqlite_update_same_add_vmessages(
 
 @pytest.mark.sqlite
 def test_to_sqlite_update_more(
-        oldest3_fi_filingset, asml22en_filingset, db_record_count,
+        get_oldest3_fi_filingset, asml22en_filingset, db_record_count,
         tmp_path, monkeypatch):
     """Test method `to_sqlite` with update=True adding more records."""
     monkeypatch.setattr(xf.options, 'views', None)
@@ -205,7 +205,7 @@ def test_to_sqlite_update_more(
     e_added_fxo_id = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
     db_path = tmp_path / 'test_to_sqlite_update_more.db'
 
-    fs_a: xf.FilingSet = oldest3_fi_filingset
+    fs_a: xf.FilingSet = get_oldest3_fi_filingset()
     fs_a.to_sqlite(
         path=db_path,
         update=False,
@@ -244,12 +244,12 @@ def test_to_sqlite_update_more(
 
 @pytest.mark.sqlite
 def test_to_sqlite_update_more_but_false(
-        oldest3_fi_filingset, asml22en_filingset, tmp_path, monkeypatch):
+        get_oldest3_fi_filingset, asml22en_filingset, tmp_path, monkeypatch):
     """Test method `to_sqlite` trying to update existing database but update=False."""
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = tmp_path / 'test_to_sqlite_update_more_but_false.db'
 
-    fs_a: xf.FilingSet = oldest3_fi_filingset
+    fs_a: xf.FilingSet = get_oldest3_fi_filingset()
     fs_a.to_sqlite(
         path=db_path,
         update=False,
@@ -349,13 +349,13 @@ def test_to_sqlite_update_no_api_id(
 
 @pytest.mark.sqlite
 def test_to_sqlite_path_reserved(
-        oldest3_fi_filingset, tmp_path, monkeypatch):
+        get_oldest3_fi_filingset, tmp_path, monkeypatch):
     """Test method `to_sqlite` but assigned path is a folder."""
     monkeypatch.setattr(xf.options, 'views', None)
     reserved_path = tmp_path / 'test_to_sqlite_path_reserved'
     reserved_path.mkdir()
 
-    fs_a: xf.FilingSet = oldest3_fi_filingset
+    fs_a: xf.FilingSet = get_oldest3_fi_filingset()
     with pytest.raises(DatabasePathIsReservedError):
         fs_a.to_sqlite(
             path=reserved_path,
@@ -365,9 +365,9 @@ def test_to_sqlite_path_reserved(
     assert reserved_path.is_dir()
 
 
-def test_get_data_sets_only_filings(oldest3_fi_filingset):
+def test_get_data_sets_only_filings(get_oldest3_fi_filingset):
     """Test method `_get_data_sets` when set has only filings."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     flags = (xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
     data_objs, flags = fs._get_data_sets(flags)
     assert set(data_objs) == {'Filing'}
@@ -377,9 +377,9 @@ def test_get_data_sets_only_filings(oldest3_fi_filingset):
         assert isinstance(filing, xf.Filing)
 
 
-def test_get_data_sets_entities(oldest3_fi_entities_filingset):
+def test_get_data_sets_entities(get_oldest3_fi_entities_filingset):
     """Test method `_get_data_sets` when set has entities."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     flags = (xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
     data_objs, flags = fs._get_data_sets(flags)
     assert set(data_objs) == {'Filing', 'Entity'}
@@ -392,9 +392,9 @@ def test_get_data_sets_entities(oldest3_fi_entities_filingset):
         assert isinstance(ent, xf.Entity)
 
 
-def test_get_data_sets_entities_out(oldest3_fi_entities_filingset):
+def test_get_data_sets_entities_out(get_oldest3_fi_entities_filingset):
     """Test method `_get_data_sets` when set has entities but leaves them out."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     flags = xf.GET_ONLY_FILINGS
     data_objs, flags = fs._get_data_sets(flags)
     assert set(data_objs) == {'Filing'}
@@ -404,9 +404,9 @@ def test_get_data_sets_entities_out(oldest3_fi_entities_filingset):
         assert isinstance(filing, xf.Filing)
 
 
-def test_get_data_sets_vmessages(oldest3_fi_vmessages_filingset):
+def test_get_data_sets_vmessages(get_oldest3_fi_vmessages_filingset):
     """Test method `_get_data_sets` when set has validation messages."""
-    fs: xf.FilingSet = oldest3_fi_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_vmessages_filingset()
     flags = (xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
     data_objs, flags = fs._get_data_sets(flags)
     assert set(data_objs) == {'Filing', 'ValidationMessage'}
@@ -419,9 +419,9 @@ def test_get_data_sets_vmessages(oldest3_fi_vmessages_filingset):
         assert isinstance(vmsg, xf.ValidationMessage)
 
 
-def test_get_data_sets_entities_vmessages(oldest3_fi_ent_vmessages_filingset):
+def test_get_data_sets_entities_vmessages(get_oldest3_fi_ent_vmessages_filingset):
     """Test method `_get_data_sets` when set has entities and validation messages."""
-    fs: xf.FilingSet = oldest3_fi_ent_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
     flags = (xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
     data_objs, flags = fs._get_data_sets(flags)
     assert set(data_objs) == {'Filing', 'Entity', 'ValidationMessage'}
@@ -437,9 +437,9 @@ def test_get_data_sets_entities_vmessages(oldest3_fi_ent_vmessages_filingset):
         assert isinstance(vmsg, xf.ValidationMessage)
 
 
-def test_get_data_sets_entities_vmessages_ent_out(oldest3_fi_ent_vmessages_filingset):
+def test_get_data_sets_entities_vmessages_ent_out(get_oldest3_fi_ent_vmessages_filingset):
     """Test method `_get_data_sets` when set has entities and validation messages leaving entities."""
-    fs: xf.FilingSet = oldest3_fi_ent_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
     flags = xf.GET_VALIDATION_MESSAGES
     data_objs, flags = fs._get_data_sets(flags)
     assert set(data_objs) == {'Filing', 'ValidationMessage'}
@@ -452,9 +452,9 @@ def test_get_data_sets_entities_vmessages_ent_out(oldest3_fi_ent_vmessages_filin
         assert isinstance(vmsg, xf.ValidationMessage)
 
 
-def test_get_data_sets_entities_vmessages_all_out(oldest3_fi_ent_vmessages_filingset):
+def test_get_data_sets_entities_vmessages_all_out(get_oldest3_fi_ent_vmessages_filingset):
     """Test method `_get_data_sets` when set has entities and validation messages but selects only filings."""
-    fs: xf.FilingSet = oldest3_fi_ent_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
     flags = xf.GET_ONLY_FILINGS
     data_objs, flags = fs._get_data_sets(flags)
     assert set(data_objs) == {'Filing'}
@@ -464,8 +464,8 @@ def test_get_data_sets_entities_vmessages_all_out(oldest3_fi_ent_vmessages_filin
         assert isinstance(filing, xf.Filing)
 
 
-def test_columns_property(oldest3_fi_filingset):
-    fs: xf.FilingSet = oldest3_fi_filingset
+def test_columns_property(get_oldest3_fi_filingset):
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     assert isinstance(fs.columns, list)
     assert len(fs.columns) > 0
     for col in fs.columns:
@@ -473,16 +473,16 @@ def test_columns_property(oldest3_fi_filingset):
     assert 'api_id' in fs.columns
 
 
-def test_repr(oldest3_fi_filingset):
+def test_repr(get_oldest3_fi_filingset):
     """Test `__repr__` of FilingSet."""
     e_repr = 'FilingSet(len(self)=3)'
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     assert repr(fs) == e_repr
 
 
-def test_repr_ent_vmessages(oldest3_fi_ent_vmessages_filingset):
+def test_repr_ent_vmessages(get_oldest3_fi_ent_vmessages_filingset):
     """Test `__repr__` of FilingSet."""
     e_repr = (
         'FilingSet(len(self)=3, len(entities)=3, len(validation_messages)=45)')
-    fs: xf.FilingSet = oldest3_fi_ent_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
     assert repr(fs) == e_repr

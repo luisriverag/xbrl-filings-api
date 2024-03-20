@@ -40,7 +40,7 @@ def test_attributes(oldest3_fi_ent_vmessages_filingspage):
 def test_repr(oldest3_fi_ent_vmessages_filingspage):
     """Test `__repr__` of `FilingsPage`."""
     e_repr1 = (
-        "FilingsPage(request_url='https://filings.xbrl.org/api/filings?")
+        "FilingsPage(request_url='")
     e_repr2 = (
         "', query_time=datetime("
         )

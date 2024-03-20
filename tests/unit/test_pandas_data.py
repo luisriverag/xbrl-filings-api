@@ -10,11 +10,12 @@ import pandas as pd
 import pytest
 
 import xbrl_filings_api as xf
+import xbrl_filings_api.options as options
 
 
-def test_filings_attributes(oldest3_fi_filingset):
+def test_filings_attributes(get_oldest3_fi_filingset):
     """Test basic attributes by `FilingSet.get_pandas_data`."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=False,
@@ -51,9 +52,9 @@ def test_filings_attributes(oldest3_fi_filingset):
 
 
 @pytest.mark.date
-def test_filings_dates(oldest3_fi_filingset):
+def test_filings_dates(get_oldest3_fi_filingset):
     """Test datetime attributes by `FilingSet.get_pandas_data`."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=False,
@@ -71,9 +72,9 @@ def test_filings_dates(oldest3_fi_filingset):
 
 
 @pytest.mark.datetime
-def test_filings_datetimes(oldest3_fi_filingset):
+def test_filings_datetimes(get_oldest3_fi_filingset):
     """Test datetime attributes by `FilingSet.get_pandas_data`."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=False,
@@ -91,9 +92,9 @@ def test_filings_datetimes(oldest3_fi_filingset):
 
 
 @pytest.mark.date
-def test_filings_attr_names(oldest3_fi_filingset):
+def test_filings_attr_names(get_oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data` with attr_names."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=['api_id', 'filing_index', 'last_end_date'],
         with_entity=False,
@@ -113,9 +114,9 @@ def test_filings_attr_names(oldest3_fi_filingset):
 
 
 @pytest.mark.date
-def test_filings_attr_names_entity(oldest3_fi_entities_filingset):
+def test_filings_attr_names_entity(get_oldest3_fi_entities_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data` with attr_names with entity attr."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=['api_id', 'filing_index', 'last_end_date', 'entity.name'],
         with_entity=False,
@@ -135,9 +136,9 @@ def test_filings_attr_names_entity(oldest3_fi_entities_filingset):
     assert '1495' in df['api_id'].array
 
 
-def test_filings_with_entity(oldest3_fi_entities_filingset):
+def test_filings_with_entity(get_oldest3_fi_entities_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data`, with_entity=True."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=True,
@@ -162,9 +163,9 @@ def test_filings_with_entity(oldest3_fi_entities_filingset):
     assert '1495' in df['api_id'].array
 
 
-def test_filings_with_entity_no_entity(oldest3_fi_filingset):
+def test_filings_with_entity_no_entity(get_oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data`, with_entity=True but no entity."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=True,
@@ -190,9 +191,9 @@ def test_filings_with_entity_no_entity(oldest3_fi_filingset):
 
 
 @pytest.mark.datetime
-def test_filings_strip_timezone_false(oldest3_fi_filingset):
+def test_filings_strip_timezone_false(get_oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data`, strip_timezone=False."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=False,
@@ -210,9 +211,9 @@ def test_filings_strip_timezone_false(oldest3_fi_filingset):
 
 
 @pytest.mark.date
-def test_filings_date_as_datetime_false(oldest3_fi_filingset):
+def test_filings_date_as_datetime_false(get_oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data`, date_as_datetime=False."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=False,
@@ -228,9 +229,10 @@ def test_filings_date_as_datetime_false(oldest3_fi_filingset):
     assert '1495' in pd_data['api_id']
 
 
-def test_filings_include_urls(oldest3_fi_filingset):
+def test_filings_include_urls(get_oldest3_fi_filingset, monkeypatch):
     """Test exporting filings by `FilingSet.get_pandas_data`, include_urls=True."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    monkeypatch.setattr(options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=False,
@@ -251,9 +253,11 @@ def test_filings_include_urls(oldest3_fi_filingset):
     assert '1495' in df['api_id'].array
 
 
-def test_filings_with_entity_include_urls(oldest3_fi_entities_filingset):
+def test_filings_with_entity_include_urls(
+        get_oldest3_fi_entities_filingset, monkeypatch):
     """Test exporting filings by `FilingSet.get_pandas_data`, with_entity=True & include_urls=True."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    monkeypatch.setattr(options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=True,
@@ -278,9 +282,9 @@ def test_filings_with_entity_include_urls(oldest3_fi_entities_filingset):
     assert '1495' in df['api_id'].array
 
 
-def test_filings_include_paths(oldest3_fi_filingset):
+def test_filings_include_paths(get_oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data`, include_paths=True."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     enento20en_filing = next(filter(lambda f: f.api_id == '710', fs))
     enento20en_filing.json_download_path = 'test_json'
     enento20en_filing.package_download_path = 'test_package'
@@ -303,9 +307,9 @@ def test_filings_include_paths(oldest3_fi_filingset):
     assert '1495' in df['api_id'].array
 
 
-def test_filings_include_paths_no_data(oldest3_fi_filingset):
+def test_filings_include_paths_no_data(get_oldest3_fi_filingset):
     """Test exporting filings by `FilingSet.get_pandas_data`, include_paths=True but no data."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     pd_data = fs.get_pandas_data(
         attr_names=None,
         with_entity=False,
@@ -323,9 +327,9 @@ def test_filings_include_paths_no_data(oldest3_fi_filingset):
     assert '1495' in df['api_id'].array
 
 
-def test_entities(oldest3_fi_entities_filingset):
+def test_entities(get_oldest3_fi_entities_filingset):
     """Test exporting entities by `ResourceCollection.get_pandas_data`."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     pd_data = fs.entities.get_pandas_data(
         attr_names=None,
         strip_timezone=True,
@@ -346,9 +350,9 @@ def test_entities(oldest3_fi_entities_filingset):
     assert '1120' in df['api_id'].array
 
 
-def test_entities_attr_names(oldest3_fi_entities_filingset):
+def test_entities_attr_names(get_oldest3_fi_entities_filingset):
     """Test exporting entities by `ResourceCollection.get_pandas_data` with attr_names set."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     pd_data = fs.entities.get_pandas_data(
         attr_names=['api_id', 'name'],
         strip_timezone=True,
@@ -366,9 +370,9 @@ def test_entities_attr_names(oldest3_fi_entities_filingset):
 
 
 @pytest.mark.datetime
-def test_entities_strip_timezone_true(oldest3_fi_entities_filingset):
+def test_entities_strip_timezone_true(get_oldest3_fi_entities_filingset):
     """Test exporting entities by `ResourceCollection.get_pandas_data`, strip_timezone=True."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     pd_data = fs.entities.get_pandas_data(
         attr_names=None,
         strip_timezone=True,
@@ -380,9 +384,9 @@ def test_entities_strip_timezone_true(oldest3_fi_entities_filingset):
 
 
 @pytest.mark.datetime
-def test_entities_strip_timezone_false(oldest3_fi_entities_filingset):
+def test_entities_strip_timezone_false(get_oldest3_fi_entities_filingset):
     """Test exporting entities by `ResourceCollection.get_pandas_data`, strip_timezone=False."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     pd_data = fs.entities.get_pandas_data(
         attr_names=None,
         strip_timezone=False,
@@ -393,9 +397,11 @@ def test_entities_strip_timezone_false(oldest3_fi_entities_filingset):
     assert pd_data['query_time'][0].tzinfo is not None
 
 
-def test_entities_include_urls_true(oldest3_fi_entities_filingset):
+def test_entities_include_urls_true(
+        get_oldest3_fi_entities_filingset, monkeypatch):
     """Test exporting entities by `ResourceCollection.get_pandas_data`, include_urls=True."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    monkeypatch.setattr(options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     pd_data = fs.entities.get_pandas_data(
         attr_names=None,
         strip_timezone=True,
@@ -412,7 +418,7 @@ def test_entities_include_urls_true(oldest3_fi_entities_filingset):
     assert '1120' in df['api_id'].array
 
 
-def test_validation_messages(oldest3_fi_vmessages_filingset):
+def test_validation_messages(get_oldest3_fi_vmessages_filingset):
     """Test exporting validation messages by `ResourceCollection.get_pandas_data`."""
     e_api_ids = {
         '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471', '5472',
@@ -428,7 +434,7 @@ def test_validation_messages(oldest3_fi_vmessages_filingset):
         'computed sum 537,400,000 context c-3 unit u-1 '
         'unreportedContributingItems none'
         )
-    fs: xf.FilingSet = oldest3_fi_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_vmessages_filingset()
     vmsg_5464: xf.ValidationMessage = next(filter(
         lambda vmsg: vmsg.api_id == '5464', fs.validation_messages))
     pd_data = fs.validation_messages.get_pandas_data(
@@ -461,7 +467,7 @@ def test_validation_messages(oldest3_fi_vmessages_filingset):
         assert e_api_id in df['api_id'].array
 
 
-def test_validation_messages_attr_names(oldest3_fi_vmessages_filingset):
+def test_validation_messages_attr_names(get_oldest3_fi_vmessages_filingset):
     """Test exporting validation messages by `ResourceCollection.get_pandas_data` with attr_names set."""
     e_api_ids = {
         '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471', '5472',
@@ -471,7 +477,7 @@ def test_validation_messages_attr_names(oldest3_fi_vmessages_filingset):
         '16749', '16750', '16751', '16752', '16753', '16754', '16755', '16756',
         '16757', '16758'
         }
-    fs: xf.FilingSet = oldest3_fi_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_vmessages_filingset()
     pd_data = fs.validation_messages.get_pandas_data(
         attr_names=['api_id', 'severity'],
         strip_timezone=True,

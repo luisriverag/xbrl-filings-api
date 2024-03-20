@@ -46,17 +46,17 @@ def test_Filing_get_data_attributes_GET_ENTITY():
     assert 'entity_api_id' in dattrs
 
 
-def test_Filing_get_data_attributes_filings_no_paths(oldest3_fi_filingset):
+def test_Filing_get_data_attributes_filings_no_paths(get_oldest3_fi_filingset):
     """Test Filing.get_data_attributes with a FilingSet, no paths."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     dattrs = xf.Filing.get_data_attributes(flags=None, filings=fs)
     for dattr in dattrs:
         assert not dattr.endswith('_download_path')
 
 
-def test_Filing_get_data_attributes_filings_xhtml_path(oldest3_fi_filingset):
+def test_Filing_get_data_attributes_filings_xhtml_path(get_oldest3_fi_filingset):
     """Test Filing.get_data_attributes with a FilingSet, has xhtml_download_path."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     fsiter = iter(fs)
     next(fsiter)
     f2 = next(fsiter)

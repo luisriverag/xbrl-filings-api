@@ -42,7 +42,9 @@ def test_download_not_found_error(tmp_path):
             url=url,
             status=404,
             )
-        with pytest.raises(requests.exceptions.HTTPError, match='404 Client Error'):
+        with pytest.raises(
+                requests.exceptions.HTTPError,
+                match=r'404 Client Error'):
             downloader.download(
                 url=url,
                 to_dir=tmp_path,

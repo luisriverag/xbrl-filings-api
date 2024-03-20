@@ -31,11 +31,11 @@ def test_placeholder_end():
 
 def test_placeholder_partial():
     """Test raised ValueError when placeholder is partial."""
-    with pytest.raises(ValueError, match='Placeholder .+ missing in'):
+    with pytest.raises(ValueError, match=r'Placeholder .+ missing in'):
         downloader.validate_stem_pattern('prefix/namesuffix')
 
 
 def test_placeholder_not_given():
     """Test raised ValueError when placeholder is missing."""
-    with pytest.raises(ValueError, match='Placeholder .+ missing in'):
+    with pytest.raises(ValueError, match=r'Placeholder .+ missing in'):
         downloader.validate_stem_pattern('prefixsuffix')

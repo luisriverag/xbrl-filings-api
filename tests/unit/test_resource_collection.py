@@ -26,9 +26,9 @@ def asml22en_entities_filingset(asml22en_entities_response, res_colls):
         )
 
 
-def test_no_subresources(oldest3_fi_filingset):
+def test_no_subresources(get_oldest3_fi_filingset):
     """Test FilingsSet with empty sets in ResourceCollection."""
-    fs: xf.FilingSet = oldest3_fi_filingset
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert fs.entities.exist is False
     assert len(fs.entities) == 0
@@ -48,9 +48,9 @@ def test_no_subresources(oldest3_fi_filingset):
     assert fs.validation_messages.filingset is fs
 
 
-def test_with_entities(oldest3_fi_entities_filingset):
+def test_with_entities(get_oldest3_fi_entities_filingset):
     """Test FilingsSet with entities but no validation messages."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert fs.entities.exist is True
     assert len(fs.entities) == 3
@@ -77,9 +77,9 @@ def test_with_entities(oldest3_fi_entities_filingset):
     assert fs.validation_messages.filingset is fs
 
 
-def test_with_vmessages(oldest3_fi_vmessages_filingset):
+def test_with_vmessages(get_oldest3_fi_vmessages_filingset):
     """Test FilingsSet with validation messages but no entities."""
-    fs: xf.FilingSet = oldest3_fi_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_vmessages_filingset()
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert fs.entities.exist is False
     assert len(fs.entities) == 0
@@ -107,9 +107,9 @@ def test_with_vmessages(oldest3_fi_vmessages_filingset):
     assert fs.validation_messages.filingset is fs
 
 
-def test_add_entities(oldest3_fi_entities_filingset, asml22en_entities_filingset):
+def test_add_entities(get_oldest3_fi_entities_filingset, asml22en_entities_filingset):
     """Test FilingsSet with entities which will be updated with more filings and entities."""
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     fs_add: xf.FilingSet = asml22en_entities_filingset
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert fs.entities.exist is True
@@ -147,21 +147,21 @@ def test_add_entities(oldest3_fi_entities_filingset, asml22en_entities_filingset
         assert col in after_cols
 
 
-def test_repr_entities(oldest3_fi_entities_filingset):
+def test_repr_entities(get_oldest3_fi_entities_filingset):
     """Test `__repr__` for entity ResourceCollection."""
     e_repr = (
         "ResourceCollection("
         "item_class=<class 'xbrl_filings_api.entity.Entity'>, len()=3)"
         )
-    fs: xf.FilingSet = oldest3_fi_entities_filingset
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     assert repr(fs.entities) == e_repr
 
 
-def test_repr_vmessages(oldest3_fi_vmessages_filingset):
+def test_repr_vmessages(get_oldest3_fi_vmessages_filingset):
     """Test `__repr__` for validation message ResourceCollection."""
     e_repr = (
         "ResourceCollection(item_class=<class "
         "'xbrl_filings_api.validation_message.ValidationMessage'>, len()=45)"
         )
-    fs: xf.FilingSet = oldest3_fi_vmessages_filingset
+    fs: xf.FilingSet = get_oldest3_fi_vmessages_filingset()
     assert repr(fs.validation_messages) == e_repr

@@ -45,7 +45,9 @@ async def test_not_found_error(tmp_path):
             url=url,
             status=404,
             )
-        with pytest.raises(requests.exceptions.HTTPError, match='404 Client Error'):
+        with pytest.raises(
+                requests.exceptions.HTTPError,
+                match=r'404 Client Error'):
             await downloader.download_async(
                 url=url,
                 to_dir=tmp_path,
@@ -126,7 +128,7 @@ async def test_stem_pattern_no_placeholder(tmp_path):
     e_filename = 'test_stem_pattern_no_placeholder.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     e_filename = 'test_stem_pattern_filename' + '_test' + '.zip'
-    with pytest.raises(ValueError, match="Placeholder '/name/' missing"):
+    with pytest.raises(ValueError, match=r"Placeholder '/name/' missing"):
         await downloader.download_async(
             url=url,
             to_dir=tmp_path,
