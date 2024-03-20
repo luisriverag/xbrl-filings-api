@@ -587,6 +587,39 @@ def test_download_package_missing_log(
 
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_package_missing_files_mapping_log(
+        libclass, get_asml22en_or_oldest3_fi, tmp_path, caplog):
+    """Test logging when package is missing (files as mapping) by `download`."""
+    caplog.set_level(logging.WARNING)
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    for filing in filings:
+        filing.package_url = None
+    files={
+        'package': xf.DownloadItem(
+            filename=None,
+            to_dir=tmp_path,
+            stem_pattern=None)
+        }
+    target.download(
+        files=files,
+        to_dir=None,
+        stem_pattern=None,
+        check_corruption=True,
+        max_concurrent=None
+        )
+    for filing in filings:
+        assert filing.package_download_path is None
+    record: logging.LogRecord
+    counter = 0
+    for record in caplog.records:
+        if (record.levelname == 'WARNING'
+                and record.message.startswith('Package not available for Filing(')):
+            counter += 1
+    assert counter == len(filings)
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_and_xhtml(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
     """Test downloading `json_url` and `xhtml_url` by `download`."""
