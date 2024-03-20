@@ -29,6 +29,10 @@ def construct(
     """
     Construct a list of `DownloadSpecs` objects.
 
+    This function is used by methods `download` and `download_aiter` of
+    objects `Filing` and `FilingSet` to get a list of `DownloadSpecs`
+    objects for `downloader` subpackage.
+
     Returns
     -------
     DownloadSpecs

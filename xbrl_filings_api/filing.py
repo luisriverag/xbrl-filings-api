@@ -491,7 +491,7 @@ class Filing(APIResource):
             ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
             override method parameters for a single file.
         to_dir : str or pathlike, optional
-            Directory to save the files.
+            Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
             Pattern to add to the filename stems. Placeholder ``/name/``
             is always required.
@@ -558,7 +558,7 @@ class Filing(APIResource):
             ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
             override method parameters for a single file.
         to_dir : str or pathlike, optional
-            Directory to save the files.
+            Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
             Pattern to add to the filename stems. Placeholder ``/name/``
             is always required.

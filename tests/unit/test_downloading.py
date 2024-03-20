@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+import logging
+import os
 import urllib.parse
 from pathlib import Path, PurePosixPath
 
@@ -16,7 +18,7 @@ import xbrl_filings_api.exceptions as xf_exceptions
 
 @pytest.fixture(scope='module')
 def get_asml22en_or_oldest3_fi():
-    """Function for single Filing or FilingSet."""
+    """Function for single Filing or FilingSet of either `asml22en` or `oldest3_fi`."""
     def _get_asml22en_or_oldest3_fi(libclass):
         mock_dir_path = Path(__file__).parent.parent / 'mock_responses'
         if libclass is xf.Filing:
@@ -347,9 +349,76 @@ async def test_download_aiter_xhtml(
 
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_json_to_dir_none(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` with to_dir=None (cwd) by `download`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    origcwd = Path.cwd()
+    os.chdir(tmp_path)
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+        target.download(
+            files='json',
+            to_dir=None,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    try:
+        for filing in filings:
+            save_path = Path(filing.json_download_path)
+            assert save_path.parent == tmp_path
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == url_filename(filing.json_url)
+    except AssertionError:
+        os.chdir(origcwd)
+        raise
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_json_to_dir_none(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+    """Test downloading `json_url` with to_dir=None (cwd) by `download_aiter`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    origcwd = Path.cwd()
+    os.chdir(tmp_path)
+    with responses.RequestsMock() as rsps:
+        for filing in filings:
+            mock_url_response(filing.json_url, rsps)
+        dliter = target.download_aiter(
+            files='json',
+            to_dir=None,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+        res: xf.DownloadResult
+        try:
+            async for res in dliter:
+                assert res.err is None
+                res_info: xf.DownloadInfo = res.info
+                assert res_info.file == 'json'
+                filing: xf.Filing = res_info.obj
+                assert res.url == filing.json_url
+                assert res.path == filing.json_download_path
+                save_path = Path(filing.json_download_path)
+                assert save_path.parent == tmp_path
+                assert save_path.is_file()
+                assert save_path.stat().st_size > 0
+                assert save_path.name == url_filename(filing.json_url)
+        except AssertionError:
+            os.chdir(origcwd)
+            raise
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_viewer_raise(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
-        tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, tmp_path):
     """Test raising when downloading `viewer_url` by `download`."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
@@ -386,6 +455,135 @@ async def test_download_aiter_viewer_raise(
     for filing in filings:
         empty_path = tmp_path / url_filename(filing.viewer_url)
         assert not empty_path.is_file()
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_files_as_int_raise(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, tmp_path):
+    """Test raising when `files` is int by `download`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    with pytest.raises(
+            ValueError,
+            match="Parameter 'files' is none of str, Iterable or Mapping" ):
+        target.download(
+            files=2,
+            to_dir=tmp_path,
+            stem_pattern=None,
+            check_corruption=True,
+            max_concurrent=None
+            )
+    for filing in filings:
+        empty_path = tmp_path / url_filename(filing.viewer_url)
+        assert not empty_path.is_file()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_files_as_int_raise(
+        libclass, get_asml22en_or_oldest3_fi, url_filename, tmp_path):
+    """Test raising when `files` is int by `download_aiter`."""
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    dliter = target.download_aiter(
+        files=2,
+        to_dir=tmp_path,
+        stem_pattern=None,
+        check_corruption=True,
+        max_concurrent=None
+        )
+    with pytest.raises(
+            ValueError,
+            match="Parameter 'files' is none of str, Iterable or Mapping" ):
+        async for _ in dliter:
+            pass
+    for filing in filings:
+        empty_path = tmp_path / url_filename(filing.viewer_url)
+        assert not empty_path.is_file()
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_json_missing_log(
+        libclass, get_asml22en_or_oldest3_fi, tmp_path, caplog):
+    """Test logging when JSON is missing by `download`."""
+    caplog.set_level(logging.WARNING)
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    for filing in filings:
+        filing.json_url = None
+    target.download(
+        files='json',
+        to_dir=tmp_path,
+        stem_pattern=None,
+        check_corruption=True,
+        max_concurrent=None
+        )
+    for filing in filings:
+        assert filing.json_download_path is None
+    record: logging.LogRecord
+    counter = 0
+    for record in caplog.records:
+        if (record.levelname == 'WARNING'
+                and record.message.startswith('JSON not available for Filing(')):
+            counter += 1
+    assert counter == len(filings)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+async def test_download_aiter_json_missing_log(
+        libclass, get_asml22en_or_oldest3_fi, tmp_path, caplog):
+    """Test logging when JSON is missing by `download_aiter`."""
+    caplog.set_level(logging.WARNING)
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    for filing in filings:
+        filing.json_url = None
+    dliter = target.download_aiter(
+        files='json',
+        to_dir=tmp_path,
+        stem_pattern=None,
+        check_corruption=True,
+        max_concurrent=None
+        )
+    async for _ in dliter:
+        pass
+    for filing in filings:
+        assert filing.json_download_path is None
+    record: logging.LogRecord
+    counter = 0
+    for record in caplog.records:
+        if (record.levelname == 'WARNING'
+                and record.message.startswith('JSON not available for Filing(')):
+            counter += 1
+    assert counter == len(filings)
+
+
+@pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
+def test_download_package_missing_log(
+        libclass, get_asml22en_or_oldest3_fi, tmp_path, caplog):
+    """Test logging when package is missing by `download`."""
+    caplog.set_level(logging.WARNING)
+    target, filings = get_asml22en_or_oldest3_fi(libclass)
+    filing: xf.Filing
+    for filing in filings:
+        filing.package_url = None
+    target.download(
+        files='package',
+        to_dir=tmp_path,
+        stem_pattern=None,
+        check_corruption=True,
+        max_concurrent=None
+        )
+    for filing in filings:
+        assert filing.package_download_path is None
+    record: logging.LogRecord
+    counter = 0
+    for record in caplog.records:
+        if (record.levelname == 'WARNING'
+                and record.message.startswith('Package not available for Filing(')):
+            counter += 1
+    assert counter == len(filings)
 
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
