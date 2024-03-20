@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: MIT
 
 import logging
+import urllib.parse
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any, ClassVar, Optional, Union
-from urllib.parse import urljoin
 
 from xbrl_filings_api import options
 from xbrl_filings_api.enums import _ParseType
@@ -41,16 +41,24 @@ class _JSONTree:
     """
     Object for traversing and parsing API response.
 
-    When the required keys have been read, `close()` method must be
-    called in the init methods of leaf subclasses of `APIObject`. This
-    ensures that the keys which were never accessed (novel API features)
-    are available for `get_unaccessed_key_paths()` method.
+    When the required keys have been read, `close` method must be called
+    in the init methods of `APIObject` subclasses. This ensures the keys
+    which were never accessed (novel API features) are available via the
+    two class methods.
+
+    The class methods `get_unaccessed_key_paths` and
+    `get_key_path_availability_counts` are preferred to be called via
+    the identically named functions of the `debug` module.
 
     Attributes
     ----------
     class_name : str
     tree : dict or None
     do_not_track : bool
+
+    Class attributes
+    ----------------
+    unexpected_resource_types: set of tuples (str, str)
     """
 
     _unaccessed_paths: ClassVar[dict[str, set[str]]] = {}
@@ -75,6 +83,8 @@ class _JSONTree:
     """
     Set of unexpected API resource types.
 
+    Read by calling function `debug.get_unexpected_resource_types`.
+
     Content::
 
         unexpected_resource_types.pop() = (type_str, origin)
@@ -98,11 +108,32 @@ class _JSONTree:
             The underlying JSON:API unserialized JSON as a dictionary
             structure. An `_APIPage` contains the whole document.
         do_not_track : bool, default False
-            Do not track read and unaccessed keys.
+            When `True`, does not track successful and total `get`
+            method calls, available via function
+            `debug.get_key_path_availability_counts`.
         """
         self.class_name = class_name
+        """
+        `__qualname__` of the `APIObject` subclass this tree is read
+        for.
+        """
         self.tree: Union[dict[str, Any], None] = json_frag
+        """
+        JSON:API fragment as Python dict from argument `json_frag` for
+        querying.
+        """
         self.do_not_track = do_not_track
+        """
+        When `True`, does not track successful and total `get` method
+        calls.
+        """
+
+        opcounter = self._object_path_counter
+        if not opcounter.get(self.class_name):
+            opcounter[self.class_name] = {}
+        upaths = self._unaccessed_paths
+        if not upaths.get(self.class_name):
+            upaths[self.class_name] = set()
 
     def get(
             self, key_path: str, parse_type: Optional[_ParseType] = None
@@ -133,29 +164,26 @@ class _JSONTree:
         key_value = None
         comps = key_path.split('.')
         subdict: dict[str, Any] = self.tree
-        last_part = len(comps) - 1
-        for i, comp in enumerate(comps):
+        last_i = len(comps) - 1
+        for comp_i, comp in enumerate(comps):
             key_value = subdict.get(comp)
             if key_value is None:
                 break
             elif isinstance(key_value, dict):
-                if i < last_part:
+                if comp_i < last_i:
                     subdict = key_value
                 else:
-                    # Value of key_path is dict
+                    # Value of key_path is a dict
                     break
-            # Get actual existing non-dict value of key_path
             else:
+                # Get actual existing non-dict value of key_path
                 if isinstance(key_value, str):
                     key_value = self._parse_value(
                         key_value, parse_type, key_path)
                 break
 
-        if not self.do_not_track:
+        if self.do_not_track is False:
             opcounter = self._object_path_counter
-            if not opcounter.get(self.class_name):
-                opcounter[self.class_name] = {}
-
             if not opcounter[self.class_name].get(key_path):
                 init_count = 0 if key_value is None else 1
                 opcounter[self.class_name][key_path] = (
@@ -191,10 +219,6 @@ class _JSONTree:
         List values are skipped.
         """
         opcounter = self._object_path_counter
-        if opcounter.get(self.class_name) is None:
-            msg = 'close() cannot be called before get()'
-            raise Exception(msg)
-
         last_comp = comps[len(comps) - 1]
         key_value = json_frag.get(last_comp)
         if isinstance(key_value, dict):
@@ -203,10 +227,7 @@ class _JSONTree:
                 comps_copy.append(key)
                 self._find_unaccessed(key_value, comps_copy)
         elif '.'.join(comps) not in opcounter[self.class_name]:
-            upaths = self._unaccessed_paths
-            if not upaths.get(self.class_name):
-                upaths[self.class_name] = set()
-            upaths[self.class_name].add('.'.join(comps))
+            self._unaccessed_paths[self.class_name].add('.'.join(comps))
 
     def _parse_value(
             self, key_value: str, parse_type: Union[_ParseType, None],
@@ -220,7 +241,7 @@ class _JSONTree:
             except ValueError:
                 msg = (
                     f'Could not parse ISO datetime string {key_value!r} for '
-                    f'object {self.class_name} JSON fragment path '
+                    f'{self.class_name} object JSON fragment path '
                     f'{key_path!r}.'
                     )
                 logger.warning(msg, stacklevel=2)
@@ -240,7 +261,7 @@ class _JSONTree:
             except ValueError:
                 msg = (
                     f'Could not parse ISO date string {key_value!r} for '
-                    f'object {self.class_name} JSON fragment path '
+                    f'{self.class_name} object JSON fragment path '
                     f'{key_path!r}.'
                     )
                 logger.warning(msg, stacklevel=2)
@@ -249,11 +270,12 @@ class _JSONTree:
         elif parse_type == _ParseType.URL:
             parsed_url = None
             try:
-                parsed_url = urljoin(options.entry_point_url, key_value)
+                parsed_url = urllib.parse.urljoin(
+                    options.entry_point_url, key_value)
             except ValueError:
                 msg = (
                     f'Could not determine absolute URL string from '
-                    f'{key_value!r} for object {self.class_name} JSON '
+                    f'{key_value!r} for {self.class_name} object JSON '
                     f'fragment path {key_path!r}.'
                     )
                 logger.warning(msg, stacklevel=2)
@@ -267,7 +289,8 @@ class _JSONTree:
         Get unaccessed JSON key paths of objects.
 
         Get the set of unaccessed key paths in unserialized JSON
-        fragments of API responses.
+        fragments of API responses. List values (JSON arrays) are listed
+        as a single path.
         """
         unaccessed: set[tuple[str, str]] = set()
         for class_name, key_path_set in cls._unaccessed_paths.items():
