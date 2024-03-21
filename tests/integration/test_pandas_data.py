@@ -4,6 +4,7 @@ Define integration tests for method `get_pandas_data` of `FilingSet` and
 
 Tests with unit test focus are found from module
 `unit.test_pandas_data_unit`.
+
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
