@@ -152,7 +152,7 @@ class TestFilingSet_get_pandas_data:
 class TestResourceCollection_entities_get_pandas_data:
     """Test method ResourceCollection.get_pandas_data for FilingSet.entities."""
 
-    def test_defaults(self, get_oldest3_fi_entities_filingset):
+    def test_e_defaults(self, get_oldest3_fi_entities_filingset):
         """Test default parameter values."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
@@ -178,7 +178,7 @@ class TestResourceCollection_entities_get_pandas_data:
 class TestResourceCollection_validation_messages_get_pandas_data:
     """Test method ResourceCollection.get_pandas_data for FilingSet.validation_messages."""
 
-    def test_defaults(self, get_oldest3_fi_vmessages_filingset):
+    def test_vm_defaults(self, get_oldest3_fi_vmessages_filingset):
         """Test default parameter values."""
         e_api_ids = {
             '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471', '5472',

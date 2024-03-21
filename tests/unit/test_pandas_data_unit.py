@@ -250,7 +250,7 @@ class TestFilingSet_get_pandas_data:
 class TestResourceCollection_entities_get_pandas_data:
     """Test method ResourceCollection.get_pandas_data for FilingSet.entities."""
 
-    def test_defaults(self, get_oldest3_fi_entities_filingset):
+    def test_e_defaults(self, get_oldest3_fi_entities_filingset):
         """Test default parameter values."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
@@ -270,7 +270,7 @@ class TestResourceCollection_entities_get_pandas_data:
         assert '383' in pd_data['api_id']
         assert '1120' in pd_data['api_id']
 
-    def test_attr_names_2cols(self, get_oldest3_fi_entities_filingset):
+    def test_e_attr_names_2cols(self, get_oldest3_fi_entities_filingset):
         """Test attr_names defining 2 columns."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
@@ -287,7 +287,7 @@ class TestResourceCollection_entities_get_pandas_data:
         assert '1120' in pd_data['api_id']
 
     @pytest.mark.datetime
-    def test_strip_timezone_true(
+    def test_e_strip_timezone_true(
             self, get_oldest3_fi_entities_filingset):
         """Test strip_timezone=True."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
@@ -303,7 +303,7 @@ class TestResourceCollection_entities_get_pandas_data:
             assert pd_data['query_time'][i].tzinfo is None
 
     @pytest.mark.datetime
-    def test_strip_timezone_false(self, get_oldest3_fi_entities_filingset):
+    def test_e_strip_timezone_false(self, get_oldest3_fi_entities_filingset):
         """Test strip_timezone=False."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
@@ -317,7 +317,7 @@ class TestResourceCollection_entities_get_pandas_data:
             assert isinstance(pd_data['query_time'][i], datetime)
             assert pd_data['query_time'][i].tzinfo is not None
 
-    def test_include_urls_true(
+    def test_e_include_urls_true(
             self, get_oldest3_fi_entities_filingset, monkeypatch):
         """Test include_urls=True."""
         monkeypatch.setattr(xf.options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
@@ -335,7 +335,7 @@ class TestResourceCollection_entities_get_pandas_data:
         assert '383' in pd_data['api_id']
         assert '1120' in pd_data['api_id']
 
-    def test_include_urls_true(
+    def test_e_include_urls_true(
             self, get_oldest3_fi_entities_filingset, monkeypatch):
         """Test include_urls=True."""
         monkeypatch.setattr(xf.options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
@@ -357,7 +357,7 @@ class TestResourceCollection_entities_get_pandas_data:
 class TestResourceCollection_validation_messages_get_pandas_data:
     """Test method ResourceCollection.get_pandas_data for FilingSet.validation_messages."""
 
-    def test_defaults(self, get_oldest3_fi_vmessages_filingset):
+    def test_vm_defaults(self, get_oldest3_fi_vmessages_filingset):
         """Test default parameter values."""
         e_api_ids = {
             '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471', '5472',
@@ -403,7 +403,7 @@ class TestResourceCollection_validation_messages_get_pandas_data:
         for e_api_id in e_api_ids:
             assert e_api_id in pd_data['api_id']
 
-    def test_attr_names_2cols(self, get_oldest3_fi_vmessages_filingset):
+    def test_vm_attr_names_2cols(self, get_oldest3_fi_vmessages_filingset):
         """Test attr_names defining 2 columns."""
         e_api_ids = {
             '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471', '5472',
