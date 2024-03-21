@@ -232,8 +232,7 @@ class Filing(APIResource):
         The original field name in the API is ``processed``.
         """
 
-        self.entity_api_id: Union[str, None] = self._json.get(
-            self.ENTITY_API_ID)
+        self.entity_api_id: Union[str, None] = self._get_entity_api_id()
         """`api_id` of Entity object."""
 
         self.entity: Union[Entity, None] = None
@@ -635,6 +634,8 @@ class Filing(APIResource):
             self.VALIDATION_MESSAGES)
         if msgs_relfrags:
             for rel_api_id in (mf['id'] for mf in msgs_relfrags):
+                if not isinstance(rel_api_id, str):
+                    rel_api_id = str(rel_api_id)
                 for vmsg in message_iter:
                     if vmsg.api_id == rel_api_id:
                         vmsg.filing_api_id = self.api_id
@@ -677,3 +678,9 @@ class Filing(APIResource):
             return file_stem
         else:
             return None
+    
+    def _get_entity_api_id(self) -> Union[str, None]:
+        api_id = self._json.get(self.ENTITY_API_ID)
+        if api_id is not None and not isinstance(api_id, str):
+            api_id = str(api_id)
+        return api_id

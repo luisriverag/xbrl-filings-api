@@ -13,6 +13,7 @@ import responses
 
 import xbrl_filings_api as xf
 from xbrl_filings_api.api_page import _APIPage, _IncludedResource
+from xbrl_filings_api.api_request import _APIRequest
 
 
 @pytest.fixture
@@ -91,8 +92,8 @@ def test_included_resources_unexpected():
                 },
             'relationships': {
                 'alien_type': {
-                    'links': { 'related': '/api/alien_types/724500Y6DUVHQD6OXN27' },
-                    'data': { 'type': 'alien_type', 'id': '123456789'}
+                    'links': {'related': '/api/alien_types/724500Y6DUVHQD6OXN27'},
+                    'data': {'type': 'alien_type', 'id': '123456789'}
                     }
                 },
             'id': '4261',
@@ -103,13 +104,13 @@ def test_included_resources_unexpected():
             'id': '123456789',
             'attributes': {},
             'relationships': {},
-            'links': { 'self': '/api/alien_types/123456789' }
+            'links': {'self': '/api/alien_types/123456789'}
         }],
         'links': {
             'self': 'https://filings.xbrl.org/api/filings'
             },
-        'meta': { 'count': 1 },
-        'jsonapi': { 'version': '1.0' }
+        'meta': {'count': 1},
+        'jsonapi': {'version': '1.0'}
         }
     fpage: xf.FilingsPage
     with responses.RequestsMock() as rsps:
@@ -125,3 +126,109 @@ def test_included_resources_unexpected():
     assert alien_res.type_ == 'alien_type'
     assert alien_res.id_ == '123456789'
     assert isinstance(alien_res.frag, dict)
+
+
+def test_raises_initiate_directly():
+    """Test _APIPage raises if initiated directly from parent class."""
+    rsps_dummy = {
+        'data': [],
+        'links': {
+            'self': 'https://filings.xbrl.org/api/filings'
+            },
+        'meta': { 'count': 0 },
+        'jsonapi': { 'version': '1.0' }
+        }
+    areq = _APIRequest(
+        url='https://filings.xbrl.org/api/filings',
+        query_time=datetime.now()
+        )
+    with pytest.raises(
+            NotImplementedError,
+            match=r'_APIPage can only be initialized via subclassing'):
+        _ = _APIPage(
+            json_frag=rsps_dummy,
+            api_request=areq
+            )
+
+
+def test_main_resource_api_id_as_int():
+    """Test filing api_id from API as int."""
+    rsps_with_int_data_id = {
+        'data': [{
+            'type': 'filing',
+            'attributes': {
+                'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
+                'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+                },
+            'relationships': {
+                'entity': {
+                    'links': {'related': '/api/entities/724500Y6DUVHQD6OXN27'},
+                    'data': {'type': 'entity', 'id': '123456789'}
+                    }
+                },
+            'id': 123,
+            'links': {'self': '/api/filings/123'}
+            }],
+        'links': {
+            'self': 'https://filings.xbrl.org/api/filings'
+            },
+        'meta': {'count': 0},
+        'jsonapi': {'version': '1.0'}
+        }
+    fpage: xf.FilingsPage
+    with responses.RequestsMock() as rsps:
+        rsps.get(
+            url=re.compile(r'.+'),
+            json=rsps_with_int_data_id,
+        )
+        piter = xf.filing_page_iter()
+        fpage = next(piter)
+    assert len(fpage._data) == 1
+    filing_frag = fpage._data[0]
+    assert filing_frag['id'] == '123'
+    assert filing_frag['attributes']['fxo_id'] == '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+
+
+def test_included_resource_api_id_as_int():
+    """Test filing api_id from API as int."""
+    rsps_with_int_included_id = {
+        'data': [{
+            'type': 'filing',
+            'attributes': {
+                'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
+                'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+                },
+            'relationships': {
+                'entity': {
+                    'links': {'related': '/api/entities/724500Y6DUVHQD6OXN27'},
+                    'data': {'type': 'entity', 'id': 123456789}
+                    }
+                },
+            'id': '123',
+            'links': {'self': '/api/filings/123'}
+            }],
+        'included': [{
+            'type': 'entity',
+            'id': 123456789,
+            'attributes': {},
+            'relationships': {},
+            'links': {'self': '/api/entities/123456789'}
+        }],
+        'links': {
+            'self': 'https://filings.xbrl.org/api/filings'
+            },
+        'meta': {'count': 0},
+        'jsonapi': {'version': '1.0'}
+        }
+    fpage: xf.FilingsPage
+    with responses.RequestsMock() as rsps:
+        rsps.get(
+            url=re.compile(r'.+'),
+            json=rsps_with_int_included_id,
+        )
+        piter = xf.filing_page_iter()
+        fpage = next(piter)
+    assert len(fpage._included_resources) == 1
+    ent_frag = fpage._included_resources[0]
+    assert ent_frag.id_ == '123456789'
+    assert ent_frag.frag['links']['self'] == '/api/entities/123456789'

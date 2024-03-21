@@ -77,8 +77,7 @@ class APIResource(APIObject):
         """``id`` from JSON:API."""
 
         api_id = self._json.get('id')
-        if isinstance(api_id, str):
-            self.api_id = api_id
+        self.api_id = str(api_id)
 
     @classmethod
     def get_data_attributes(

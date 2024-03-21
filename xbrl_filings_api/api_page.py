@@ -51,6 +51,7 @@ class _APIPage(APIObject):
         """List of main resources as unserialized JSON fragments of the
         page.
         """
+        self._ensure_data_ids_are_strings()
 
         self._included_resources: list[_IncludedResource] = (
             self._get_included_resources())
@@ -109,7 +110,14 @@ class _APIPage(APIObject):
             for res_frag in inc:
                 res_type = str(res_frag.get('type')).lower()
                 res_id = res_frag.get('id')
-                if isinstance(res_id, str):
-                    resources.append(
-                        _IncludedResource(res_type, res_id, res_frag))
+                if not isinstance(res_id, str):
+                    res_id = str(res_id)
+                resources.append(
+                    _IncludedResource(res_type, res_id, res_frag))
         return resources
+
+    def _ensure_data_ids_are_strings(self):
+        for data_frag in self._data:
+            api_id = data_frag.get('id')
+            if not isinstance(api_id, str):
+                data_frag['id'] = str(api_id)
