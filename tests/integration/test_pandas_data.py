@@ -19,8 +19,8 @@ import xbrl_filings_api as xf
 class TestFilingSet_get_pandas_data:
     """Test method FilingSet.get_pandas_data."""
 
-    def test_filings_attributes(self, get_oldest3_fi_filingset):
-        """Test basic attributes by `FilingSet.get_pandas_data`."""
+    def test_defaults(self, get_oldest3_fi_filingset):
+        """Test default parameter values."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -56,10 +56,8 @@ class TestFilingSet_get_pandas_data:
         assert '507' in df['api_id'].array
         assert '1495' in df['api_id'].array
 
-
-    def test_filings_attributes_with_entity(
-            self, get_oldest3_fi_entities_filingset):
-        """Test exporting filings by `FilingSet.get_pandas_data`, with_entity=True."""
+    def test_with_entity_true(self, get_oldest3_fi_entities_filingset):
+        """Test with_entity=True."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -85,10 +83,9 @@ class TestFilingSet_get_pandas_data:
         assert '507' in df['api_id'].array
         assert '1495' in df['api_id'].array
 
-
     @pytest.mark.date
-    def test_filings_dates(self, get_oldest3_fi_filingset):
-        """Test datetime attributes by `FilingSet.get_pandas_data`."""
+    def test_dates(self, get_oldest3_fi_filingset):
+        """Test date columns."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -105,10 +102,9 @@ class TestFilingSet_get_pandas_data:
         assert enento20en.at[i, 'reporting_date'] == pd.Timestamp('2020-12-31')
         assert isinstance(enento20en.at[i, 'query_time'], pd.Timestamp)
 
-
     @pytest.mark.datetime
-    def test_filings_datetimes(self, get_oldest3_fi_filingset):
-        """Test datetime attributes by `FilingSet.get_pandas_data`."""
+    def test_datetimes(self, get_oldest3_fi_filingset):
+        """Test datetime columns."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -125,9 +121,8 @@ class TestFilingSet_get_pandas_data:
         assert enento20en.at[i, 'processed_time'] == pd.Timestamp('2023-01-18 11:02:18.936351')
         assert isinstance(enento20en.at[i, 'query_time'], pd.Timestamp)
 
-
-    def test_filings_with_entity_no_entity(self, get_oldest3_fi_filingset):
-        """Test exporting filings by `FilingSet.get_pandas_data`, with_entity=True but no entity."""
+    def test_with_entity_true_no_entity(self, get_oldest3_fi_filingset):
+        """Test with_entity=True but no entities in FilingSet."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -156,8 +151,8 @@ class TestFilingSet_get_pandas_data:
 class TestResourceCollection_entities_get_pandas_data:
     """Test method ResourceCollection.get_pandas_data for FilingSet.entities."""
 
-    def test_entities(self, get_oldest3_fi_entities_filingset):
-        """Test exporting entities by `ResourceCollection.get_pandas_data`."""
+    def test_defaults(self, get_oldest3_fi_entities_filingset):
+        """Test default parameter values."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
             attr_names=None,
@@ -179,30 +174,11 @@ class TestResourceCollection_entities_get_pandas_data:
         assert '1120' in df['api_id'].array
 
 
-    def test_entities_attr_names(self, get_oldest3_fi_entities_filingset):
-        """Test exporting entities by `ResourceCollection.get_pandas_data` with attr_names set."""
-        fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
-        pd_data = fs.entities.get_pandas_data(
-            attr_names=['api_id', 'name'],
-            strip_timezone=True,
-            date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
-            )
-        df = pd.DataFrame(data=pd_data)
-        enento = df[df['api_id'] == '548']
-        i = enento.index.array[0]
-        assert len(enento.columns.array) == 2
-        assert enento.at[i, 'name'] == 'Enento Group Oyj'
-        assert '383' in df['api_id'].array
-        assert '1120' in df['api_id'].array
-
-
 class TestResourceCollection_validation_messages_get_pandas_data:
     """Test method ResourceCollection.get_pandas_data for FilingSet.validation_messages."""
 
-    def test_validation_messages(self, get_oldest3_fi_vmessages_filingset):
-        """Test exporting validation messages by `ResourceCollection.get_pandas_data`."""
+    def test_defaults(self, get_oldest3_fi_vmessages_filingset):
+        """Test default parameter values."""
         e_api_ids = {
             '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471', '5472',
             '5473', '5474', '5475', '5476', '5477', '5478', '8662', '8663', '8664',
@@ -241,8 +217,8 @@ class TestResourceCollection_validation_messages_get_pandas_data:
         assert enento.at[i, 'calc_line_item'] == vmsg_5464.calc_line_item
         assert enento.at[i, 'calc_short_role'] == vmsg_5464.calc_short_role
         assert enento.at[i, 'calc_unreported_items'] == vmsg_5464.calc_unreported_items
-        assert enento.at[i, 'duplicate_greater'] == vmsg_5464.duplicate_greater
-        assert enento.at[i, 'duplicate_lesser'] == vmsg_5464.duplicate_lesser
+        assert enento.at[i, 'duplicate_greater'] is None
+        assert enento.at[i, 'duplicate_lesser'] is None
         assert isinstance(enento.at[i, 'query_time'], pd.Timestamp)
         assert 'request_url' not in enento.columns.array
         assert 'filing' not in enento.columns.array
