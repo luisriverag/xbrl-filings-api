@@ -661,7 +661,7 @@ class Filing(APIResource):
             return None
 
         url_path = None
-        if isinstance(presult.path, str) and presult.path.strip():
+        if presult.path.strip():
             url_path = presult.path
         if url_path is None:
             return None

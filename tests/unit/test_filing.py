@@ -428,3 +428,46 @@ def test_language_from_xhtml_url(
     )
     fortum23fi = next(iter(fs))
     assert fortum23fi.language == 'fi'
+
+
+def test_str_no_entity_name(asml22en_entities_filing):
+    """Test __str__ method without entity.name."""
+    e_str = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0 2022 [en]'
+    asml22en_entities_filing.entity.name = None
+    assert str(asml22en_entities_filing) == e_str
+
+
+def test_str_no_reporting_date(asml22en_entities_filing):
+    """Test __str__ method without entity.name."""
+    e_str = 'ASML Holding N.V. [en]'
+    asml22en_entities_filing.reporting_date = None
+    assert str(asml22en_entities_filing) == e_str
+
+
+def test_derive_language_3letters(asml22en_entities_filing):
+    """Test _derive_language with 3 letter language."""
+    filing: xf.Filing = asml22en_entities_filing
+    filing.package_url = (
+        'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0/743700KMZL7E8PLI5X73-2020-12-31_fin.zip')
+    assert filing._derive_language() == 'fi'
+
+
+def test_derive_reporting_date_bad_date(asml22en_entities_filing):
+    """Test _derive_reporting_date with a nonexistent date '2020-02-31'."""
+    filing: xf.Filing = asml22en_entities_filing
+    filing.package_url = (
+        'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0/743700KMZL7E8PLI5X73-2020-02-31_fin.zip')
+    filing.last_end_date = None # Disable fallback when could not derive
+    assert filing._derive_reporting_date() is None
+
+
+def test_get_url_stem_bad_url():
+    """Test _get_url_stem with a bad URL."""
+    bad_url = 'https://[1:2:3:4:5:6/stem'
+    assert xf.Filing._get_url_stem(None, bad_url) is None
+
+
+def test_get_url_stem_empty_path():
+    """Test _get_url_stem with a an empty path."""
+    emptypath_url = 'https://filing.xbrl.org'
+    assert xf.Filing._get_url_stem(None, emptypath_url) is None
