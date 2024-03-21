@@ -12,7 +12,7 @@ This is an extended set type with certain added attributes.
 from collections.abc import AsyncIterator, Collection, Iterable, Mapping
 from datetime import date, datetime
 from pathlib import Path, PurePath
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import xbrl_filings_api.options as options
 from xbrl_filings_api import (
@@ -400,3 +400,13 @@ class FilingSet(set[Filing]):
             f'{self.__class__.__name__}('
             f'len(self)={len(self)}{subreslist})'
             )
+
+    def __contains__(self, item: Any) -> bool:
+        """Return `True` if is instance of `Filing` and `api_id` exists."""
+        if not isinstance(item, Filing):
+            return False
+        match_id = item.api_id
+        for filing in self:
+            if filing.api_id == match_id:
+                return True
+        return False

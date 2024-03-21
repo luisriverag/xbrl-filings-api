@@ -74,9 +74,12 @@ class ResourceCollection:
         return count
 
     def __contains__(self, item: Any) -> bool:
-        """Return `True` if `item` exists in collection."""
+        """Return `True` if is instance of `item_class` and `api_id` exists."""
+        if not isinstance(item, self.item_class):
+            return False
+        match_id = item.api_id
         for resource in self:
-            if resource is item:
+            if resource.api_id == match_id:
                 return True
         return False
 

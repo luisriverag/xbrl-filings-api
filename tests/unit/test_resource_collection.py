@@ -9,6 +9,8 @@ The tests for the method `get_pandas_data` are in separate module
 #
 # SPDX-License-Identifier: MIT
 
+import copy
+
 import pytest
 
 import xbrl_filings_api as xf
@@ -181,3 +183,28 @@ def test_repr_vmessages(get_oldest3_fi_vmessages_filingset):
         )
     fs: xf.FilingSet = get_oldest3_fi_vmessages_filingset()
     assert repr(fs.validation_messages) == e_repr
+
+
+def test_contains_is_true_diff_identities(get_oldest3_fi_entities_filingset):
+    """Test `in` operator evaluates to True if filing is same but identity different."""
+    fs_a: xf.FilingSet = get_oldest3_fi_entities_filingset()
+    fs_b: xf.FilingSet = get_oldest3_fi_entities_filingset()
+    ent_a = next(iter(fs_a.entities))
+    # Determined by type and api_id
+    assert ent_a in fs_b.entities
+
+
+def test_contains_is_false_wrong_type(get_oldest3_fi_entities_filingset):
+    """Test `in` operator evaluates to False when wrong type."""
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
+    filing = next(iter(fs))
+    assert filing not in fs.entities
+
+
+def test_contains_is_false_wrong_api_id(get_oldest3_fi_entities_filingset):
+    """Test `in` operator evaluates to False when wrong api_id."""
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
+    ent = next(iter(fs)).entity
+    ent_copy = copy.deepcopy(ent)
+    ent_copy.api_id = 'abc'
+    assert ent_copy not in fs.entities

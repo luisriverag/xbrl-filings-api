@@ -10,6 +10,7 @@ Tests for downloading methods are in separate test module
 #
 # SPDX-License-Identifier: MIT
 
+import copy
 import sqlite3
 from collections.abc import Collection
 
@@ -486,3 +487,28 @@ def test_repr_ent_vmessages(get_oldest3_fi_ent_vmessages_filingset):
         'FilingSet(len(self)=3, len(entities)=3, len(validation_messages)=45)')
     fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
     assert repr(fs) == e_repr
+
+
+def test_contains_is_true_diff_identities(get_oldest3_fi_filingset):
+    """Test `in` operator evaluates to True if filing is same but identity different."""
+    fs_a: xf.FilingSet = get_oldest3_fi_filingset()
+    fs_b: xf.FilingSet = get_oldest3_fi_filingset()
+    filing_a = next(iter(fs_a))
+    # Determined by type and api_id
+    assert filing_a in fs_b
+
+
+def test_contains_is_false_wrong_type(get_oldest3_fi_entities_filingset):
+    """Test `in` operator evaluates to False when wrong type."""
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
+    filing = next(iter(fs))
+    assert filing.entity not in fs
+
+
+def test_contains_is_false_wrong_api_id(get_oldest3_fi_entities_filingset):
+    """Test `in` operator evaluates to False when wrong api_id."""
+    fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
+    filing = next(iter(fs))
+    filing_copy = copy.deepcopy(filing)
+    filing_copy.api_id = 'abc'
+    assert filing_copy not in fs
