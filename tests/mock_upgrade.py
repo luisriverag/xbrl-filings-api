@@ -787,6 +787,24 @@ def _fetch_sort_desc_package_sha256_latvia():
 _addmock('sort_desc_package_sha256_latvia')
 
 
+@_recorder.record(file_path=_get_path('kone22_all_languages'))
+def _fetch_kone22_all_languages():
+    """Sorted ascending by package_sha256 from Latvian records."""
+    kone22_api_ids = ['4143', '4144']
+    for req_i, api_id in enumerate(kone22_api_ids):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': 100 - req_i,
+                'filter[id]': api_id,
+                'include': 'entity'
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+_addmock('kone22_all_languages')
+
+
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 
 

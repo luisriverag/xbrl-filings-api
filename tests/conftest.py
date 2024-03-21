@@ -497,3 +497,11 @@ def sort_desc_package_sha256_latvia_response():
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('sort_desc_package_sha256_latvia'))
         yield rsps
+
+
+@pytest.fixture
+def kone22_all_languages_response():
+    """Sorted ascending by package_sha256 from Latvian records."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('kone22_all_languages'))
+        yield rsps

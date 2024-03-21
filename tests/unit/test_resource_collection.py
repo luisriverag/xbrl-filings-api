@@ -130,7 +130,7 @@ def test_add_entities(get_oldest3_fi_entities_filingset, asml22en_entities_filin
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert fs.entities.exist is True
     assert len(fs.entities) == 4
-    after_ents = [ent for ent in before_ents]
+    after_ents = before_ents.copy()
     for ent in fs.entities:
         assert isinstance(ent, xf.Entity)
         after_ents.append(ent)
@@ -146,6 +146,21 @@ def test_add_entities(get_oldest3_fi_entities_filingset, asml22en_entities_filin
 
     for col in before_cols:
         assert col in after_cols
+
+
+def test_same_entity_only_once(kone22_all_languages_response):
+    """Test same entity is in the collection only once."""
+    fs = xf.get_filings(
+        filters={'api_id': ['4143', '4144']},
+        sort=None,
+        max_size=100,
+        flags=xf.GET_ENTITY
+        )
+    assert len(fs) == 2
+    assert fs.entities.exist
+    assert len(fs.entities) == 1
+    ents = list(fs.entities)
+    assert len(ents) == 1
 
 
 def test_repr_entities(get_oldest3_fi_entities_filingset):
