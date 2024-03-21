@@ -169,7 +169,7 @@ class FilingsPage(_APIPage):
             return None
 
         resource_list = []
-        type_name = type_obj.__class__.__name__
+        type_name = type_obj.__name__
         if not received_api_ids.get(type_name):
             received_api_ids[type_name] = set()
         received_set = received_api_ids[type_name]
@@ -213,7 +213,7 @@ class FilingsPage(_APIPage):
                 + str(len(self.validation_message_list))
                 )
         return (
-            f'{self.__class__.__name__}('
+            f'{type(self).__name__}('
             f'request_url={self.request_url!r}, '
             f'query_time={query_time}, '
             f'len(filing_list)={len(self.filing_list)}{subreslist})'

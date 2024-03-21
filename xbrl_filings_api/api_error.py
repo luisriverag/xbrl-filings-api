@@ -83,7 +83,7 @@ class APIError(FilingsAPIError, APIObject):
     def __repr__(self) -> str:
         """Return string repr of API error."""
         return (
-            f'{self.__class__.__name__}('
+            f'{type(self).__name__}('
             f'title={self.title!r}, '
             f'detail={self.detail!r}, '
             f'code={self.code!r})'

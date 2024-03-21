@@ -86,7 +86,7 @@ class ResourceCollection:
     def get_pandas_data(
             self, attr_names: Optional[Iterable[str]] = None, *,
             strip_timezone: bool = True, date_as_datetime: bool = True,
-            include_urls : bool = False, include_paths : bool = False
+            include_urls : bool = False
             ) -> dict[str, list[ResourceLiteralType]]:
         """
         Get data for `pandas.DataFrame` constructor for subresources.
@@ -98,9 +98,7 @@ class ResourceCollection:
         >>> df = pd.DataFrame(data=filingset.entities.get_pandas_data())
 
         If `attr_names` is not given, most data attributes will be
-        extracted. Attributes ending in ``_download_path`` will be
-        extracted only if at least one file of this type has been
-        downloaded (and include_paths=True).
+        extracted.
 
         Parameters
         ----------
@@ -115,9 +113,6 @@ class ResourceCollection:
         include_urls : bool, default False
             When `attr_names` is not given, include attributes ending
             ``_url``.
-        include_paths : bool, default False
-            When `attr_names` is not given, include attributes ending
-            ``_path``.
 
         Returns
         -------
@@ -134,16 +129,14 @@ class ResourceCollection:
                 url_cols = [col for col in data if col.endswith('_url')]
                 for col in url_cols:
                     del data[col]
-            if not include_paths:
-                path_cols = [col for col in data if col.endswith('_path')]
-                for col in path_cols:
-                    del data[col]
         for resource in self:
             for col_name in data:
                 val = getattr(resource, col_name)
                 if strip_timezone and isinstance(val, datetime):
                     val = val.replace(tzinfo=None)
-                if date_as_datetime and val.__class__ is date:
+                if (date_as_datetime
+                        and isinstance(val, date)
+                        and type(val) is not datetime):
                     val = datetime.fromordinal(val.toordinal())
                 data[col_name].append(val)
         return data
@@ -172,7 +165,7 @@ class ResourceCollection:
     def __repr__(self) -> str:
         """Return string repr of resource collection."""
         return (
-            f'{self.__class__.__name__}('
+            f'{type(self).__name__}('
             f'item_class={self.item_class!r}, '
             f'len()={len(self)})'
             )

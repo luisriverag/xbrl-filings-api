@@ -246,7 +246,7 @@ class ValidationMessage(APIResource):
 
         Displays `code` attribute.
         """
-        return f'{self.__class__.__name__}(code={self.code!r})'
+        return f'{type(self).__name__}(code={self.code!r})'
 
     def __str__(self) -> str:
         """Return `text` attribute value."""

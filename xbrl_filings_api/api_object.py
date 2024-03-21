@@ -28,7 +28,7 @@ class APIObject:
             raise NotImplementedError(msg)
 
         self._json = _JSONTree(
-            class_name=self.__class__.__qualname__,
+            class_name=type(self).__qualname__,
             json_frag=json_frag,
             do_not_track=do_not_track
             )

@@ -533,7 +533,7 @@ def _retrieve_page_json(
 def _get_api_attribute_map() -> dict[str, str]:
     attrmap: dict[str, str] = {}
     fproto = Filing(...)
-    cls = fproto.__class__
+    cls = type(fproto)
     clsmap = {'api_id': 'id'}
     for prop in dir(fproto):
         # Exclude class attributes from instance attributes

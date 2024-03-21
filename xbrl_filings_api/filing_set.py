@@ -355,7 +355,9 @@ class FilingSet(set[Filing]):
                     val = getattr(filing, col_name)
                 if strip_timezone and isinstance(val, datetime):
                     val = val.replace(tzinfo=None)
-                if date_as_datetime and val.__class__ is date:
+                if (date_as_datetime
+                        and isinstance(val, date)
+                        and type(val) is not datetime):
                     val = datetime.fromordinal(val.toordinal())
                 data[col_name].append(val)
         return data
@@ -397,7 +399,7 @@ class FilingSet(set[Filing]):
             subreslist += (
                 f', len(validation_messages)={len(self.validation_messages)}')
         return (
-            f'{self.__class__.__name__}('
+            f'{type(self).__name__}('
             f'len(self)={len(self)}{subreslist})'
             )
 

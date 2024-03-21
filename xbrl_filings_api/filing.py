@@ -353,7 +353,7 @@ class Filing(APIResource):
         `reporting_date` and `language`. Otherwise displays only
         `filing_index`.
         """
-        start = f'{self.__class__.__name__}('
+        start = f'{type(self).__name__}('
         if self.entity:
             rrepdate = f"date({self.reporting_date.strftime('%Y, %m, %d')})"
             return (

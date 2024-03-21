@@ -68,7 +68,7 @@ class Entity(APIResource):
 
     def __repr__(self) -> str:
         """Return string repr of the entity."""
-        return f'{self.__class__.__name__}(name={self.name!r})'
+        return f'{type(self).__name__}(name={self.name!r})'
 
     def __str__(self) -> str:
         """Return string str of the entity."""

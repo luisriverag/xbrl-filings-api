@@ -257,8 +257,7 @@ class TestResourceCollection_entities_get_pandas_data:
             attr_names=None,
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
+            include_urls=False
             )
         i = pd_data['api_id'].index('548')
         assert pd_data['identifier'][i] == '743700EPLUWXE25HGM03'
@@ -277,8 +276,7 @@ class TestResourceCollection_entities_get_pandas_data:
             attr_names=['api_id', 'name'],
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
+            include_urls=False
             )
         i = pd_data['api_id'].index('548')
         assert len(pd_data) == 2
@@ -295,8 +293,7 @@ class TestResourceCollection_entities_get_pandas_data:
             attr_names=None,
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
+            include_urls=False
             )
         for i in range(len(fs)):
             assert isinstance(pd_data['query_time'][i], datetime)
@@ -310,8 +307,7 @@ class TestResourceCollection_entities_get_pandas_data:
             attr_names=None,
             strip_timezone=False,
             date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
+            include_urls=False
             )
         for i in range(len(fs)):
             assert isinstance(pd_data['query_time'][i], datetime)
@@ -326,8 +322,7 @@ class TestResourceCollection_entities_get_pandas_data:
             attr_names=None,
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=True,
-            include_paths=False
+            include_urls=True
             )
         i = pd_data['api_id'].index('548')
         assert pd_data['api_entity_filings_url'][i] == 'https://filings.xbrl.org/api/entities/743700EPLUWXE25HGM03/filings'
@@ -344,8 +339,7 @@ class TestResourceCollection_entities_get_pandas_data:
             attr_names=None,
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=True,
-            include_paths=False
+            include_urls=True
             )
         i = pd_data['api_id'].index('548')
         assert pd_data['api_entity_filings_url'][i] == 'https://filings.xbrl.org/api/entities/743700EPLUWXE25HGM03/filings'
@@ -380,8 +374,7 @@ class TestResourceCollection_validation_messages_get_pandas_data:
             attr_names=None,
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
+            include_urls=False
             )
         i = pd_data['api_id'].index('5464')
         assert len(pd_data['api_id']) == len(e_api_ids)
@@ -418,8 +411,7 @@ class TestResourceCollection_validation_messages_get_pandas_data:
             attr_names=['api_id', 'severity'],
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
+            include_urls=False
             )
         i = pd_data['api_id'].index('5464')
         assert len(pd_data['api_id']) == len(e_api_ids)

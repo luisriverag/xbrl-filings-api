@@ -159,8 +159,7 @@ class TestResourceCollection_entities_get_pandas_data:
             attr_names=None,
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
+            include_urls=False
             )
         df = pd.DataFrame(data=pd_data)
         enento = df[df['api_id'] == '548']
@@ -201,8 +200,7 @@ class TestResourceCollection_validation_messages_get_pandas_data:
             attr_names=None,
             strip_timezone=True,
             date_as_datetime=True,
-            include_urls=False,
-            include_paths=False
+            include_urls=False
             )
         df = pd.DataFrame(data=pd_data)
         assert len(df.index.array) == len(e_api_ids)
