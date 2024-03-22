@@ -236,9 +236,18 @@ class _JSONTree:
         """Parse string value of `key_path` based on `parse_type`."""
         if parse_type == _ParseType.DATETIME:
             parsed_dt = None
-            try:
-                parsed_dt = datetime.fromisoformat(key_value)
-            except ValueError:
+            for try_i in range(2):
+                try:
+                    if try_i == 0:
+                        parsed_dt = datetime.fromisoformat(key_value)
+                    else:
+                        # For Python 3.10 and earlier in case timezones
+                        # are taken to use in API datetime strings
+                        parsed_dt = datetime.strptime(
+                            key_value, '%Y-%m-%d %H:%M:%S.%f%z')
+                except ValueError:
+                    pass
+            if parsed_dt is None:
                 msg = (
                     f'Could not parse ISO datetime string {key_value!r} for '
                     f'{self.class_name} object JSON fragment path '
