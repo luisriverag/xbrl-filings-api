@@ -254,9 +254,25 @@ def filter_last_end_date_lax_response():
 
 @pytest.fixture
 def filter_error_count_response():
-    """Filter by error_count value 1."""
+    """Filter by error_count value 0."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('filter_error_count'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_inconsistency_count_response():
+    """Filter by `inconsistency_count` value 0."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('filter_inconsistency_count'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_warning_count_response():
+    """Filter by warning_count value 0."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('filter_warning_count'))
         yield rsps
 
 
@@ -301,10 +317,34 @@ def filter_entity_api_id_lax_response():
 
 
 @pytest.fixture
+def filter_json_url_response():
+    """Filter by json_url of Kone 2022 [en] filing."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('filter_json_url'))
+        yield rsps
+
+
+@pytest.fixture
 def filter_package_url_response():
-    """Filter by package_url of Kone 2022 filing."""
+    """Filter by package_url of Kone 2022 [en] filing."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('filter_package_url'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_viewer_url_response():
+    """Filter by viewer_url of Kone 2022 [en] filing."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('filter_viewer_url'))
+        yield rsps
+
+
+@pytest.fixture
+def filter_xhtml_url_response():
+    """Filter by xhtml_url of Kone 2022 [en] filing."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('filter_xhtml_url'))
         yield rsps
 
 
@@ -416,14 +456,6 @@ def multifilter_reporting_date_response():
     """Return an error for filtering with `reporting_date`."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('multifilter_reporting_date'))
-        yield rsps
-
-
-@pytest.fixture
-def multifilter_inconsistency_count_response():
-    """Return an error for filtering with `inconsistency_count`."""
-    with responses.RequestsMock() as rsps:
-        rsps._add_from_file(_get_path('multifilter_inconsistency_count'))
         yield rsps
 
 

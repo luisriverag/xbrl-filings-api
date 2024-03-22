@@ -264,17 +264,47 @@ _addmock('filter_last_end_date', lax_fixture=True)
 
 @_recorder.record(file_path=_get_path('filter_error_count'))
 def _fetch_filter_error_count():
-    """Filter by error_count value 1."""
+    """Filter by error_count value 0."""
     _ = requests.get(
         url=ENTRY_POINT_URL,
         params={
             'page[size]': 1,
-            'filter[error_count]': 1
+            'filter[error_count]': 0
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
 _addmock('filter_error_count')
+
+
+@_recorder.record(file_path=_get_path('filter_inconsistency_count'))
+def _fetch_filter_inconsistency_count():
+    """Filter by `inconsistency_count` value 0."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'filter[inconsistency_count]': 0
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('filter_inconsistency_count')
+
+
+@_recorder.record(file_path=_get_path('filter_warning_count'))
+def _fetch_filter_warning_count():
+    """Filter by warning_count value 0."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'filter[warning_count]': 0
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('filter_warning_count')
 
 
 @_recorder.record(file_path=_get_path('filter_added_time'))
@@ -323,10 +353,29 @@ def _fetch_filter_entity_api_id():
 _addmock('filter_entity_api_id', lax_fixture=True)
 
 
+@_recorder.record(file_path=_get_path('filter_json_url'))
+def _fetch_filter_json_url():
+    """Filter by json_url of Kone 2022 [en] filing."""
+    json_url = (
+        '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/2138001CNF45JP5XZK38-'
+        '2022-12-31-en.json'
+        )
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'filter[json_url]': json_url
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('filter_json_url')
+
+
 @_recorder.record(file_path=_get_path('filter_package_url'))
 def _fetch_filter_package_url():
-    """Filter by package_url of Kone 2022 filing."""
-    filter_url = (
+    """Filter by package_url of Kone 2022 [en] filing."""
+    package_url = (
         '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/'
         '2138001CNF45JP5XZK38-2022-12-31-EN.zip'
         )
@@ -334,12 +383,50 @@ def _fetch_filter_package_url():
         url=ENTRY_POINT_URL,
         params={
             'page[size]': 1,
-            'filter[package_url]': filter_url
+            'filter[package_url]': package_url
             },
         headers=JSON_API_HEADERS,
         timeout=REQUEST_TIMEOUT
         )
 _addmock('filter_package_url')
+
+
+@_recorder.record(file_path=_get_path('filter_viewer_url'))
+def _fetch_filter_viewer_url():
+    """Filter by viewer_url of Kone 2022 [en] filing."""
+    viewer_url = (
+        '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/2138001CNF45JP5XZK38-'
+        '2022-12-31-EN/reports/ixbrlviewer.html'
+        )
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'filter[viewer_url]': viewer_url
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('filter_viewer_url')
+
+
+@_recorder.record(file_path=_get_path('filter_xhtml_url'))
+def _fetch_filter_xhtml_url():
+    """Filter by xhtml_url of Kone 2022 [en] filing."""
+    xhtml_url = (
+        '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/2138001CNF45JP5XZK38-'
+        '2022-12-31-EN/reports/2138001CNF45JP5XZK38-2022-12-31-en.html'
+        )
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'filter[report_url]': xhtml_url
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('filter_xhtml_url')
 
 
 @_recorder.record(file_path=_get_path('filter_package_sha256'))
@@ -549,21 +636,6 @@ def _fetch_multifilter_reporting_date():
         timeout=REQUEST_TIMEOUT
         )
 _addmock('multifilter_reporting_date')
-
-
-@_recorder.record(file_path=_get_path('multifilter_inconsistency_count'))
-def _fetch_multifilter_inconsistency_count():
-    """Return an error for filtering with `inconsistency_count`."""
-    _ = requests.get(
-        url=ENTRY_POINT_URL,
-        params={
-            'page[size]': 2,
-            'filter[inconsistency_count]': 1
-            },
-        headers=JSON_API_HEADERS,
-        timeout=REQUEST_TIMEOUT
-        )
-_addmock('multifilter_inconsistency_count')
 
 
 @_recorder.record(file_path=_get_path('multifilter_processed_time'))

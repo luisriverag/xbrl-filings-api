@@ -205,66 +205,6 @@ def test_to_sqlite_reporting_date(
     assert not db_path.is_file()
 
 
-@pytest.mark.xfail(
-    reason=(
-        'Filtering by "_count" attributes is not supported by the '
-        'API.'
-        ),
-    raises=xf.APIError)
-def test_get_filings_inconsistency_count(
-        multifilter_inconsistency_count_response):
-    """Requested `inconsistency_count` filings are returned."""
-    ic_counts = 1, 2
-    fs = xf.get_filings(
-        filters={
-            'inconsistency_count': ic_counts
-            },
-        sort=None,
-        max_size=2,
-        flags=xf.GET_ONLY_FILINGS
-        )
-    received_counts = tuple(filing.inconsistency_count for filing in fs)
-    assert received_counts == 1, 1
-
-
-@pytest.mark.xfail(
-    reason=(
-        'Filtering by "_count" attributes is not supported by the '
-        'API.'
-        ),
-    raises=xf.APIError)
-@pytest.mark.sqlite
-def test_to_sqlite_inconsistency_count(
-        multifilter_inconsistency_count_response, db_record_count, tmp_path,
-        monkeypatch):
-    """Filtering by `inconsistency_count` filings inserted to db."""
-    monkeypatch.setattr(xf.options, 'views', None)
-    ic_counts = 1, 2
-    db_path = tmp_path / 'test_to_sqlite_inconsistency_count.db'
-    xf.to_sqlite(
-        path=db_path,
-        update=False,
-        filters={
-            'inconsistency_count': ic_counts
-            },
-        sort=None,
-        max_size=2,
-        flags=xf.GET_ONLY_FILINGS
-        )
-    assert db_path.is_file()
-    con = sqlite3.connect(db_path)
-    cur = con.cursor()
-    cur.execute(
-        "SELECT inconsistency_count FROM Filing "
-        "WHERE inconsistency_count IN (?, ?)",
-        ic_counts
-        )
-    saved_ic_counts = {row[0] for row in cur.fetchall()}
-    assert saved_ic_counts == set(ic_counts)
-    assert db_record_count(cur) == 2
-    con.close()
-
-
 @pytest.mark.datetime
 def test_get_filings_processed_time_str(
         multifilter_processed_time_response):

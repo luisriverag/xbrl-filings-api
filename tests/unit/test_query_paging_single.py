@@ -20,7 +20,7 @@ import xbrl_filings_api as xf
     reason=(
         'Error in undelying API: redundant filings on pages. '
         'Filing with api_id "1" (Cloetta AB, 2021, en) and "2" '
-        '(Cloetta AB, 2021, sv) is returned twice and as a result, '
+        '(Cloetta AB, 2021, sv) are returned twice and as a result, '
         'a fouth page is requested to fulfil expected 5 filings.'
         )
     )

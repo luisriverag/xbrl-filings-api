@@ -288,62 +288,6 @@ def test_to_sqlite_last_end_date_datetime(
             )
 
 
-@pytest.mark.xfail(
-    reason=(
-        'Filtering by "_count" attributes is not supported by the '
-        'API.'
-        ),
-    raises=xf.APIError)
-def test_get_filings_error_count(filter_error_count_response):
-    """Filtering by `error_count` value 1 return one filing."""
-    fs = xf.get_filings(
-        filters={
-            'error_count': 1
-            },
-        sort=None,
-        max_size=1,
-        flags=xf.GET_ONLY_FILINGS
-        )
-    filing = next(iter(fs), None)
-    assert isinstance(filing, xf.Filing)
-    assert filing.error_count == 1
-
-
-@pytest.mark.xfail(
-    reason=(
-        'Filtering by "_count" attributes is not supported by the '
-        'API.'
-        ),
-    raises=xf.APIError)
-@pytest.mark.sqlite
-def test_to_sqlite_error_count(
-        filter_error_count_response, db_record_count, tmp_path, monkeypatch):
-    """Requested `error_count` is inserted into a database."""
-    monkeypatch.setattr(xf.options, 'views', None)
-    db_path = tmp_path / 'test_to_sqlite_error_count.db'
-    xf.to_sqlite(
-        path=db_path,
-        update=False,
-        filters={
-            'error_count': 1
-            },
-        sort=None,
-        max_size=1,
-        flags=xf.GET_ONLY_FILINGS
-        )
-    assert db_path.is_file()
-    con = sqlite3.connect(db_path)
-    cur = con.cursor()
-    cur.execute(
-        "SELECT COUNT(*) FROM Filing WHERE error_count = ?",
-        (1,)
-        )
-    count_num = cur.fetchone()[0]
-    assert count_num == 1, 'Inserted requested filing(s)'
-    assert db_record_count(cur) == 1
-    con.close()
-
-
 @pytest.mark.datetime
 def test_get_filings_added_time_str(
         filter_added_time_response, monkeypatch):
@@ -568,70 +512,6 @@ def test_get_filings_entity_api_id(filter_entity_api_id_lax_response):
                 max_size=1,
                 flags=xf.GET_ONLY_FILINGS
                 )
-
-
-@pytest.mark.xfail(
-    reason=(
-        'Filtering by "_url" attributes is not supported by the '
-        'API.'
-        ),
-    raises=xf.APIError)
-def test_get_filings_package_url(filter_package_url_response):
-    """Filtering by `package_url` return one filing."""
-    filter_url = (
-        '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/'
-        '2138001CNF45JP5XZK38-2022-12-31-EN.zip'
-        )
-    fs = xf.get_filings(
-        filters={
-            'package_url': filter_url
-            },
-        sort=None,
-        max_size=1,
-        flags=xf.GET_ONLY_FILINGS
-        )
-    kone22en = next(iter(fs), None)
-    assert isinstance(kone22en, xf.Filing)
-    assert kone22en.package_url.endswith(filter_url)
-
-
-@pytest.mark.xfail(
-    reason=(
-        'Filtering by "_url" attributes is not supported by the '
-        'API.'
-        ),
-    raises=xf.APIError)
-@pytest.mark.sqlite
-def test_to_sqlite_package_url(
-        filter_package_url_response, db_record_count, tmp_path, monkeypatch):
-    """Requested `package_url` is inserted into a database."""
-    monkeypatch.setattr(xf.options, 'views', None)
-    filter_url = (
-        '/2138001CNF45JP5XZK38/2022-12-31/ESEF/FI/0/'
-        '2138001CNF45JP5XZK38-2022-12-31-EN.zip'
-        )
-    db_path = tmp_path / 'test_to_sqlite_package_url.db'
-    xf.to_sqlite(
-        path=db_path,
-        update=False,
-        filters={
-            'package_url': filter_url
-            },
-        sort=None,
-        max_size=1,
-        flags=xf.GET_ONLY_FILINGS
-        )
-    assert db_path.is_file()
-    con = sqlite3.connect(db_path)
-    cur = con.cursor()
-    cur.execute(
-        "SELECT COUNT(*) FROM Filing WHERE package_url LIKE '%?'",
-        (1,)
-        )
-    count_num = cur.fetchone()[0]
-    assert count_num == 1, 'Inserted requested filing(s)'
-    assert db_record_count(cur) == 1
-    con.close()
 
 
 def test_get_filings_package_sha256(filter_package_sha256_response):
