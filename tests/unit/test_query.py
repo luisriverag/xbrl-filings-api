@@ -131,3 +131,21 @@ def test_get_filings_bad_json(monkeypatch):
                 max_size=100,
                 flags=xf.GET_ONLY_FILINGS
                 )
+
+
+@pytest.mark.sqlite
+def test_bad_options_time_accuracy(
+        get_oldest3_fi_filingset, monkeypatch, tmp_path):
+    """Test bad `options.time_accuracy`."""
+    monkeypatch.setattr(xf.options, 'time_accuracy', 'bad_value')
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
+    path = tmp_path / 'test_bad_options_time_accuracy.db'
+    with pytest.raises(
+            ValueError,
+            match=(r"options\.time_accuracy not in \{'day', 'min', 'sec', "
+                   r"'max'\}")):
+        fs.to_sqlite(
+            path=path,
+            update=False,
+            flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
+            )

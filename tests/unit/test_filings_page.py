@@ -124,6 +124,46 @@ def test_included_resource_api_id_as_int():
     assert ent.api_id == '123456789'
 
 
+def test_rogue_validation_messages_logging(caplog):
+    """Test logging when ValidationMessage has no attribute filing."""
+    e_log = (
+        "No filing defined for ValidationMessage("
+        "code='xbrl.5.2.5.2:calcInconsistency'), api_id=987654"
+        )
+    rsps_with_rogue_vmsg = {
+        'data': [{
+            'type': 'filing',
+            'attributes': {
+                'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
+                'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+                },
+            'id': '123',
+            'links': {'self': '/api/filings/123'}
+            }],
+        'included': [{
+            'type': 'validation_message',
+            'attributes': {
+                'code': 'xbrl.5.2.5.2:calcInconsistency',
+                'message': 'Calculation inconsistent',
+                'severity': 'INCONSISTENCY'
+                },
+            'id': '987654'
+            }],
+        'links': {
+            'self': 'https://filings.xbrl.org/api/filings'
+            },
+        'meta': {'count': 0},
+        'jsonapi': {'version': '1.0'}
+        }
+    with responses.RequestsMock() as rsps:
+        rsps.get(
+            url=re.compile(r'.+'),
+            json=rsps_with_rogue_vmsg,
+        )
+        _ = xf.get_filings(flags=xf.GET_VALIDATION_MESSAGES)
+    assert e_log in caplog.text
+
+
 # xf.FilingsPage._get_filings
 # xf.FilingsPage._parse_filing_fragment
 # xf.FilingsPage._get_inc_resource

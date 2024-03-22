@@ -13,7 +13,8 @@ from xbrl_filings_api.default_views import DEFAULT_VIEWS
 
 
 @pytest.mark.sqlite
-def test_views_added(get_oldest3_fi_ent_vmessages_filingset, tmp_path, monkeypatch):
+def test_views_added(
+        get_oldest3_fi_ent_vmessages_filingset, tmp_path, monkeypatch):
     """Test views are added when `options.views` is set."""
     monkeypatch.setattr(xf.options, 'views', DEFAULT_VIEWS)
     fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
@@ -34,7 +35,8 @@ def test_views_added(get_oldest3_fi_ent_vmessages_filingset, tmp_path, monkeypat
 
 
 @pytest.mark.sqlite
-def test_views_not_added(get_oldest3_fi_ent_vmessages_filingset, tmp_path, monkeypatch):
+def test_views_not_added(
+        get_oldest3_fi_ent_vmessages_filingset, tmp_path, monkeypatch):
     """Test views are not added when `options.views` is None."""
     monkeypatch.setattr(xf.options, 'views', None)
     fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
@@ -54,7 +56,8 @@ def test_views_not_added(get_oldest3_fi_ent_vmessages_filingset, tmp_path, monke
 
 
 @pytest.mark.sqlite
-def test_require_entities_added(get_oldest3_fi_entities_filingset, tmp_path, monkeypatch):
+def test_require_entities_added(
+        get_oldest3_fi_entities_filingset, tmp_path, monkeypatch):
     """Test view which requires entities is added properly."""
     monkeypatch.setattr(xf.options, 'views', DEFAULT_VIEWS)
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
@@ -74,7 +77,8 @@ def test_require_entities_added(get_oldest3_fi_entities_filingset, tmp_path, mon
 
 
 @pytest.mark.sqlite
-def test_require_entities_not_added(get_oldest3_fi_filingset, tmp_path, monkeypatch):
+def test_require_entities_not_added(
+        get_oldest3_fi_filingset, tmp_path, monkeypatch):
     """Test view which requires entities is not added when no entities."""
     monkeypatch.setattr(xf.options, 'views', DEFAULT_VIEWS)
     fs: xf.FilingSet = get_oldest3_fi_filingset()
@@ -94,7 +98,8 @@ def test_require_entities_not_added(get_oldest3_fi_filingset, tmp_path, monkeypa
 
 
 @pytest.mark.sqlite
-def test_add_with_same_name(get_oldest3_fi_ent_vmessages_filingset, tmp_path, monkeypatch):
+def test_add_with_same_name(
+        get_oldest3_fi_ent_vmessages_filingset, tmp_path, monkeypatch):
     """Test with two views named ``ViewTest``."""
     sql = 'SELECT * FROM Filing'
     overlapping_list = [

@@ -18,6 +18,18 @@ def test_raises_APIResource_init():
         xf.APIResource(json_frag={})
 
 
+def test_raises_Filing_init_without_api_request():
+    """Test raising for Filing init without api_request."""
+    with pytest.raises(ValueError, match=r'Parameter api_request not given'):
+        xf.Filing(json_frag={})
+
+
+def test_raises_Filing_init_prototype():
+    """Test initiating Filing prototype with ellipsis argument."""
+    fproto = xf.Filing(...)
+    assert fproto.api_id == 'None'
+
+
 def test_raises_APIResource_get_data_attributes():
     """Test raising for APIResource.get_data_attributes."""
     with pytest.raises(NotImplementedError):

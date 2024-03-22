@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 
-time_formats = {
+TIME_FORMATS = {
     'day': '%Y-%m-%d',
     'min': '%Y-%m-%d %H:%M',
     'sec': '%Y-%m-%d %H:%M:%S',

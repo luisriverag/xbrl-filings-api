@@ -33,7 +33,7 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
-from xbrl_filings_api.time_formats import time_formats
+from xbrl_filings_api.time_formats import TIME_FORMATS
 
 UTC = timezone.utc
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def generate_pages(
         max_size: int,
         flags: ScopeFlag,
         res_colls: dict[str, ResourceCollection],
-        sort: Union[Sequence[str], None] = None,
+        sort: Union[str, Sequence[str], None] = None,
         add_api_params: Union[Mapping, None] = None,
         ) -> Generator[FilingsPage, None, None]:
     """
@@ -73,6 +73,9 @@ def generate_pages(
     requests.ConnectionError
     requests.JSONDecodeError
     """
+    if isinstance(sort, str):
+        sort = [sort]
+
     params: dict[str, str] = {}
     received_api_ids: dict[str, set] = {}
 
@@ -194,10 +197,9 @@ def _get_params_list_on_filters(
     # fgroup[group_name][field_name] = [str_value1, str_value2, ...]
     fgroup: dict[str, dict[str, list[str]]] = {}
 
-    # Classify filter values and normalize them as list of strings into
-    # `fgroup`
+    # Function calls change `fgroup`, classify to 'other', 'date', 'time'
     for field_name, filter_value in filters.items():
-        _classify_filter(fgroup, field_name, filter_value)
+        _classify_normalize_filter(fgroup, field_name, filter_value)
 
     _expand_short_date_filters(fgroup)
 
@@ -254,7 +256,7 @@ def _filters_to_query_params(
     return qparams
 
 
-def _classify_filter(
+def _classify_normalize_filter(
         fgroup: dict[str, dict[str, list[str]]], field_name: str,
         filter_value: object) -> None:
     """Classify a filter, normalize and process it as strings."""
@@ -264,20 +266,19 @@ def _classify_filter(
     if field_name.endswith('_time'):
         group_name = 'time'
 
-    vlist: list[str]
+    vlist: list[str] = []
     if (isinstance(filter_value, Iterable)
         and not isinstance(filter_value, str)):
         # Multifilter value
-        vlist = []
         for multifilter_i, single_filter in enumerate(filter_value):
-            vlist.append(
-                _process_single_filter_value(
-                    field_name, single_filter, group_name, multifilter_i))
+            processed = _process_single_filter_value(
+                field_name, single_filter, group_name, multifilter_i)
+            vlist.append(processed)
     else:
         # Single filter value
-        vlist = [
-            _process_single_filter_value(
-                field_name, filter_value, group_name, None)]
+        processed = _process_single_filter_value(
+            field_name, filter_value, group_name, None)
+        vlist.append(processed)
 
     if group_name not in fgroup:
         fgroup[group_name] = {}
@@ -332,7 +333,7 @@ def _process_time_filter(
             proc_dt = val.astimezone(UTC) # type: ignore
     else:
         val_str = str(val)
-        for dtparse in reversed(time_formats.values()):
+        for dtparse in reversed(TIME_FORMATS.values()):
             try_dt: Union[datetime, None] = None
             try:
                 try_dt = datetime.strptime(val_str, dtparse)  # noqa: DTZ007

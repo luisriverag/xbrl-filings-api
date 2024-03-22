@@ -17,7 +17,8 @@ from xbrl_filings_api.api_request import _APIRequest
 
 
 @pytest.fixture
-def paging_swedish_size2_pg3_2nd_filingspage(paging_swedish_size2_pg3_lax_response, res_colls, monkeypatch):
+def paging_swedish_size2_pg3_2nd_filingspage(
+        paging_swedish_size2_pg3_lax_response, monkeypatch):
     """FilingsPage for 2nd page (2pc) of oldest Swedish filings."""
     monkeypatch.setattr(xf.options, 'max_page_size', 2)
     piter = xf.filing_page_iter(

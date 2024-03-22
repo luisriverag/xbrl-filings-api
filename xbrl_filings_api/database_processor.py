@@ -30,7 +30,7 @@ from xbrl_filings_api.exceptions import (
     DatabaseSchemaUnmatchError,
 )
 from xbrl_filings_api.filing import Filing
-from xbrl_filings_api.time_formats import time_formats
+from xbrl_filings_api.time_formats import TIME_FORMATS
 from xbrl_filings_api.validation_message import ValidationMessage
 
 logger = logging.getLogger(__name__)
@@ -290,9 +290,10 @@ def _exec(
 
 def _adapt_datetime(dt: datetime):
     try:
-        fstr = time_formats[options.time_accuracy]
+        fstr = TIME_FORMATS[options.time_accuracy]
     except KeyError:
-        fstr = time_formats['min']
+        msg = "options.time_accuracy not in {'day', 'min', 'sec', 'max'}"
+        raise ValueError(msg)
     return dt.strftime(fstr)
 
 

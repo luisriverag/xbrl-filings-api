@@ -134,9 +134,6 @@ def get_filings(
     FilingSet of Filing
         Set of retrieved filings.
     """
-    if isinstance(sort, str):
-        sort = [sort]
-
     filings = FilingSet()
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,
@@ -239,9 +236,6 @@ def to_sqlite(
         When ``update=True``, if the file is not a database
         (``err.sqlite_errorname='SQLITE_NOTADB'``) etc.
     """
-    if isinstance(sort, str):
-        sort = [sort]
-
     filings = FilingSet()
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,
@@ -257,6 +251,7 @@ def to_sqlite(
             update=update,
             flags=flags
             )
+        # ResourceCollection reads subresource references in FilingSet
         filings.update(page_filings)
         # After database creation, next pages are always added to
         # existing db
@@ -306,9 +301,6 @@ def filing_page_iter(
     FilingsPage
         Filings page containing a batch of downloaded filings
     """
-    if isinstance(sort, str):
-        sort = [sort]
-
     filings = FilingSet()
     res_colls: dict[str, ResourceCollection] = {
         'Entity': filings.entities,

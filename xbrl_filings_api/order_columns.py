@@ -6,8 +6,6 @@
 
 from collections.abc import Iterable
 
-from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
-
 
 def order_columns(cols: Iterable[str]) -> list[str]:
     """Order column names for display."""
@@ -20,8 +18,6 @@ def order_columns(cols: Iterable[str]) -> list[str]:
             order = 10
         elif col.endswith('_api_id'):
             order = 20
-        elif col in ATTRS_ALWAYS_EXCLUDE_FROM_DATA:
-            order = 21
         elif col.endswith('_url'):
             order = 22
         if col == 'query_time':

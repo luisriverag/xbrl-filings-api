@@ -467,39 +467,21 @@ _addmock('sort_two_fields')
 
 @_recorder.record(file_path=_get_path('paging_swedish_size2_pg3'))
 def _fetch_paging_swedish_size2_pg3():
-    """Get 3 pages (2pc) of oldest Swedish filings."""
-    _ = requests.get(
-        url=ENTRY_POINT_URL,
-        params={
-            'page[size]': 2,
-            'filter[country]': 'SE',
-            'sort': 'date_added' # added_time
-            },
-        headers=JSON_API_HEADERS,
-        timeout=REQUEST_TIMEOUT
-        )
-    _ = requests.get(
-        url=ENTRY_POINT_URL,
-        params={
-            'page[size]': 2,
-            'filter[country]': 'SE',
-            'sort': 'date_added', # added_time
-            'page[number]': 2
-            },
-        headers=JSON_API_HEADERS,
-        timeout=REQUEST_TIMEOUT
-        )
-    _ = requests.get(
-        url=ENTRY_POINT_URL,
-        params={
-            'page[size]': 2,
-            'filter[country]': 'SE',
-            'sort': 'date_added', # added_time
-            'page[number]': 3
-            },
-        headers=JSON_API_HEADERS,
-        timeout=REQUEST_TIMEOUT
-        )
+    """Get 3 pages, actually 4, (pg size 2) of oldest Swedish filings."""
+    page_count = 4 # API bug due to not fulfilling on 3rd page
+    params={
+        'page[size]': 2,
+        'filter[country]': 'SE',
+        'sort': 'date_added' # added_time
+        }
+    for page_num in range(1, page_count+1):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params=params,
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+        params['page[number]'] = page_num + 1
 _addmock('paging_swedish_size2_pg3', lax_fixture=True)
 
 
@@ -804,6 +786,25 @@ def _fetch_kone22_all_languages():
             )
 _addmock('kone22_all_languages')
 
+
+@_recorder.record(file_path=_get_path('estonian_2_pages_3_each'))
+def _fetch_estonian_2_pages_3_each():
+    """Estonian filings 2 pages of size 3, incl. entities, v-messages."""
+    page_count = 2
+    params={
+        'page[size]': 3,
+        'filter[country]': 'EE',
+        'include': 'entity,validation_messages'
+        }
+    for page_num in range(1, page_count+1):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params=params,
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+        params['page[number]'] = page_num + 1
+_addmock('estonian_2_pages_3_each')
 
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 

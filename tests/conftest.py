@@ -373,7 +373,7 @@ def sort_two_fields_response():
 
 @pytest.fixture
 def paging_swedish_size2_pg3_response():
-    """Get 3 pages (2pc) of oldest Swedish filings."""
+    """Get 3 pages, actually 4, (pg size 2) of oldest Swedish filings."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('paging_swedish_size2_pg3'))
         yield rsps
@@ -381,7 +381,7 @@ def paging_swedish_size2_pg3_response():
 
 @pytest.fixture
 def paging_swedish_size2_pg3_lax_response():
-    """Get 3 pages (2pc) of oldest Swedish filings."""
+    """Get 3 pages, actually 4, (pg size 2) of oldest Swedish filings."""
     with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
         rsps._add_from_file(_get_path('paging_swedish_size2_pg3'))
         yield rsps
@@ -504,4 +504,12 @@ def kone22_all_languages_response():
     """Sorted ascending by package_sha256 from Latvian records."""
     with responses.RequestsMock() as rsps:
         rsps._add_from_file(_get_path('kone22_all_languages'))
+        yield rsps
+
+
+@pytest.fixture
+def estonian_2_pages_3_each_response():
+    """Estonian filings 2 pages of size 3, incl. entities, v-messages."""
+    with responses.RequestsMock() as rsps:
+        rsps._add_from_file(_get_path('estonian_2_pages_3_each'))
         yield rsps

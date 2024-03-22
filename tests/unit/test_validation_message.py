@@ -315,3 +315,10 @@ class TestDuplicateNumMsg:
         assert isinstance(vmsg.query_time, datetime)
         assert isinstance(vmsg.request_url, str)
         assert '://' in vmsg.request_url
+
+
+def test_str_empty_message(tecnotree21fi_duplicate_num_msg):
+    """Test __str__ method."""
+    vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
+    vmsg.text = ''
+    assert str(vmsg) == ''

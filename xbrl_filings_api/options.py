@@ -12,9 +12,9 @@ max_page_size : int, default 200
     parameter `max_size` which is smaller than this value, page
     size will be set as `max_size` instead.
 time_accuracy : {'day', 'min', 'sec', 'max'}, default 'min'
-    The smallest time unit to be shown when converting times to
-    strings. This includes database values. Option ``day`` shows
-    only dates and ``max`` fractional seconds.
+    The smallest time unit to be shown when converting datetimes to
+    SQLite TEXT values. Option ``day`` shows only dates and ``max``
+    fractional seconds.
 year_filter_months : YearFilterMonthsType, default ((0, 8), (1, 8))
     Range of months to request when `filters` has a date
     field with only year defined. First int of inner tuples is a
@@ -43,8 +43,10 @@ max_page_size: int = 200
 """Maximum batch of main resources to be fetched on a single page."""
 
 time_accuracy: str = 'min'
-"""String conversion of datetimes which must be a key of
-`time_formats.time_formats`.
+"""
+Most accurate time unit for datetime conversion to SQLite TEXT value.
+
+Must be in {'day', 'min', 'sec', 'max'}.
 """
 
 year_filter_months: YearFilterMonthsType = ((0, 8), (1, 8))
