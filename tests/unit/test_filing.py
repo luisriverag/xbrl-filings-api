@@ -22,16 +22,16 @@ import xbrl_filings_api.options as options
 import xbrl_filings_api.request_processor as request_processor
 
 UTC = timezone.utc
-MOCK_RESPONSE_PATH = Path(__file__).parent.parent / 'mock_responses'
 
 
 @pytest.fixture(scope='module')
-def get_asml22en_filing():
+def get_asml22en_filing(urlmock):
     """ASML Holding 2022 English AFR filing."""
     def _get_asml22en_filing():
+        nonlocal urlmock
         filing = None
         with responses.RequestsMock() as rsps:
-            rsps._add_from_file(MOCK_RESPONSE_PATH / 'asml22en.yaml')
+            urlmock.apply(rsps, 'asml22en')
             fs = xf.get_filings(
                 filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
                 sort=None,
@@ -58,13 +58,13 @@ def asml22en_entities_filing(asml22en_entities_response, res_colls):
 
 
 @pytest.fixture(scope='module')
-def get_creditsuisse21en_entity_filing():
+def get_creditsuisse21en_entity_filing(urlmock):
     """Credit Suisse 2021 English AFR filing with Entity."""
     def _get_creditsuisse21en_entity_filing():
+        nonlocal urlmock
         filing = None
         with responses.RequestsMock() as rsps:
-            rsps._add_from_file(
-                MOCK_RESPONSE_PATH / 'creditsuisse21en_by_id_entity.yaml')
+            urlmock.apply(rsps, 'creditsuisse21en_by_id_entity')
             fs = xf.get_filings(
                 filters={'api_id': '162'},
                 sort=None,
@@ -471,3 +471,18 @@ def test_get_url_stem_empty_path():
     """Test _get_url_stem with a an empty path."""
     emptypath_url = 'https://filing.xbrl.org'
     assert xf.Filing._get_url_stem(None, emptypath_url) is None
+
+
+def test_get_url_stem_space_chr_value():
+    """Test _get_url_stem with stem as a space character."""
+    emptypath_url = 'https://filing.xbrl.org/path/%20/'
+    assert xf.Filing._get_url_stem(None, emptypath_url) is None
+
+
+def test_derive_language_bad_3letter_language(asml22en_entities_filing):
+    """Test _derive_language with a bad 3-letter language 'XYZ'."""
+    filing: xf.Filing = asml22en_entities_filing
+    filing.package_url = (
+        'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0/743700KMZL7E8PLI5X73-2020-12-31_XYZ.zip')
+    filing.xhtml_url = None # Disable fallback
+    assert filing._derive_language() is None

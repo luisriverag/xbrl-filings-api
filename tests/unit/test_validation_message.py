@@ -320,5 +320,5 @@ class TestDuplicateNumMsg:
 def test_str_empty_message(tecnotree21fi_duplicate_num_msg):
     """Test __str__ method."""
     vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
-    vmsg.text = ''
+    vmsg.text = None
     assert str(vmsg) == ''

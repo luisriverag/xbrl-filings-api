@@ -12,6 +12,7 @@ import xbrl_filings_api.exceptions as xf_exceptions
 
 @pytest.fixture
 def unknown_filter_error_obj(unknown_filter_error_response):
+    """Get APIError from mock unknown_filter_error."""
     with pytest.warns(xf_exceptions.FilterNotSupportedWarning):
         with pytest.raises(xf.APIError) as exc_info:
             _ = xf.get_filings(
@@ -26,6 +27,7 @@ def unknown_filter_error_obj(unknown_filter_error_response):
 
 @pytest.fixture
 def bad_page_error_obj(bad_page_error_response):
+    """Get APIError from mock bad_page_error."""
     with pytest.raises(xf.APIError) as exc_info:
         _ = xf.get_filings(
             filters=None,
@@ -37,7 +39,8 @@ def bad_page_error_obj(bad_page_error_response):
     return exc_info.value
 
 
-def test_unknown_filter(unknown_filter_error_obj):
+def test_unknown_filter_attributes(unknown_filter_error_obj):
+    """Test attributes of mock unknown_filter_error."""
     err: xf.APIError = unknown_filter_error_obj
     assert err.title == 'Invalid filters querystring parameter.'
     assert err.detail == 'FilingSchema has no attribute abcdef'
@@ -48,6 +51,7 @@ def test_unknown_filter(unknown_filter_error_obj):
 
 
 def test_bad_page(bad_page_error_obj):
+    """Test attributes of mock bad_page_error."""
     err: xf.APIError = bad_page_error_obj
     assert err.title == 'Unknown error'
     assert err.detail is None
@@ -67,6 +71,26 @@ def test_str_unknown_filter(unknown_filter_error_obj):
     assert str(err) == e_str
 
 
+def test_str_bad_page(bad_page_error_obj):
+    """Test `__str__` for mock bad_page_error."""
+    err: xf.APIError = bad_page_error_obj
+    assert str(err) == f'{err.title} ({err.code})'
+
+
+def test_str_no_title_detail(bad_page_error_obj):
+    """Test `__str__` when APIError has code but no title or detail."""
+    err: xf.APIError = bad_page_error_obj
+    err.title = None
+    assert str(err) == f'Code: {err.code}'
+
+
+def test_str_no_title(unknown_filter_error_obj):
+    """Test `__str__` when APIError has detail but no title or code."""
+    err: xf.APIError = unknown_filter_error_obj
+    err.title = None
+    assert str(err) == err.detail
+
+
 def test_repr_unknown_filter(unknown_filter_error_obj):
     """Test `__repr__` for mock unknown_filter_error."""
     e_repr = (
@@ -75,13 +99,6 @@ def test_repr_unknown_filter(unknown_filter_error_obj):
         )
     err: xf.APIError = unknown_filter_error_obj
     assert repr(err) == e_repr
-
-
-def test_str_bad_page(bad_page_error_obj):
-    """Test `__str__` for mock bad_page_error."""
-    e_str = 'Unknown error (9h9h)'
-    err: xf.APIError = bad_page_error_obj
-    assert str(err) == e_str
 
 
 def test_repr_bad_page(bad_page_error_obj):

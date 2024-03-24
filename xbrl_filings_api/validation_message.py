@@ -7,7 +7,7 @@
 import logging
 import re
 import urllib.parse
-from pathlib import PurePath
+from pathlib import PurePosixPath
 from typing import Union
 
 from xbrl_filings_api.api_request import _APIRequest
@@ -207,52 +207,38 @@ class ValidationMessage(APIResource):
         """
 
         if self.code == 'xbrl.5.2.5.2:calcInconsistency':
-            self.calc_computed_sum = self._derive_calc_float(
-                self._COMPUTED_SUM_RE, 'calc_computed_sum')
-            self.calc_reported_sum = self._derive_calc_float(
-                self._REPORTED_SUM_RE, 'calc_reported_sum')
-            self.calc_context_id = self._derive_calc(
-                self._CONTEXT_ID_RE)
-            self.calc_line_item = self._derive_calc(
-                self._LINE_ITEM_RE)
-            self.calc_short_role = self._derive_calc(
-                self._SHORT_ROLE_RE)
-            unreported_items = self._derive_calc(
-                self._UNREPORTED_ITEMS_RE)
+            self._derive_calc_prefixed_attrs()
+        elif self.code == 'message:tech_duplicated_facts1':
+            self._derive_duplicate_prefixed_attrs()
 
-            uri_path = urllib.parse.urlparse(self.calc_short_role).path
-            if uri_path.strip():
-                last_part = PurePath(uri_path).name
-                if last_part.strip():
-                    self.calc_short_role = last_part
+    def _derive_calc_prefixed_attrs(self):
+        self.calc_computed_sum = self._derive_calc_float(
+            self._COMPUTED_SUM_RE, 'calc_computed_sum')
+        self.calc_reported_sum = self._derive_calc_float(
+            self._REPORTED_SUM_RE, 'calc_reported_sum')
+        self.calc_context_id = self._derive_calc(
+            self._CONTEXT_ID_RE)
+        self.calc_line_item = self._derive_calc(
+            self._LINE_ITEM_RE)
+        self.calc_short_role = self._derive_calc(
+            self._SHORT_ROLE_RE)
+        unreported_items = self._derive_calc(
+            self._UNREPORTED_ITEMS_RE)
+        self.calc_short_role = self._derive_calc_short_role()
 
-            if unreported_items and unreported_items.lower() != 'none':
-                self.calc_unreported_items = (
-                    self._COMMA_RE.split(unreported_items))
+        if unreported_items and unreported_items.lower() != 'none':
+            self.calc_unreported_items = (
+                self._COMMA_RE.split(unreported_items))
 
-        if self.code == 'message:tech_duplicated_facts1':
-            duplicate_1 = self._derive_calc_float(
-                self._DUPLICATE_1_RE, 'duplicate_*')
-            duplicate_2 = self._derive_calc_float(
-                self._DUPLICATE_2_RE, 'duplicate_*')
-            if (isinstance(duplicate_1, float)
-                    and isinstance(duplicate_2, float)):
-                self.duplicate_greater = max(duplicate_1, duplicate_2)
-                self.duplicate_lesser = min(duplicate_1, duplicate_2)
-
-    def __repr__(self) -> str:
-        """
-        Return string repr of validation message.
-
-        Displays `code` attribute.
-        """
-        return f'{type(self).__name__}(code={self.code!r})'
-
-    def __str__(self) -> str:
-        """Return `text` attribute value."""
-        if self.text is None:
-            return ''
-        return self.text
+    def _derive_duplicate_prefixed_attrs(self):
+        duplicate_1 = self._derive_calc_float(
+            self._DUPLICATE_1_RE, 'duplicate_*')
+        duplicate_2 = self._derive_calc_float(
+            self._DUPLICATE_2_RE, 'duplicate_*')
+        if (isinstance(duplicate_1, float)
+                and isinstance(duplicate_2, float)):
+            self.duplicate_greater = max(duplicate_1, duplicate_2)
+            self.duplicate_lesser = min(duplicate_1, duplicate_2)
 
     def _derive_calc(self, re_obj: re.Pattern) -> Union[str, None]:
         mt = re_obj.search(self.text)
@@ -274,3 +260,38 @@ class ValidationMessage(APIResource):
                     )
                 logger.warning(msg, stacklevel=2)
         return calc_float
+    
+    def _derive_calc_short_role(self) -> str | None:
+        uri_path = ''
+        try:
+            parse_res = urllib.parse.urlparse(self.calc_short_role)
+        except ValueError:
+            pass
+        else:
+            uri_path = parse_res.path
+        if not uri_path.strip():
+            return None
+        uri_path = urllib.parse.unquote(uri_path)
+
+        uri_name = None
+        try:
+            plib_path = PurePosixPath(uri_path)
+        except ValueError:
+            pass
+        else:
+            uri_name = plib_path.name
+        return uri_name
+
+    def __repr__(self) -> str:
+        """
+        Return string repr of validation message.
+
+        Displays `code` attribute.
+        """
+        return f'{type(self).__name__}(code={self.code!r})'
+
+    def __str__(self) -> str:
+        """Return `text` attribute value."""
+        if self.text is None:
+            return ''
+        return self.text

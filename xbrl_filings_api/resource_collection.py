@@ -59,6 +59,8 @@ class ResourceCollection:
                 if isinstance(attr_val, set):
                     resource: APIResource
                     for resource in attr_val:
+                        # Multiple filings cannot share validation
+                        # messages, but here for completeness
                         if resource.api_id not in yielded_ids:
                             yielded_ids.add(resource.api_id)
                             yield resource

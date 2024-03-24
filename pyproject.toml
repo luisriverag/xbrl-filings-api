@@ -114,6 +114,7 @@ omit = [
     "xbrl_filings_api/__about__.py",
     "tests/conftest_source.py",
     "tests/mock_upgrade.py",
+    "tests/urlmock.py",
 ]
 
 [tool.coverage.paths]

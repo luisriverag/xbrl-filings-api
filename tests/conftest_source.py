@@ -22,17 +22,24 @@ import pytest
 import responses  # noqa: F401
 
 import xbrl_filings_api as xf
+from tests.urlmock import UrlMock
 from xbrl_filings_api import FilingSet, ResourceCollection
 
 MOCK_URL_DIR_NAME = 'mock_responses'
 
-mock_dir_path = Path(__file__).parent / MOCK_URL_DIR_NAME
 
+@pytest.fixture(scope='package')
+def urlmock() -> UrlMock:
+    """
+    Define operations for URL mock responses.
 
-def _get_path(set_id):
-    """Get absolute file path of the mock URL collection file."""
-    file_path = mock_dir_path / f'{set_id}.yaml'
-    return str(file_path)
+    Methods
+    -------
+    path
+        Get absolute file path of the mock URL collection file.
+    """
+    instance = UrlMock()
+    return instance
 
 
 @pytest.fixture
@@ -93,12 +100,13 @@ def mock_url_response(mock_response_data):
 
 
 @pytest.fixture(scope='package')
-def get_oldest3_fi_filingset():
+def get_oldest3_fi_filingset(urlmock):
     """Get FilingSet from mock response ``oldest3_fi``."""
     def _get_oldest3_fi_filingset():
+        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
-            rsps._add_from_file(_get_path('oldest3_fi'))
+            urlmock.apply(rsps, 'oldest3_fi')
             fs = xf.get_filings(
                 filters={'country': 'FI'},
                 sort='date_added',
@@ -111,12 +119,13 @@ def get_oldest3_fi_filingset():
 
 
 @pytest.fixture(scope='package')
-def get_oldest3_fi_entities_filingset():
+def get_oldest3_fi_entities_filingset(urlmock):
     """Get FilingSet from mock response ``oldest3_fi_entities`` with entities."""
     def _get_oldest3_fi_entities_filingset():
+        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
-            rsps._add_from_file(_get_path('oldest3_fi_entities'))
+            urlmock.apply(rsps, 'oldest3_fi_entities')
             fs = xf.get_filings(
                 filters={'country': 'FI'},
                 sort='date_added',
@@ -129,12 +138,13 @@ def get_oldest3_fi_entities_filingset():
 
 
 @pytest.fixture(scope='package')
-def get_oldest3_fi_vmessages_filingset():
+def get_oldest3_fi_vmessages_filingset(urlmock):
     """Get FilingSet from mock response ``oldest3_fi_vmessages`` with validation messages."""
     def _get_oldest3_fi_vmessages_filingset():
+        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
-            rsps._add_from_file(_get_path('oldest3_fi_vmessages'))
+            urlmock.apply(rsps, 'oldest3_fi_vmessages')
             fs = xf.get_filings(
                 filters={'country': 'FI'},
                 sort='date_added',
@@ -147,12 +157,13 @@ def get_oldest3_fi_vmessages_filingset():
 
 
 @pytest.fixture(scope='package')
-def get_oldest3_fi_ent_vmessages_filingset():
+def get_oldest3_fi_ent_vmessages_filingset(urlmock):
     """Get FilingSet from mock response ``oldest3_fi_ent_vmessages`` with entities and validation messages."""
     def _get_oldest3_fi_ent_vmessages_filingset():
+        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
-            rsps._add_from_file(_get_path('oldest3_fi_ent_vmessages'))
+            urlmock.apply(rsps, 'oldest3_fi_ent_vmessages')
             fs = xf.get_filings(
                 filters={'country': 'FI'},
                 sort='date_added',

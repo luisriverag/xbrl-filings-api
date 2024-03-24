@@ -7,9 +7,29 @@
 import sqlite3
 
 import pytest
+import responses
 
 import xbrl_filings_api as xf
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
+
+
+@pytest.fixture(scope='module')
+def get_asml22en_entities_filingset(urlmock):
+    """Get FilingSet from mock response ``asml22en_entities``."""
+    def _get_asml22en_entities_filingset():
+        nonlocal urlmock
+        fs = None
+        with responses.RequestsMock() as rsps:
+            urlmock.apply(rsps, 'asml22en_entities')
+            fs = xf.get_filings(
+                filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
+                sort=None,
+                max_size=1,
+                flags=xf.GET_ENTITY,
+                add_api_params=None
+                )
+        return fs
+    return _get_asml22en_entities_filingset
 
 
 @pytest.mark.sqlite
@@ -118,3 +138,35 @@ def test_add_with_same_name(
             flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
             )
     assert not db_path.is_file()
+
+
+@pytest.mark.sqlite
+def test_views_retained_after_update(
+        get_oldest3_fi_ent_vmessages_filingset,
+        get_asml22en_entities_filingset, tmp_path, monkeypatch):
+    """Test views are retained after update to the database."""
+    monkeypatch.setattr(xf.options, 'views', DEFAULT_VIEWS)
+    db_path = tmp_path / 'test_views_retained_after_update.db'
+    flags = xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
+
+    fs_a: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
+    fs_a.to_sqlite(
+        path=db_path,
+        update=False,
+        flags=flags
+        )
+    fs_b: xf.FilingSet = get_asml22en_entities_filingset()
+    fs_b.to_sqlite(
+        path=db_path,
+        update=True,
+        flags=flags
+        )
+
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    cur.execute(
+        'SELECT name FROM sqlite_schema WHERE type = ?', ('view',))
+    existing_views = set(*zip(*cur.fetchall()))
+    con.close()
+    for dview in DEFAULT_VIEWS:
+        assert dview.name in existing_views

@@ -662,7 +662,7 @@ class Filing(APIResource):
 
         url_path = None
         if presult.path.strip():
-            url_path = presult.path
+            url_path = urllib.parse.unquote(presult.path)
         if url_path is None:
             return None
 
@@ -678,7 +678,7 @@ class Filing(APIResource):
             return file_stem
         else:
             return None
-    
+
     def _get_entity_api_id(self) -> Union[str, None]:
         api_id = self._json.get(self.ENTITY_API_ID)
         if api_id is not None and not isinstance(api_id, str):

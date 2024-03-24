@@ -76,7 +76,10 @@ class APIError(FilingsAPIError, APIObject):
                 pts.append('|')
             pts.append(str(self.detail))
         if self.code:
-            pts.append(f'({self.code})')
+            if len(pts) == 0:
+                pts.append(f'Code: {self.code}')
+            else:
+                pts.append(f'({self.code})')
         pts = [pt.strip() for pt in pts]
         return ' '.join(pts)
 

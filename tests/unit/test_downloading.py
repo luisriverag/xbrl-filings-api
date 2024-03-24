@@ -17,14 +17,14 @@ import xbrl_filings_api.exceptions as xf_exceptions
 
 
 @pytest.fixture(scope='module')
-def get_asml22en_or_oldest3_fi():
+def get_asml22en_or_oldest3_fi(urlmock):
     """Function for single Filing or FilingSet of either `asml22en` or `oldest3_fi`."""
     def _get_asml22en_or_oldest3_fi(libclass):
-        mock_dir_path = Path(__file__).parent.parent / 'mock_responses'
+        nonlocal urlmock
         if libclass is xf.Filing:
             fset = None
             with responses.RequestsMock() as rsps:
-                rsps._add_from_file(str(mock_dir_path / 'asml22en.yaml'))
+                urlmock.apply(rsps, 'asml22en')
                 fset = xf.get_filings(
                     filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
                     sort=None,
@@ -37,7 +37,7 @@ def get_asml22en_or_oldest3_fi():
         if libclass is xf.FilingSet:
             fset = None
             with responses.RequestsMock() as rsps:
-                rsps._add_from_file(str(mock_dir_path / 'oldest3_fi.yaml'))
+                urlmock.apply(rsps, 'oldest3_fi')
                 fset = xf.get_filings(
                     filters={'country': 'FI'},
                     sort='date_added',
@@ -350,12 +350,12 @@ async def test_download_aiter_xhtml(
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_to_dir_none(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path, monkeypatch):
     """Test downloading `json_url` with to_dir=None (cwd) by `download`."""
+    monkeypatch.chdir(tmp_path)
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
-    origcwd = Path.cwd()
-    os.chdir(tmp_path)
     with responses.RequestsMock() as rsps:
         for filing in filings:
             mock_url_response(filing.json_url, rsps)
@@ -366,27 +366,23 @@ def test_download_json_to_dir_none(
             check_corruption=True,
             max_concurrent=None
             )
-    try:
-        for filing in filings:
-            save_path = Path(filing.json_download_path)
-            assert save_path.parent == tmp_path
-            assert save_path.is_file()
-            assert save_path.stat().st_size > 0
-            assert save_path.name == url_filename(filing.json_url)
-    except AssertionError:
-        os.chdir(origcwd)
-        raise
+    for filing in filings:
+        save_path = Path(filing.json_download_path)
+        assert save_path.parent == tmp_path
+        assert save_path.is_file()
+        assert save_path.stat().st_size > 0
+        assert save_path.name == url_filename(filing.json_url)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json_to_dir_none(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path, monkeypatch):
     """Test downloading `json_url` with to_dir=None (cwd) by `download_aiter`."""
+    monkeypatch.chdir(tmp_path)
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
-    origcwd = Path.cwd()
-    os.chdir(tmp_path)
     with responses.RequestsMock() as rsps:
         for filing in filings:
             mock_url_response(filing.json_url, rsps)
@@ -398,22 +394,18 @@ async def test_download_aiter_json_to_dir_none(
             max_concurrent=None
             )
         res: xf.DownloadResult
-        try:
-            async for res in dliter:
-                assert res.err is None
-                res_info: xf.DownloadInfo = res.info
-                assert res_info.file == 'json'
-                filing: xf.Filing = res_info.obj
-                assert res.url == filing.json_url
-                assert res.path == filing.json_download_path
-                save_path = Path(filing.json_download_path)
-                assert save_path.parent == tmp_path
-                assert save_path.is_file()
-                assert save_path.stat().st_size > 0
-                assert save_path.name == url_filename(filing.json_url)
-        except AssertionError:
-            os.chdir(origcwd)
-            raise
+        async for res in dliter:
+            assert res.err is None
+            res_info: xf.DownloadInfo = res.info
+            assert res_info.file == 'json'
+            filing: xf.Filing = res_info.obj
+            assert res.url == filing.json_url
+            assert res.path == filing.json_download_path
+            save_path = Path(filing.json_download_path)
+            assert save_path.parent == tmp_path
+            assert save_path.is_file()
+            assert save_path.stat().st_size > 0
+            assert save_path.name == url_filename(filing.json_url)
 
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
