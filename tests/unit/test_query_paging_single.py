@@ -7,10 +7,7 @@
 # Allow unnecessary double quotes as file includes SQL statements.
 # ruff: noqa: Q000
 
-from itertools import chain
-
 import pytest
-import requests
 
 import xbrl_filings_api as xf
 
@@ -83,7 +80,7 @@ def test_removing_extra_filings(estonian_2_pages_3_each_response, monkeypatch):
     page2_filings = next(piter).filing_list
     assert len(page2_filings) == 1, 'Remove 2 unnecessary filings'
     assert next(piter, None) is None
-    received_api_ids = set(chain(page1_filings, page2_filings))
+    received_api_ids = set(page1_filings + page2_filings)
     assert len(received_api_ids) == 4, 'Receive 4 unique api_id values'
 
 

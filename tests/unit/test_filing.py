@@ -28,7 +28,6 @@ UTC = timezone.utc
 def get_asml22en_filing(urlmock):
     """ASML Holding 2022 English AFR filing."""
     def _get_asml22en_filing():
-        nonlocal urlmock
         filing = None
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'asml22en')
@@ -61,7 +60,6 @@ def asml22en_entities_filing(asml22en_entities_response, res_colls):
 def get_creditsuisse21en_entity_filing(urlmock):
     """Credit Suisse 2021 English AFR filing with Entity."""
     def _get_creditsuisse21en_entity_filing():
-        nonlocal urlmock
         filing = None
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'creditsuisse21en_by_id_entity')

@@ -20,7 +20,6 @@ import xbrl_filings_api.exceptions as xf_exceptions
 def get_asml22en_or_oldest3_fi(urlmock):
     """Function for single Filing or FilingSet of either `asml22en` or `oldest3_fi`."""
     def _get_asml22en_or_oldest3_fi(libclass):
-        nonlocal urlmock
         if libclass is xf.Filing:
             fset = None
             with responses.RequestsMock() as rsps:

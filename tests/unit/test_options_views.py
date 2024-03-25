@@ -17,7 +17,6 @@ from xbrl_filings_api.default_views import DEFAULT_VIEWS
 def get_asml22en_entities_filingset(urlmock):
     """Get FilingSet from mock response ``asml22en_entities``."""
     def _get_asml22en_entities_filingset():
-        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'asml22en_entities')
