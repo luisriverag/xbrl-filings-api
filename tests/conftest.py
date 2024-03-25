@@ -86,7 +86,6 @@ def mock_url_response(mock_response_data):
     """Function to add a `responses` mock URL with `mock_response_data` body."""
     def _mock_url_response(
             url: str, rsps: Union[responses.RequestsMock, None] = None):
-        nonlocal mock_response_data
         if rsps is None:
             rsps = responses
         rsps.add(
@@ -102,7 +101,6 @@ def mock_url_response(mock_response_data):
 def get_oldest3_fi_filingset(urlmock):
     """Get FilingSet from mock response ``oldest3_fi``."""
     def _get_oldest3_fi_filingset():
-        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'oldest3_fi')
@@ -121,7 +119,6 @@ def get_oldest3_fi_filingset(urlmock):
 def get_oldest3_fi_entities_filingset(urlmock):
     """Get FilingSet from mock response ``oldest3_fi_entities`` with entities."""
     def _get_oldest3_fi_entities_filingset():
-        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'oldest3_fi_entities')
@@ -140,7 +137,6 @@ def get_oldest3_fi_entities_filingset(urlmock):
 def get_oldest3_fi_vmessages_filingset(urlmock):
     """Get FilingSet from mock response ``oldest3_fi_vmessages`` with validation messages."""
     def _get_oldest3_fi_vmessages_filingset():
-        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'oldest3_fi_vmessages')
@@ -159,7 +155,6 @@ def get_oldest3_fi_vmessages_filingset(urlmock):
 def get_oldest3_fi_ent_vmessages_filingset(urlmock):
     """Get FilingSet from mock response ``oldest3_fi_ent_vmessages`` with entities and validation messages."""
     def _get_oldest3_fi_ent_vmessages_filingset():
-        nonlocal urlmock
         fs = None
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'oldest3_fi_ent_vmessages')
