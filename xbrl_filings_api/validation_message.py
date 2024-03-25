@@ -260,8 +260,8 @@ class ValidationMessage(APIResource):
                     )
                 logger.warning(msg, stacklevel=2)
         return calc_float
-    
-    def _derive_calc_short_role(self) -> str | None:
+
+    def _derive_calc_short_role(self) -> Union[str, None]:
         uri_path = ''
         try:
             parse_res = urllib.parse.urlparse(self.calc_short_role)

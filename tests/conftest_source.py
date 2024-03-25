@@ -15,7 +15,6 @@ flag ``-n`` / ``--new``).
 # SPDX-License-Identifier: MIT
 
 import hashlib
-from pathlib import Path
 from typing import Union
 
 import pytest
