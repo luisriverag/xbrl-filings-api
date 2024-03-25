@@ -216,14 +216,9 @@ class ValidationMessage(APIResource):
             self._COMPUTED_SUM_RE, 'calc_computed_sum')
         self.calc_reported_sum = self._derive_calc_float(
             self._REPORTED_SUM_RE, 'calc_reported_sum')
-        self.calc_context_id = self._derive_calc(
-            self._CONTEXT_ID_RE)
-        self.calc_line_item = self._derive_calc(
-            self._LINE_ITEM_RE)
-        self.calc_short_role = self._derive_calc(
-            self._SHORT_ROLE_RE)
-        unreported_items = self._derive_calc(
-            self._UNREPORTED_ITEMS_RE)
+        self.calc_context_id = self._derive_calc(self._CONTEXT_ID_RE)
+        self.calc_line_item = self._derive_calc(self._LINE_ITEM_RE)
+        unreported_items = self._derive_calc(self._UNREPORTED_ITEMS_RE)
         self.calc_short_role = self._derive_calc_short_role()
 
         if unreported_items and unreported_items.lower() != 'none':
@@ -262,9 +257,13 @@ class ValidationMessage(APIResource):
         return calc_float
 
     def _derive_calc_short_role(self) -> Union[str, None]:
+        matched_uri = self._derive_calc(self._SHORT_ROLE_RE)
+        if not matched_uri:
+            return None
+
         uri_path = ''
         try:
-            parse_res = urllib.parse.urlparse(self.calc_short_role)
+            parse_res = urllib.parse.urlparse(matched_uri)
         except ValueError:
             pass
         else:
@@ -273,14 +272,14 @@ class ValidationMessage(APIResource):
             return None
         uri_path = urllib.parse.unquote(uri_path)
 
-        uri_name = None
+        short_role = None
         try:
             plib_path = PurePosixPath(uri_path)
         except ValueError:
             pass
         else:
-            uri_name = plib_path.name
-        return uri_name
+            short_role = plib_path.name
+        return short_role
 
     def __repr__(self) -> str:
         """

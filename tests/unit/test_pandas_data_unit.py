@@ -207,8 +207,8 @@ class TestFilingSet_get_pandas_data:
         assert '507' in pd_data['api_id']
         assert '1495' in pd_data['api_id']
 
-    def test_include_paths_true(self, get_oldest3_fi_filingset):
-        """Test include_paths=True."""
+    def test_include_paths_true_has_downloaded(self, get_oldest3_fi_filingset):
+        """Test include_paths=True and filings were downloaded."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         enento20en_filing = next(filter(lambda f: f.api_id == '710', fs))
         enento20en_filing.json_download_path = 'test_json'
@@ -229,8 +229,8 @@ class TestFilingSet_get_pandas_data:
         assert '507' in pd_data['api_id']
         assert '1495' in pd_data['api_id']
 
-    def test_include_paths_true_no_data(self, get_oldest3_fi_filingset):
-        """Test include_paths=True but all paths values are None."""
+    def test_include_paths_true_not_downloaded(self, get_oldest3_fi_filingset):
+        """Test include_paths=True but no filings were downloaded."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -239,6 +239,27 @@ class TestFilingSet_get_pandas_data:
             date_as_datetime=True,
             include_urls=False,
             include_paths=True
+            )
+        assert 'json_download_path' not in pd_data
+        assert 'package_download_path' not in pd_data
+        assert 'xhtml_download_path' not in pd_data
+        assert '507' in pd_data['api_id']
+        assert '1495' in pd_data['api_id']
+
+    def test_include_paths_false_has_downloaded(self, get_oldest3_fi_filingset):
+        """Test include_paths=False and filings were downloaded."""
+        fs: xf.FilingSet = get_oldest3_fi_filingset()
+        enento20en_filing = next(filter(lambda f: f.api_id == '710', fs))
+        enento20en_filing.json_download_path = 'test_json'
+        enento20en_filing.package_download_path = 'test_package'
+        enento20en_filing.xhtml_download_path = 'test_xhtml'
+        pd_data = fs.get_pandas_data(
+            attr_names=None,
+            with_entity=False,
+            strip_timezone=True,
+            date_as_datetime=True,
+            include_urls=False,
+            include_paths=False
             )
         assert 'json_download_path' not in pd_data
         assert 'package_download_path' not in pd_data

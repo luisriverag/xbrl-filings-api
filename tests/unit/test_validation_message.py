@@ -322,3 +322,10 @@ def test_str_empty_message(tecnotree21fi_duplicate_num_msg):
     vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
     vmsg.text = None
     assert str(vmsg) == ''
+
+
+def test_derive_calc_short_role_bad_url(asml22en_calc_msg):
+    """Test _derive_calc_short_role method with bad URL."""
+    vmsg: xf.ValidationMessage = asml22en_calc_msg
+    vmsg.text = 'Calculation inconsistent link role http://[1:2:3:4:5:6/test '
+    assert vmsg._derive_calc_short_role() is None
