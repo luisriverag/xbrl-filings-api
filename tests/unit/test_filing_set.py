@@ -13,8 +13,10 @@ Tests for downloading methods are in separate test module
 import copy
 import sqlite3
 from collections.abc import Collection
+from datetime import date
 
 import pytest
+import responses
 
 import xbrl_filings_api as xf
 from xbrl_filings_api.exceptions import (
@@ -36,6 +38,36 @@ def asml22en_filingset(asml22en_response):
         max_size=1,
         flags=xf.GET_ONLY_FILINGS
         )
+
+
+@pytest.fixture
+def ageas21_22_filingset(urlmock):
+    ageas21_22_ids = '3314', '3316', '3315', '5139', '5140', '5141'
+    fs = None
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'ageas21_22')
+        fs = xf.get_filings(
+            filters={'api_id': ageas21_22_ids},
+            sort=None,
+            max_size=6,
+            flags=xf.GET_ENTITY
+            )
+    return fs
+
+
+@pytest.fixture
+def applus20_21_filingset(urlmock):
+    applus20_21_ids = '1733', '1734'
+    fs = None
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'applus20_21')
+        fs = xf.get_filings(
+            filters={'api_id': applus20_21_ids},
+            sort=None,
+            max_size=2,
+            flags=xf.GET_ENTITY
+            )
+    return fs
 
 
 def test_attributes(get_oldest3_fi_filingset):
@@ -512,3 +544,184 @@ def test_contains_is_false_wrong_api_id(get_oldest3_fi_entities_filingset):
     filing_copy = copy.deepcopy(filing)
     filing_copy.api_id = 'abc'
     assert filing_copy not in fs
+
+
+def test_pop_duplicates_raises_no_entities(multifilter_api_id_response):
+    """Test pop_duplicates method raises ValueError when no entities."""
+    shell21_22_gb_nl_ids = '1134', '1135', '4496', '4529'
+    fs = xf.get_filings(
+        filters={'api_id': shell21_22_gb_nl_ids},
+        sort=None,
+        max_size=4,
+        flags=xf.GET_ONLY_FILINGS
+        )
+    fs_before = set(fs)
+    with pytest.raises(
+            ValueError, match=r'Entities must be available on the FilingSet'):
+        _ = fs.pop_duplicates(
+            languages=['en'],
+            use_reporting_date=False
+            )
+    assert fs_before == set(fs)
+
+
+def test_pop_duplicates_two_markets(multifilter_api_id_entities_response):
+    """Test pop_duplicates method with two market enclosure."""
+    shell21_22_gb_nl_ids = '1134', '1135', '4496', '4529'
+    fs = xf.get_filings(
+        filters={'api_id': shell21_22_gb_nl_ids},
+        sort=None,
+        max_size=4,
+        flags=xf.GET_ENTITY
+        )
+    popped = fs.pop_duplicates(
+        languages=['en'],
+        use_reporting_date=False
+        )
+    assert isinstance(fs, xf.FilingSet)
+    assert len(fs) == 2
+    for filing in fs:
+        assert filing.language == 'en'
+        assert filing.country == 'NL'
+    assert isinstance(popped, xf.FilingSet)
+    assert len(popped) == 2
+    for filing in popped:
+        assert filing.language is None
+        assert filing.country == 'GB'
+
+
+@pytest.mark.parametrize('languages,match_lang,pop_lang', [
+    (['en'], 'en', ('fr', 'nl')),
+    (['fi', 'nl'], 'nl', ('fr', 'en')),
+    ([None, 'fr', 'nl'], 'fr', ('nl', 'en')),
+    ])
+def test_pop_duplicates_3languages_2enclosures_match_language(
+        languages, match_lang, pop_lang, ageas21_22_filingset):
+    """Test pop_duplicates method with 3 languages, 2 enclosures."""
+    fs: xf.FilingSet = ageas21_22_filingset
+    popped = fs.pop_duplicates(
+        languages=languages,
+        use_reporting_date=False
+        )
+    assert isinstance(fs, xf.FilingSet)
+    assert len(fs) == 2
+    e_retained_dates = [date(2021, 12, 31), date(2022, 12, 31)]
+    for filing in fs:
+        assert filing.language == match_lang
+        e_retained_dates.remove(filing.last_end_date)
+
+    assert isinstance(popped, xf.FilingSet)
+    assert len(popped) == 4
+    e_popped_dates = [
+        date(2021, 12, 31), date(2021, 12, 31), date(2022, 12, 31),
+        date(2022, 12, 31)
+        ]
+    for filing in popped:
+        assert filing.language in pop_lang
+        e_popped_dates.remove(filing.last_end_date)
+
+
+@pytest.mark.parametrize('languages', [None, [None], ['fi', 'sv']])
+def test_pop_duplicates_3languages_2enclosures_max_filing_index(
+        languages, ageas21_22_filingset):
+    """Test pop_duplicates method with 3 languages, 2 enclosures, fallback max filing_index."""
+    fs: xf.FilingSet = ageas21_22_filingset
+    popped = fs.pop_duplicates(
+        languages=languages,
+        use_reporting_date=False
+        )
+    assert isinstance(fs, xf.FilingSet)
+    assert len(fs) == 2
+    e_retained_dates = [date(2021, 12, 31), date(2022, 12, 31)]
+    e_max_filing_indexes = (
+        '5493005DJBML6LY3RV36-2021-12-31-ESEF-BE-2',
+        '5493005DJBML6LY3RV36-2022-12-31-ESEF-BE-2'
+        )
+    for filing in fs:
+        assert filing.filing_index in e_max_filing_indexes
+        e_retained_dates.remove(filing.last_end_date)
+
+    assert isinstance(popped, xf.FilingSet)
+    assert len(popped) == 4
+    e_popped_dates = [
+        date(2021, 12, 31), date(2021, 12, 31), date(2022, 12, 31),
+        date(2022, 12, 31)
+        ]
+    for filing in popped:
+        assert filing.filing_index not in e_max_filing_indexes
+        e_popped_dates.remove(filing.last_end_date)
+
+
+def test_pop_duplicates_3languages_2enclosures_filing_index_none(
+        ageas21_22_filingset):
+    """Test pop_duplicates method with 3 languages, 2 enclosures, max filing_index as None."""
+    fs: xf.FilingSet = ageas21_22_filingset
+    for filing in fs:
+        if filing.filing_index in (
+                '5493005DJBML6LY3RV36-2021-12-31-ESEF-BE-2',
+                '5493005DJBML6LY3RV36-2022-12-31-ESEF-BE-2'):
+            filing.filing_index = None
+    popped = fs.pop_duplicates(
+        languages=None,
+        use_reporting_date=False
+        )
+    assert isinstance(fs, xf.FilingSet)
+    assert len(fs) == 2
+    e_retained_dates = [date(2021, 12, 31), date(2022, 12, 31)]
+    e_max_filing_indexes = (
+        '5493005DJBML6LY3RV36-2021-12-31-ESEF-BE-1',
+        '5493005DJBML6LY3RV36-2022-12-31-ESEF-BE-1'
+        )
+    for filing in fs:
+        assert filing.filing_index in e_max_filing_indexes
+        e_retained_dates.remove(filing.last_end_date)
+
+    assert isinstance(popped, xf.FilingSet)
+    assert len(popped) == 4
+    e_popped_dates = [
+        date(2021, 12, 31), date(2021, 12, 31), date(2022, 12, 31),
+        date(2022, 12, 31)
+        ]
+    for filing in popped:
+        assert filing.filing_index not in e_max_filing_indexes
+        e_popped_dates.remove(filing.last_end_date)
+
+
+def test_pop_duplicates_use_reporting_date_false_faulty_last_end_date(
+        applus20_21_filingset):
+    """Test pop_duplicates method with faulty last_end_date, use_reporting_date=False."""
+    fs: xf.FilingSet = applus20_21_filingset
+    popped = fs.pop_duplicates(
+        languages=None,
+        use_reporting_date=False
+        )
+    assert isinstance(fs, xf.FilingSet)
+    assert len(fs) == 1
+    e_max_filing_index = (
+        '213800M9XCA6NR98E873-2021-12-31-ESEF-ES-1')
+    filing = next(iter(fs))
+    assert filing.filing_index == e_max_filing_index
+    assert filing.last_end_date == date(2021, 12, 31)
+
+    assert isinstance(popped, xf.FilingSet)
+    assert len(popped) == 1
+    filing = next(iter(popped))
+    assert filing.filing_index != e_max_filing_index
+    assert filing.last_end_date == date(2021, 12, 31)
+
+
+def test_pop_duplicates_use_reporting_date_true_faulty_last_end_date(
+        applus20_21_filingset):
+    """Test pop_duplicates method with faulty last_end_date, use_reporting_date=True."""
+    fs: xf.FilingSet = applus20_21_filingset
+    popped = fs.pop_duplicates(
+        languages=None,
+        use_reporting_date=True
+        )
+    assert isinstance(fs, xf.FilingSet)
+    assert len(fs) == 2
+    for filing in fs:
+        assert filing.last_end_date in [date(2020, 12, 31), date(2021, 12, 31)]
+
+    assert isinstance(popped, xf.FilingSet)
+    assert len(popped) == 0

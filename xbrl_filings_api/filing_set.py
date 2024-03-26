@@ -362,6 +362,109 @@ class FilingSet(set[Filing]):
                 data[col_name].append(val)
         return data
 
+    def pop_duplicates(
+            self, languages: Union[Iterable[str], None] = ['en'],
+            use_reporting_date: bool = False) -> 'FilingSet':
+        """
+        Pops duplicates of the same enclosure from the set of filings.
+
+        Entities must be available on the `FilingSet`.
+
+        The method searches the `FilingSet` and leaves only one filing
+        for each group of same `entity_api_id`, `last_end_date` pairs,
+        i.e., one filing for each unique enclosure of the same entity
+        for the same financial period. If `use_reporting_date` is True,
+        grouping is based on `entity_api_id`, `reporting_date` instead.
+
+        The selected filing from the group is chosen primarily on
+        `languages` parameter values matched on the `language`
+        attribute of a `Filing`. Parameter value `['sv', 'fi']` thus
+        means that Swedish filings are preferred, secondarily Finnish
+        and lastly the ones which have language as `None`. Value `None`
+        can be used in the iterable as well. Parameter value `None`
+        means no language preference.
+
+        If there are more than one filing for the language match (or
+        language=None), the filings will be ordered based on their
+        `filing_index` and the last one is chosen which is practically
+        the one with highest filing number part of `filing_index`.
+
+        Please note that if an entity files in multiple countries, only
+        a filing from one country is chosen.
+
+        Parameters
+        ----------
+        languages : iterable of str or None, default ['en']
+            Preferred languages for the retained filing.
+        use_reporting_date : bool, default False
+            Use `reporting_date` instead of `last_end_date` when
+            grouping.
+
+        Returns
+        -------
+        FilingSet
+            The set of removed filings.
+        """
+        if not self.entities.exist:
+            msg = 'Entities must be available on the FilingSet'
+            raise ValueError(msg)
+        if languages is None:
+            langs = [None]
+        else:
+            langs = list(languages)
+        if not any(lan is None for lan in langs):
+            langs.append(None)
+
+        enclosures: dict[str, set[Filing]] = {}
+        for filing in self:
+            if use_reporting_date:
+                key = f'{filing.entity_api_id}:{filing.reporting_date}'
+            else:
+                key = f'{filing.entity_api_id}:{filing.last_end_date}'
+            if enclosures.get(key):
+                enclosures[key].add(filing)
+            else:
+                enclosures[key] = {filing}
+
+        popped: set[Filing] = set()
+        for enc_filings in enclosures.values():
+            # Select correct language filing to be retained
+            retain_filing: Filing = None
+            for lan in langs:
+                lang_filings: set[Filing] = set(filter(
+                    lambda f: f.language == lan, enc_filings))
+                retain_filing = (
+                    self._get_last_filing_index_filing(lang_filings))
+                if retain_filing:
+                    break
+            else:
+                # Fallback if no preferred language or None matches
+                retain_filing = self._get_last_filing_index_filing(enc_filings)
+            # Add the rest to be returned and remove popped from self
+            for filing in enc_filings:
+                if filing is not retain_filing:
+                    popped.add(filing)
+        # Execute pop
+        self.difference_update(popped)
+        return FilingSet(popped)
+
+    def _get_last_filing_index_filing(
+            self, filings: set[Filing]
+            ) -> Union[Filing, None]:
+        if len(filings) == 0:
+            return None
+        str_indexes = [
+            '' if f.filing_index is None else f.filing_index
+            for f in filings
+            ]
+        max_filing_index = max(str_indexes)
+        def filter_filing_index_str(filing: Filing) -> bool:
+            ismatch = filing.filing_index == max_filing_index
+            if not ismatch and max_filing_index == '':
+                ismatch = filing.filing_index is None
+            return ismatch
+        return next(filter(filter_filing_index_str, filings))
+
     def _get_data_sets(
             self, flags: ScopeFlag
             ) -> tuple[dict[str, Collection[APIResource]], ScopeFlag]:

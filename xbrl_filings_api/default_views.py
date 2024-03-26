@@ -256,7 +256,7 @@ ORDER BY name, reporting_date, country
         doc="""
         Examine the age of the data on the filings.
 
-        Ordered descending on ``dataAgeDays``.
+        Ordered ascending on ``dataAgeDays``.
 
         Columns
         -------
@@ -300,7 +300,7 @@ SELECT
   e.api_id AS entity_api_id
 FROM Filing AS f
   JOIN Entity AS e ON f.entity_api_id=e.api_id
-ORDER BY dataAgeDays DESC
+ORDER BY dataAgeDays
 """
         ),
     ]

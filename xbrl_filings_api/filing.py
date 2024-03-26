@@ -10,7 +10,7 @@ import urllib.parse
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath
-from typing import ClassVar, Union
+from typing import Any, ClassVar, Union
 
 import xbrl_filings_api.options as options
 from xbrl_filings_api import download_specs_construct, downloader
@@ -125,7 +125,13 @@ class Filing(APIResource):
           2. Reporting date
           3. Filing system
           4. Country
-          5. Integer specifying the language version (arbitrary)
+          5. Entry number (0-based)
+
+        For a correctly submitted filing, the entry number separates the
+        different language versions from each other. Sometimes the filer
+        also issues the same report more than once to correct the
+        mistakes left in the first published version. The greatest entry
+        number is the latest published filing.
 
         The parts are separated by a hyphen. Please note that the
         ISO-style reporting date is also delimited by hyphens.
@@ -592,6 +598,36 @@ class Filing(APIResource):
                     result.path
                     )
             yield result
+
+    def open(self, new: int = 0, autoraise: bool = True) -> bool:
+        """
+        Open the filing on web browser.
+
+        Opens the `viewer_url` if `options.open_viewer` is True
+        (default), otherwise opens `xhtml_url`. They are the same
+        document except the viewer has a JavaScript Inline XBRL viewer
+        to drill into the tagged facts on the document.
+
+        Parameters
+        ----------
+        new : int, default 0
+            Parameter `new` of `webbrowser.BaseBrowser.open()`. `0` for
+            the same window, `1` for a new window, `2` for a new tab.
+        autoraise : bool, default True
+            Parameter `autoraise` of `webbrowser.BaseBrowser.open()`.
+            `False` for opening in background.
+
+        Returns
+        -------
+        bool
+            Value returned by `webbrowser.BaseBrowser.open()`.
+        """
+        file_url = self.viewer_url if options.open_viewer else self.xhtml_url
+        return options.browser.open(
+            url=file_url,
+            new=new,
+            autoraise=autoraise
+            )
 
     def _search_entity(
             self,

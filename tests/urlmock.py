@@ -26,12 +26,6 @@ class UrlMock:
             Name of the URL mock as defined in ``mock_upgrade.py``.
         """
         file_path = MOCK_URL_PATH / f'{urlmock_name}.yaml'
-        if not file_path.is_file():
-            msg = (
-                'URL mock is not downloaded. Run script "mock_upgrade.py -n" '
-                'to download defined but not yet downloaded mocks.'
-                )
-            raise Exception(msg)
         return str(file_path)
 
     def apply(
@@ -47,4 +41,12 @@ class UrlMock:
         urlmock_name : str
             Name of the URL mock as defined in ``mock_upgrade.py``.
         """
-        rsps._add_from_file(self.path(urlmock_name))
+        file_path = self.path(urlmock_name)
+        if not Path(file_path).is_file():
+            msg = (
+                f'URL mock "{urlmock_name}" is not downloaded. Run '
+                'script "mock_upgrade.py -n" to download defined but '
+                'not yet downloaded mocks.'
+                )
+            raise Exception(msg)
+        rsps._add_from_file(file_path)

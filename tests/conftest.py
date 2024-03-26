@@ -441,8 +441,16 @@ def multifilter_api_id_response(urlmock):
 
 
 @pytest.fixture
+def multifilter_api_id_entities_response(urlmock):
+    """Get 4 Shell filings for 2021 and 2022 with entities."""
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'multifilter_api_id_entities')
+        yield rsps
+
+
+@pytest.fixture
 def multifilter_country_response(urlmock):
-    """Get three filings for the first country `FI`."""
+    """Get three filings for the country `FI`."""
     with responses.RequestsMock() as rsps:
         urlmock.apply(rsps, 'multifilter_country')
         yield rsps
@@ -450,7 +458,7 @@ def multifilter_country_response(urlmock):
 
 @pytest.fixture
 def multifilter_filing_index_response(urlmock):
-    """Get three filings for the first country `FI`."""
+    """Get both Shell 2021 filings filtered with filing_index."""
     with responses.RequestsMock() as rsps:
         urlmock.apply(rsps, 'multifilter_filing_index')
         yield rsps
@@ -549,4 +557,20 @@ def estonian_2_pages_3_each_response(urlmock):
     """Estonian filings 2 pages of size 3, incl. entities, v-messages."""
     with responses.RequestsMock() as rsps:
         urlmock.apply(rsps, 'estonian_2_pages_3_each')
+        yield rsps
+
+
+@pytest.fixture
+def ageas21_22_response(urlmock):
+    """Ageas 2021 and 2022 filings in 3 languages (nl, fr, en) with entities, 6 filings."""
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'ageas21_22')
+        yield rsps
+
+
+@pytest.fixture
+def applus20_21_response(urlmock):
+    """Applus Services 2020, 2021 filings with entities, 2 filings, same last_end_date."""
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'applus20_21')
         yield rsps

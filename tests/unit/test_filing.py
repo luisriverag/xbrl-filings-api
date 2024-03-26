@@ -10,6 +10,7 @@ Tests for downloading methods are in separate test module
 # SPDX-License-Identifier: MIT
 
 import logging
+import webbrowser
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -484,3 +485,43 @@ def test_derive_language_bad_3letter_language(asml22en_entities_filing):
         'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0/743700KMZL7E8PLI5X73-2020-12-31_XYZ.zip')
     filing.xhtml_url = None # Disable fallback
     assert filing._derive_language() is None
+
+
+def test_open_arguments_open_viewer_true(get_asml22en_filing, monkeypatch):
+    """Test `Filing.open` calls `BaseBrowser.open` with correct arguments, options.open_viewer=True."""
+    monkeypatch.setattr(options, 'open_viewer', True)
+    filing: xf.Filing = get_asml22en_filing()
+    call_kwargs = None
+    def open_mock(**kwargs):
+        nonlocal call_kwargs
+        call_kwargs = kwargs
+        return True
+    monkeypatch.setattr(options.browser, 'open', open_mock)
+    call_return = filing.open(
+        new=0,
+        autoraise=True
+        )
+    assert call_kwargs['url'] == filing.viewer_url
+    assert call_kwargs['new'] == 0
+    assert call_kwargs['autoraise'] is True
+    assert call_return is True
+
+
+def test_open_arguments_open_viewer_false(get_asml22en_filing, monkeypatch):
+    """Test `Filing.open` calls `BaseBrowser.open` with correct arguments, options.open_viewer=False."""
+    monkeypatch.setattr(options, 'open_viewer', False)
+    filing: xf.Filing = get_asml22en_filing()
+    call_kwargs = None
+    def open_mock(**kwargs):
+        nonlocal call_kwargs
+        call_kwargs = kwargs
+        return False
+    monkeypatch.setattr(options.browser, 'open', open_mock)
+    call_return = filing.open(
+        new=2,
+        autoraise=False
+        )
+    assert call_kwargs['url'] == filing.xhtml_url
+    assert call_kwargs['new'] == 2
+    assert call_kwargs['autoraise'] is False
+    assert call_return is False

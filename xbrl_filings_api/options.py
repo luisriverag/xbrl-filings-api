@@ -29,6 +29,7 @@ views : iterable of SQLiteView, default DEFAULT_VIEWS
 #
 # SPDX-License-Identifier: MIT
 
+import webbrowser
 from collections.abc import Iterable
 from typing import Union
 
@@ -68,3 +69,13 @@ The `name` attributes of objects may not be overlapping.
 
 timeout_sec: float = 30.0
 """Maximum number of seconds to wait for response from the server."""
+
+browser: webbrowser.BaseBrowser = webbrowser.get()
+"""
+The web browser controller object used for `Filing.open()` method.
+
+Can be created with `webbrowser.get()` function.
+"""
+
+open_viewer: bool = True
+"""Open viewer instead of plain xHTML file on `Filing.open()` call."""

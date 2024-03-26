@@ -5,15 +5,29 @@ Python API for filings.xbrl.org XBRL report repository.
 > **Note**
 > This library is still under development.
 
-As of July 2023, all the filings are Inline XBRL reports prepared in
-accordance to the European Single Electronic Format (ESEF). This
-means that the reporters have issued securities on European
-regulated markets. In most of the cases these securities are shares,
-but not always. Issuers on alternative stock exchanges such as the
-Nordic exchange First North are exempted from ESEF mandate and thus
-are not included.
+This library provides:
 
-The library is not connected to XBRL International.
+1. Python-friendly access to the public API in ``filings.xbrl.org``
+2. Parallel downloading of associated files (ZIP, xHTML and JSON)
+3. Possibility to strip redundant language versions/corrected filings
+4. Filing objects have an `open()` method to show viewer report on web browser
+5. Integration to `pandas`
+6. Integration to SQLite database
+  - Three default SQLite views, incl. one for accounting reliability
+7. A few useful derived attributes
+
+As of March 2024, all the filings in the database are Inline XBRL
+reports. They are either prepared in accordance to the European Single
+Electronic Format (ESEF) or the Ukrainian IFRS. The first reports are
+from financial year 2020 for both reporting formats.
+
+In the case of ESEF, the reporters have issued securities on European
+regulated markets in European Union member states. In most of the cases
+these securities are shares. Issuers on alternative stock exchanges in
+the EU such as the Nordic exchange First North are exempted from the
+ESEF mandate and are thus not available.
+
+This library is independent of XBRL International.
 
 **Table of Contents**
 

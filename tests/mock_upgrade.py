@@ -584,9 +584,26 @@ def _fetch_multifilter_api_id():
 _addmock('multifilter_api_id')
 
 
+@_recorder.record(file_path=urlmock.path('multifilter_api_id_entities'))
+def _fetch_multifilter_api_id_entities():
+    """Get 4 Shell filings for 2021 and 2022 with entities."""
+    for id_i, api_id in enumerate(('1134', '1135', '4496', '4529')):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': 4 - id_i,
+                'filter[id]': api_id,
+                'include': 'entity'
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+_addmock('multifilter_api_id_entities')
+
+
 @_recorder.record(file_path=urlmock.path('multifilter_country'))
 def _fetch_multifilter_country():
-    """Get three filings for the first country `FI`."""
+    """Get three filings for the country `FI`."""
     _ = requests.get(
         url=ENTRY_POINT_URL,
         params={
@@ -601,7 +618,7 @@ _addmock('multifilter_country')
 
 @_recorder.record(file_path=urlmock.path('multifilter_filing_index'))
 def _fetch_multifilter_filing_index():
-    """Get three filings for the first country `FI`."""
+    """Get both Shell 2021 filings filtered with filing_index."""
     fxo_codes = (
         '21380068P1DRHMJ8KU70-2021-12-31-ESEF-GB-0',
         '21380068P1DRHMJ8KU70-2021-12-31-ESEF-NL-0'
@@ -873,6 +890,43 @@ def _fetch_estonian_2_pages_3_each():
             )
         params['page[number]'] = page_num + 1
 _addmock('estonian_2_pages_3_each')
+
+
+@_recorder.record(file_path=urlmock.path('ageas21_22'))
+def _fetch_ageas21_22():
+    """Ageas 2021 and 2022 filings in 3 languages (nl, fr, en) with entities, 6 filings."""
+    ageas21_22_ids = '3314', '3316', '3315', '5139', '5140', '5141'
+    for req_i, api_id in enumerate(ageas21_22_ids):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': 6 - req_i,
+                'filter[id]': api_id,
+                'include': 'entity'
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+_addmock('ageas21_22')
+
+
+@_recorder.record(file_path=urlmock.path('applus20_21'))
+def _fetch_applus20_21():
+    """Applus Services 2020, 2021 filings with entities, 2 filings, same last_end_date."""
+    applus20_21_ids = '1733', '1734'
+    for req_i, api_id in enumerate(applus20_21_ids):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': 2 - req_i,
+                'filter[id]': api_id,
+                'include': 'entity'
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+_addmock('applus20_21')
+
 
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 
