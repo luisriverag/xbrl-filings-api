@@ -128,6 +128,18 @@ def vmessage_list():
     return ent_list
 
 
+class BaseBrowserMock():
+    """Mock webbrowser.BaseBrowser with open()."""
+
+    def __init__(self, return_value):
+        self.return_value = return_value
+        self.call_kwargs = None
+
+    def open(self, **kwargs):
+        self.call_kwargs = kwargs
+        return self.return_value
+
+
 class TestFilingAsml22enNoEntity:
     """Test ASML 2022 filing in English as Filing object."""
 
@@ -491,19 +503,15 @@ def test_open_arguments_open_viewer_true(get_asml22en_filing, monkeypatch):
     """Test `Filing.open` calls `BaseBrowser.open` with correct arguments, options.open_viewer=True."""
     monkeypatch.setattr(options, 'open_viewer', True)
     filing: xf.Filing = get_asml22en_filing()
-    call_kwargs = None
-    def open_mock(**kwargs):
-        nonlocal call_kwargs
-        call_kwargs = kwargs
-        return True
-    monkeypatch.setattr(options.browser, 'open', open_mock)
+    bbmock = BaseBrowserMock(return_value=True)
+    monkeypatch.setattr(options, 'browser', bbmock)
     call_return = filing.open(
         new=0,
         autoraise=True
         )
-    assert call_kwargs['url'] == filing.viewer_url
-    assert call_kwargs['new'] == 0
-    assert call_kwargs['autoraise'] is True
+    assert bbmock.call_kwargs['url'] == filing.viewer_url
+    assert bbmock.call_kwargs['new'] == 0
+    assert bbmock.call_kwargs['autoraise'] is True
     assert call_return is True
 
 
@@ -511,17 +519,13 @@ def test_open_arguments_open_viewer_false(get_asml22en_filing, monkeypatch):
     """Test `Filing.open` calls `BaseBrowser.open` with correct arguments, options.open_viewer=False."""
     monkeypatch.setattr(options, 'open_viewer', False)
     filing: xf.Filing = get_asml22en_filing()
-    call_kwargs = None
-    def open_mock(**kwargs):
-        nonlocal call_kwargs
-        call_kwargs = kwargs
-        return False
-    monkeypatch.setattr(options.browser, 'open', open_mock)
+    bbmock = BaseBrowserMock(return_value=False)
+    monkeypatch.setattr(options, 'browser', bbmock)
     call_return = filing.open(
         new=2,
         autoraise=False
         )
-    assert call_kwargs['url'] == filing.xhtml_url
-    assert call_kwargs['new'] == 2
-    assert call_kwargs['autoraise'] is False
+    assert bbmock.call_kwargs['url'] == filing.xhtml_url
+    assert bbmock.call_kwargs['new'] == 2
+    assert bbmock.call_kwargs['autoraise'] is False
     assert call_return is False

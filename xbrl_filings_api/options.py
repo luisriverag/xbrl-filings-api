@@ -70,7 +70,7 @@ The `name` attributes of objects may not be overlapping.
 timeout_sec: float = 30.0
 """Maximum number of seconds to wait for response from the server."""
 
-browser: webbrowser.BaseBrowser = webbrowser.get()
+browser: Union[webbrowser.BaseBrowser, None] = None
 """
 The web browser controller object used for `Filing.open()` method.
 
@@ -79,3 +79,9 @@ Can be created with `webbrowser.get()` function.
 
 open_viewer: bool = True
 """Open viewer instead of plain xHTML file on `Filing.open()` call."""
+
+
+try:
+    browser = webbrowser.get()
+except:
+    pass

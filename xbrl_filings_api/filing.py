@@ -399,8 +399,8 @@ class Filing(APIResource):
 
     def _derive_language(self) -> Union[str, None]:
         stems = (
-            self._get_url_stem(self.xhtml_url),
-            self._get_url_stem(self.package_url)
+            self._get_url_stem(self.package_url),
+            self._get_url_stem(self.xhtml_url)
             )
         resolved = None
         for stem in stems:
@@ -623,6 +623,12 @@ class Filing(APIResource):
             Value returned by `webbrowser.BaseBrowser.open()`.
         """
         file_url = self.viewer_url if options.open_viewer else self.xhtml_url
+        if not options.browser:
+            msg = (
+                'Value options.browser is not set. It is likely that '
+                'webbrowser.get() failed and there is no runnable browser.'
+                )
+            raise ValueError(msg)
         return options.browser.open(
             url=file_url,
             new=new,
