@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 from datetime import date, datetime
-from typing import Union
+from typing import Literal, Union
 
 NO_LIMIT = 0
 """
@@ -28,8 +28,17 @@ Exclude attributes whose value is a functional object or some sort of
 list from the data output.
 """
 
-ResourceLiteralType = Union[str, int, datetime, date]
-"""Concrete datatype of `APIResource` data attribute."""
+class Prototype:
+    pass
+
+PROTOTYPE = Prototype()
+"""A sentinel value for APIResource to construct a dummy instance."""
+
+DataAttributeType = Union[str, int, datetime, date, None]
+"""Type of `APIResource` data attribute."""
 
 YearFilterMonthsType = tuple[tuple[int, int], tuple[int, int]]
 """Months chosen when only a year is given in a date filter."""
+
+FileStringType = Literal['json', 'package', 'xhtml']
+"""String used in `files` parameter and `DownloadInfo.file`."""

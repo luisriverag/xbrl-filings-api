@@ -265,7 +265,7 @@ async def _download_parallel_worker(
         dlque: asyncio.Queue[Union[DownloadSpecs, None]],
         resultque: asyncio.Queue[DownloadResult],
         timeout: float
-        ) -> NoReturn:
+        ) -> None:
     """Coroutine worker for `download_parallel_aiter`."""
     while True:
         item: Union[DownloadSpecs, None] = await dlque.get()

@@ -9,14 +9,14 @@
 
 import logging
 import sqlite3
-from collections.abc import Collection
+from collections.abc import Collection, Sequence
 from datetime import datetime
 from pathlib import Path
 from typing import Union
 
 from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.constants import ResourceLiteralType
+from xbrl_filings_api.constants import DataAttributeType
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import (
     GET_ENTITY,
@@ -206,8 +206,10 @@ def _create_new_table(
 
 
 def _add_compatible_views(
-        cur: sqlite3.Cursor, existing_views: list[str],
+        cur: sqlite3.Cursor, existing_views: set[str],
         table_schema: _CurrentSchemaType):
+    if options.views is None:
+        return
     for view in options.views:
         if view.name in existing_views:
             continue
@@ -252,7 +254,7 @@ def _insert_data(
     cur = con.cursor()
     for table_name in table_schema:
         cols = table_schema[table_name]
-        records: list[tuple[ResourceLiteralType, ...]] = []
+        records: list[tuple[DataAttributeType, ...]] = []
         logger.debug(f'Got {len(data_objs[table_name])} of {table_name}')
         for item in data_objs[table_name]:
             col_data = []
@@ -275,9 +277,9 @@ def _insert_data(
 def _exec(
         cur: sqlite3.Cursor,
         sql: str,
-        params: Collection[str] = (),
+        params: Sequence[str] = (),
         *,
-        many: Union[Collection[Collection[ResourceLiteralType]], None] = None
+        many: Union[Collection[Sequence[DataAttributeType]], None] = None
         ) -> None:
     data_len = f' <count: {len(many)}>' if many else ''
     logger.debug(sql + ';' + data_len)

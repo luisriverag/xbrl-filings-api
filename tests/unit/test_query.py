@@ -102,6 +102,48 @@ def test_get_filings_http_status_error():
         assert exc.body == 'Testing.'
 
 
+def test_get_filings_jsonapi_format_error_array():
+    """Test raising when JSON document is an array."""
+    with responses.RequestsMock() as rsps:
+        rsps.get(
+            url='https://filings.xbrl.org/api/filings',
+            body='["test", "array"]',
+            status=200
+            )
+        with pytest.raises(xf_exceptions.JSONAPIFormatError) as exc_info:
+            _ = xf.get_filings(
+                filters=None,
+                sort=None,
+                max_size=100,
+                flags=xf.GET_ONLY_FILINGS
+                )
+        exc = exc_info.value
+        assert exc.msg == 'JSON:API document is not a JSON object'
+
+
+def test_get_filings_jsonapi_format_error_missing_keys():
+    """Test raising when JSON document is missing the required keys."""
+    with responses.RequestsMock() as rsps:
+        rsps.get(
+            url='https://filings.xbrl.org/api/filings',
+            body='{"test": null}',
+            status=200
+            )
+        with pytest.raises(xf_exceptions.JSONAPIFormatError) as exc_info:
+            _ = xf.get_filings(
+                filters=None,
+                sort=None,
+                max_size=100,
+                flags=xf.GET_ONLY_FILINGS
+                )
+        exc = exc_info.value
+        e_msg = (
+            'JSON:API document does not have any of the required keys "data", '
+            '"errors", "meta".'
+            )
+        assert exc.msg == e_msg
+
+
 def test_get_filings_max_size_minus():
     """Test raising when max_size=-1."""
     with pytest.raises(

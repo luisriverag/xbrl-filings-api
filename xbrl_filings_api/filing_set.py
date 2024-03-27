@@ -21,7 +21,7 @@ from xbrl_filings_api import (
     downloader,
 )
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.constants import ResourceLiteralType
+from xbrl_filings_api.constants import DataAttributeType, FileStringType
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
@@ -60,7 +60,11 @@ class FilingSet(set[Filing]):
 
     def download(
             self,
-            files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+            files: Union[
+                FileStringType,
+                Iterable[FileStringType],
+                Mapping[FileStringType, DownloadItem]
+                ],
             to_dir: Union[str, PurePath, None] = None,
             *,
             stem_pattern: Union[str, None] = None,
@@ -164,7 +168,11 @@ class FilingSet(set[Filing]):
 
     async def download_aiter(
             self,
-            files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+            files: Union[
+                FileStringType,
+                Iterable[FileStringType],
+                Mapping[FileStringType, DownloadItem]
+                ],
             to_dir: Union[str, PurePath, None] = None,
             *,
             stem_pattern: Union[str, None] = None,
@@ -283,7 +291,7 @@ class FilingSet(set[Filing]):
             with_entity: bool = False, strip_timezone: bool = True,
             date_as_datetime: bool = True, include_urls : bool = False,
             include_paths : bool = False
-            ) -> dict[str, list[ResourceLiteralType]]:
+            ) -> dict[str, list[DataAttributeType]]:
         """
         Get data as dict for `pandas.DataFrame` constructor for filings.
 
@@ -322,11 +330,11 @@ class FilingSet(set[Filing]):
 
         Returns
         -------
-        dict of str: list of ResourceLiteralType
+        dict of str: list of DataAttributeType
             Column names are the same as the attributes for resource of
             this type.
         """
-        data: dict[str, list[ResourceLiteralType]]
+        data: dict[str, list[DataAttributeType]]
         if attr_names:
             data = {col: [] for col in attr_names}
         else:
@@ -334,7 +342,7 @@ class FilingSet(set[Filing]):
             if with_entity:
                 if 'entity_api_id' in data:
                     del data['entity_api_id']
-                ent_cols = {
+                ent_cols: dict[str, list[DataAttributeType]] = {
                     f'entity.{col}': [] for col in self.entities.columns}
                 data.update(ent_cols)
             if not include_urls:
@@ -347,7 +355,7 @@ class FilingSet(set[Filing]):
                     del data[col]
         for filing in self:
             for col_name in data:
-                val = None
+                val: DataAttributeType = None
                 if col_name.startswith('entity.'):
                     if filing.entity:
                         val = getattr(filing.entity, col_name[7:])
@@ -415,7 +423,8 @@ class FilingSet(set[Filing]):
         if languages is None:
             langs = [None]
         else:
-            langs = list(languages)
+            # Expected type Iterable[None] ?
+            langs = list(languages) # type: ignore[arg-type]
         if not any(lan is None for lan in langs):
             langs.append(None)
 
@@ -437,7 +446,7 @@ class FilingSet(set[Filing]):
         popped: set[Filing] = set()
         for enc_filings in enclosures.values():
             # Select correct language filing to be retained
-            retain_filing: Filing = None
+            retain_filing: Union[Filing, None] = None
             for lan in langs:
                 lang_filings: set[Filing] = set(filter(
                     lambda f: f.language == lan, enc_filings))

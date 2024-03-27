@@ -63,13 +63,15 @@ class FilingsPage(_APIPage):
         """List of `Filing` objects on this page."""
 
         ents = self._get_inc_resource(
+            type_obj=Entity,
             api_request=api_request,
             received_api_ids=received_api_ids,
-            type_obj=Entity,
             flag_member=GET_ENTITY,
             flags=flags
             )
-        self.entity_list: Union[list[Entity], None] = ents # type: ignore
+        # type_obj=Entity always returns list[Entity] | None
+        self.entity_list: Union[list[Entity], None] = (
+            ents) # type: ignore[assignment]
         """
         Set of `Entity` objects on this page.
 
@@ -77,14 +79,16 @@ class FilingsPage(_APIPage):
         """
 
         vmsgs = self._get_inc_resource(
+            type_obj=ValidationMessage,
             api_request=api_request,
             received_api_ids=received_api_ids,
-            type_obj=ValidationMessage,
             flag_member=GET_VALIDATION_MESSAGES,
             flags=flags
             )
+        # type_obj=ValidationMessage always returns
+        # list[ValidationMessage] | None
         self.validation_message_list: Union[list[ValidationMessage], None] = (
-            vmsgs) # type: ignore
+            vmsgs) # type: ignore[assignment]
         """
         Set of `ValidationMessage` objects on this page.
 
@@ -135,33 +139,32 @@ class FilingsPage(_APIPage):
             return None
         else:
             received_set.add(res_id)
-            entity_iter = None
-            message_iter = None
+            entity_iter: Union[Iterable[Entity], None] = None
+            message_iter: Union[Iterable[ValidationMessage], None] = None
             if GET_ONLY_FILINGS not in flags:
                 if GET_ENTITY in flags:
                     ents = self.entity_list if self.entity_list else ()
-                    entity_iter = chain(ents, res_colls['Entity'])
+                    entity_iter = chain(
+                        ents,
+                        res_colls['Entity'] # type: ignore[arg-type]
+                        )
                 if GET_VALIDATION_MESSAGES in flags:
                     vmsgs = (
                         self.validation_message_list
                         if self.validation_message_list else ()
                         )
-                    message_iter = chain(vmsgs, res_colls['ValidationMessage'])
-            iters: tuple[
-                Union[Iterable[Entity], None],
-                Union[Iterable[ValidationMessage], None]
-                ] = entity_iter, message_iter # type: ignore
-            return Filing(
-                res_frag,
-                _APIRequest(self.request_url, self.query_time),
-                *iters
-                )
+                    message_iter = chain(
+                        vmsgs,
+                        res_colls['ValidationMessage'] # type: ignore[arg-type]
+                        )
+            api_request = _APIRequest(self.request_url, self.query_time)
+            return Filing(res_frag, api_request, entity_iter, message_iter)
 
     def _get_inc_resource(
             self,
+            type_obj: type[APIResource],
             api_request: _APIRequest,
             received_api_ids: dict[str, set],
-            type_obj: type[APIResource],
             flag_member: ScopeFlag,
             flags: ScopeFlag
             ) -> Union[list[APIResource], None]:

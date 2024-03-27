@@ -8,9 +8,8 @@ from typing import Union
 
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.constants import Prototype
 from xbrl_filings_api.enums import GET_ENTITY, _ParseType
-
-EllipsisType = type(Ellipsis) # No valid solution for Python 3.9
 
 
 class Entity(APIResource):
@@ -37,7 +36,7 @@ class Entity(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, EllipsisType],
+            json_frag: Union[dict, Prototype],
             api_request: Union[_APIRequest, None] = None
             ) -> None:
         super().__init__(json_frag, api_request)

@@ -9,6 +9,7 @@ from collections.abc import Container, Iterable, Mapping
 from pathlib import PurePath
 from typing import Any, Union
 
+from xbrl_filings_api.constants import FileStringType
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader import DownloadSpecs
@@ -17,7 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 def construct(
-        files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+        files: Union[
+            FileStringType,
+            Iterable[FileStringType],
+            Mapping[FileStringType, DownloadItem]
+            ],
         filing: Any,
         to_dir: Union[str, PurePath, None],
         stem_pattern: Union[str, None],
@@ -43,10 +48,10 @@ def construct(
     items = []
 
     if isinstance(files, Mapping):
-        for format_key in files:
-            download_item = files[format_key]
+        for file in files:
+            download_item = files[file]
             full_item = _get_filing_download_specs(
-                format_key, download_item, filing, to_dir, stem_pattern,
+                file, download_item, filing, to_dir, stem_pattern,
                 valid_file_formats,
                 check_corruption=check_corruption,
                 isfilingset=isfilingset
@@ -56,9 +61,11 @@ def construct(
 
     elif isinstance(files, Iterable):
         for file in files:
+            # `file` is FileStringType, mypy mistakes for str due to
+            # isinstance(files, str) in the beginning of the method
             full_item = _get_filing_download_specs(
-                file, None, filing, to_dir, stem_pattern,
-                valid_file_formats,
+                file, # type: ignore[arg-type]
+                None, filing, to_dir, stem_pattern, valid_file_formats,
                 check_corruption=check_corruption,
                 isfilingset=isfilingset
                 )
@@ -71,7 +78,7 @@ def construct(
 
 
 def _get_filing_download_specs(
-        file: str,
+        file: FileStringType,
         download_item: Union[DownloadItem, None],
         filing: Any,
         to_dir: Union[str, PurePath, None],

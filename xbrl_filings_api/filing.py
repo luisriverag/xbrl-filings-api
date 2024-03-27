@@ -10,12 +10,13 @@ import urllib.parse
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath
-from typing import Any, ClassVar, Union
+from typing import ClassVar, Union
 
 import xbrl_filings_api.options as options
 from xbrl_filings_api import download_specs_construct, downloader
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
+from xbrl_filings_api.constants import PROTOTYPE, FileStringType, Prototype
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
@@ -23,7 +24,6 @@ from xbrl_filings_api.enums import _ParseType
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
 from xbrl_filings_api.validation_message import ValidationMessage
 
-EllipsisType = type(Ellipsis) # No valid solution for Python 3.9
 logger = logging.getLogger(__name__)
 
 
@@ -99,7 +99,7 @@ class Filing(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, EllipsisType],
+            json_frag: Union[dict, Prototype],
             api_request: Union[_APIRequest, None] = None,
             entity_iter: Union[Iterable[Entity], None] = None,
             message_iter: Union[Iterable[ValidationMessage], None] = None
@@ -361,7 +361,9 @@ class Filing(APIResource):
         """
         start = f'{type(self).__name__}('
         if self.entity:
-            rrepdate = f"date({self.reporting_date.strftime('%Y, %m, %d')})"
+            rrepdate = 'None'
+            if self.reporting_date:
+                rrepdate = f"date({self.reporting_date.strftime('%Y, %m, %d')})"
             return (
                 start + f'entity.name={self.entity.name!r}, '
                 f'reporting_date={rrepdate}, '
@@ -445,7 +447,11 @@ class Filing(APIResource):
 
     def download(
             self,
-            files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+            files: Union[
+                FileStringType,
+                Iterable[FileStringType],
+                Mapping[FileStringType, DownloadItem]
+                ],
             to_dir: Union[str, PurePath, None] = None,
             *,
             stem_pattern: Union[str, None] = None,
@@ -543,7 +549,11 @@ class Filing(APIResource):
 
     async def download_aiter(
             self,
-            files: Union[str, Iterable[str], Mapping[str, DownloadItem]],
+            files: Union[
+                FileStringType,
+                Iterable[FileStringType],
+                Mapping[FileStringType, DownloadItem]
+                ],
             to_dir: Union[str, PurePath, None] = None,
             *,
             stem_pattern: Union[str, None] = None,
@@ -621,8 +631,18 @@ class Filing(APIResource):
         -------
         bool
             Value returned by `webbrowser.BaseBrowser.open()`.
+
+        Raises
+        ------
+        ValueError
+            If attribute `viewer_url` (or `xhtml_url`) is None or
+            `options.browser` is not set.
         """
         file_url = self.viewer_url if options.open_viewer else self.xhtml_url
+        if file_url is None:
+            attr_name = 'viewer_url' if options.open_viewer else 'xhtml_url'
+            msg = f'The attribute "{attr_name}" value is None.'
+            raise ValueError(msg)
         if not options.browser:
             msg = (
                 'Value options.browser is not set. It is likely that '
@@ -638,10 +658,10 @@ class Filing(APIResource):
     def _search_entity(
             self,
             entity_iter: Union[Iterable[Entity], None],
-            json_frag: Union[dict, EllipsisType]
+            json_frag: Union[dict, Prototype]
             ) -> Union[Entity, None]:
         """Search for an `Entity` object for the filing."""
-        if json_frag == Ellipsis or entity_iter is None:
+        if json_frag == PROTOTYPE or entity_iter is None:
             return None
         if not self.entity_api_id:
             msg = f'No entity defined for {self!r}, api_id={self.api_id}'
@@ -665,10 +685,10 @@ class Filing(APIResource):
     def _search_validation_messages(
             self,
             message_iter: Union[Iterable[ValidationMessage], None],
-            json_frag: Union[dict, EllipsisType]
+            json_frag: Union[dict, Prototype]
             ) -> Union[set[ValidationMessage], None]:
         """Search `ValidationMessage` objects for this filing."""
-        if json_frag == Ellipsis or message_iter is None:
+        if json_frag == PROTOTYPE or message_iter is None:
             return None
 
         found_msgs = set()
@@ -692,7 +712,9 @@ class Filing(APIResource):
                     logger.warning(msg, stacklevel=2)
         return found_msgs
 
-    def _get_url_stem(self, url: str) -> Union[str, None]:
+    def _get_url_stem(self, url: Union[str, None]) -> Union[str, None]:
+        if url is None:
+            return None
         presult = None
         try:
             presult = urllib.parse.urlparse(url)

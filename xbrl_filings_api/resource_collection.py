@@ -9,7 +9,7 @@ from datetime import date, datetime
 from typing import Any, Optional, Union
 
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.constants import ResourceLiteralType
+from xbrl_filings_api.constants import DataAttributeType
 from xbrl_filings_api.filing import Filing
 
 
@@ -89,7 +89,7 @@ class ResourceCollection:
             self, attr_names: Optional[Iterable[str]] = None, *,
             strip_timezone: bool = True, date_as_datetime: bool = True,
             include_urls : bool = False
-            ) -> dict[str, list[ResourceLiteralType]]:
+            ) -> dict[str, list[DataAttributeType]]:
         """
         Get data for `pandas.DataFrame` constructor for subresources.
 
@@ -118,11 +118,11 @@ class ResourceCollection:
 
         Returns
         -------
-        dict of str: list of ResourceLiteralType
+        dict of str: list of DataAttributeType
             Column names are the same as the attributes for resource of
             this type.
         """
-        data: dict[str, list[ResourceLiteralType]]
+        data: dict[str, list[DataAttributeType]]
         if attr_names:
             data = {col: [] for col in attr_names}
         else:

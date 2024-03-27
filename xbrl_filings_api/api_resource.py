@@ -6,12 +6,16 @@
 
 from collections.abc import Iterable
 from datetime import datetime, timezone
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 from xbrl_filings_api import order_columns
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
-from xbrl_filings_api.constants import ATTRS_ALWAYS_EXCLUDE_FROM_DATA
+from xbrl_filings_api.constants import (
+    ATTRS_ALWAYS_EXCLUDE_FROM_DATA,
+    PROTOTYPE,
+    Prototype,
+)
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
@@ -19,7 +23,6 @@ from xbrl_filings_api.enums import (
     ScopeFlag,
 )
 
-EllipsisType = type(Ellipsis) # No valid solution for Python 3.9
 UTC = timezone.utc
 
 
@@ -42,7 +45,7 @@ class APIResource(APIObject):
 
     def __init__(
             self,
-            json_frag: Union[dict[str, Any], EllipsisType],
+            json_frag: Union[dict, Prototype],
             api_request: Union[_APIRequest, None] = None
             ) -> None:
         """
@@ -50,16 +53,16 @@ class APIResource(APIObject):
 
         Parameters
         ----------
-        json_frag : dict or ellipsis
-            JSON fragment in an API response. An ellipsis (...) may be
-            given to create a prototype.
+        json_frag : dict or PROTOTYPE
+            JSON fragment in an API response. PROTOTYPE constant may be
+            given to create a dummy instance.
         """
         if type(self) is APIResource:
             msg = 'APIResource can only be initialized via subclassing'
             raise NotImplementedError(msg)
 
         is_prototype = False
-        if json_frag == Ellipsis:
+        if json_frag == PROTOTYPE:
             is_prototype = True
             json_frag = {}
             api_request = _APIRequest('', datetime.now(UTC))
@@ -68,7 +71,7 @@ class APIResource(APIObject):
             raise ValueError(msg)
 
         super().__init__(
-            json_frag=json_frag,
+            json_frag=json_frag, # type: ignore[arg-type] # Never PROTOTYPE
             api_request=api_request,
             do_not_track=is_prototype
             )
@@ -104,7 +107,7 @@ class APIResource(APIObject):
         """
         if cls is APIResource:
             raise NotImplementedError()
-        resource_proto = cls(...)
+        resource_proto = cls(PROTOTYPE)
         attrs = [
             attr for attr in dir(resource_proto)
             if not (
@@ -133,19 +136,19 @@ class APIResource(APIObject):
         ----------
         filings : iterable of Filing
         """
-        fproto = cls(...)
+        fproto = cls(PROTOTYPE)
         dlattrs = [
             att for att in dir(fproto)
             if not att.startswith('_') and att.endswith('_download_path')
             ]
 
         unused = set()
-        for att in dlattrs:
-            for fil in filings:
-                if getattr(fil, att) is not None:
+        for attr_name in dlattrs:
+            for filing in filings:
+                if getattr(filing, attr_name) is not None:
                     break
             else:
-                unused.add(att)
+                unused.add(attr_name)
         return unused
 
     @classmethod

@@ -97,7 +97,7 @@ dependencies = [
     "ruff>=0.0.285",
 ]
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive {args:xbrl_filings_api tests}"
+typing = "mypy --install-types --non-interactive {args:xbrl_filings_api}"
 style = [
     "ruff {args:.}",
 ]

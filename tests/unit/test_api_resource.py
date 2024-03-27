@@ -10,6 +10,7 @@ import pytest
 
 import xbrl_filings_api as xf
 from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.constants import PROTOTYPE
 
 
 def test_raises_APIResource_init():
@@ -25,8 +26,8 @@ def test_raises_Filing_init_without_api_request():
 
 
 def test_raises_Filing_init_prototype():
-    """Test initiating Filing prototype with ellipsis argument."""
-    fproto = xf.Filing(...)
+    """Test initiating Filing prototype with PROTOTYPE argument."""
+    fproto = xf.Filing(PROTOTYPE)
     assert fproto.api_id == 'None'
 
 

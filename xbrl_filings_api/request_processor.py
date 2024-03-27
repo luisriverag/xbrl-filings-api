@@ -18,7 +18,7 @@ import requests
 from xbrl_filings_api import options, stats
 from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_request import _APIRequest
-from xbrl_filings_api.constants import NO_LIMIT
+from xbrl_filings_api.constants import NO_LIMIT, PROTOTYPE
 from xbrl_filings_api.enums import (
     GET_ENTITY,
     GET_ONLY_FILINGS,
@@ -28,6 +28,7 @@ from xbrl_filings_api.enums import (
 from xbrl_filings_api.exceptions import (
     FilterNotSupportedWarning,
     HTTPStatusError,
+    JSONAPIFormatError,
 )
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
@@ -39,6 +40,8 @@ UTC = timezone.utc
 logger = logging.getLogger(__name__)
 
 api_attribute_map: dict[str, str]
+
+_ParamsType = dict[str, Union[str, int]]
 
 
 def generate_pages(
@@ -76,7 +79,7 @@ def generate_pages(
     if isinstance(sort, str):
         sort = [sort]
 
-    params: dict[str, str] = {}
+    params: _ParamsType = {}
     received_api_ids: dict[str, set] = {}
 
     page_size = options.max_page_size
@@ -114,7 +117,7 @@ def generate_pages(
     received_size = 0
     for qparam_i, query_params in enumerate(params_list):
         next_url: Union[str, None] = options.entry_point_url
-        req_params: Union[dict[str, str], None] = query_params
+        req_params: Union[_ParamsType, None] = query_params
 
         # For each page in the query
         while next_url:
@@ -151,7 +154,9 @@ def generate_pages(
         if max_size != NO_LIMIT:
             # Lower requested count of filings for further requests
             for update_i in range(qparam_i + 1, params_list_len):
-                params_list[update_i]['page[size]'] -= filing_count
+                pdict = params_list[update_i]
+                # Type of page[size] is always int
+                pdict['page[size]'] -= filing_count # type: ignore[operator]
 
 
 def _remove_excess_resources(page: FilingsPage, del_count: int):
@@ -184,10 +189,10 @@ def _raise_for_none_filters(
 
 
 def _get_params_list_on_filters(
-        params: dict[str, str],
+        params: _ParamsType,
         filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None],
         req_1st_num: int
-        ) -> list[dict[str, str]]:
+        ) -> list[_ParamsType]:
     """Append filter keys to `params` dict."""
     if not filters:
         return [params]
@@ -205,7 +210,7 @@ def _get_params_list_on_filters(
 
     # Extract single filters from `fgroup`
     single_filters: dict[str, str] = {}
-    fgroup_del = {}
+    fgroup_del: dict[str, list[str]] = {}
     for group_name in fgroup:
         for field_name, val_list in fgroup[group_name].items():
             if len(val_list) == 1:
@@ -316,8 +321,7 @@ def _process_time_filter(
         field_name: str, val: object, multifilter_i: Union[int, None]
         ) -> str:
     """Raise for bad time filter and convert string to UTC timezone."""
-    istime = isinstance(val, datetime)
-    if isinstance(val, date) and not istime:
+    if isinstance(val, date) and not isinstance(val, datetime):
         # Value is a simple date object without time information
         msg = (
             f'Not possible to filter datetime field "{field_name}" by date'
@@ -326,11 +330,11 @@ def _process_time_filter(
         raise ValueError(msg)
 
     proc_dt: datetime
-    if istime:
+    if isinstance(val, datetime):
         if val.tzinfo is None:
             proc_dt = val.replace(tzinfo=UTC)
         else:
-            proc_dt = val.astimezone(UTC) # type: ignore
+            proc_dt = val.astimezone(UTC)
     else:
         val_str = str(val)
         for dtparse in reversed(TIME_FORMATS.values()):
@@ -427,9 +431,9 @@ def _expand_short_date_filters(
 
 
 def _expand_params_on_multifilters(
-        params: dict[str, str],
+        params: _ParamsType,
         fgroup: dict[str, dict[str, list[str]]]
-        ) -> list[dict[str, str]]:
+        ) -> list[_ParamsType]:
     """
     Return lists of request params based on expanded multifilters.
 
@@ -449,7 +453,7 @@ def _expand_params_on_multifilters(
         dict(zip(multifilters.keys(), values))
         for values in itertools.product(*multifilters.values())
         ]
-    request_param_list: list[dict[str, str]] = []
+    request_param_list: list[_ParamsType] = []
     for params_append in params_append_list:
         req_params = params.copy()
         req_params |= _filters_to_query_params(params_append)
@@ -481,8 +485,8 @@ def _get_sort_query_param(sort: Sequence[str]) -> str:
 
 
 def _retrieve_page_json(
-        url: str, params: Union[dict, None], query_time: datetime,
-        request_num: int
+        url: str, params: Union[_ParamsType, None],
+        query_time: datetime, request_num: int
         ) -> tuple[dict, _APIRequest]:
     """
     Execute an API request and return the deserialized JSON object.
@@ -514,35 +518,49 @@ def _retrieve_page_json(
             f'{res.reason}'
             )
 
-    json_frag = dcerr = None
+    json_frag = decode_error = None
     try:
         json_frag = res.json()
     except JSONDecodeError as err:
-        dcerr = err
-    if not dcerr and json_frag.get('errors'):
-        err_frag: Union[dict, None] = next(iter(json_frag['errors']), None)
-        if err_frag:
+        decode_error = err
+
+    if (isinstance(json_frag, dict)
+            and json_frag.get('errors')
+            and isinstance(json_frag['errors'], list)):
+        err_frag: Any = next(iter(json_frag['errors']), None)
+        if err_frag and isinstance(err_frag, dict):
             raise APIError(err_frag, api_request, res.status_code, res.reason)
     elif res.status_code != 200:  # noqa: PLR2004
         raise HTTPStatusError(res.status_code, res.reason, res.text)
-    if dcerr:
-        raise dcerr
+    elif decode_error:
+        raise decode_error
+    elif not isinstance(json_frag, dict):
+        msg = 'JSON:API document is not a JSON object'
+        raise JSONAPIFormatError(msg)
+    elif not (json_frag.get('data') or json_frag.get('meta')):
+        msg = (
+            'JSON:API document does not have any of the required keys "data", '
+            '"errors", "meta".'
+            )
+        raise JSONAPIFormatError(msg)
 
     return json_frag, api_request
 
 
 def _get_api_attribute_map() -> dict[str, str]:
     attrmap: dict[str, str] = {}
-    fproto = Filing(...)
-    cls = type(fproto)
+    fproto = Filing(PROTOTYPE)
     clsmap = {'api_id': 'id'}
     for prop in dir(fproto):
         # Exclude class attributes from instance attributes
-        if getattr(cls, prop, False):
+        if getattr(Filing, prop, False):
             continue
 
+        # All Filing instance attribute names as upper case are JSON
+        # paths as strings if originating from the response
         api_attr: Union[str, Literal[False]] = (
-            getattr(cls, prop.upper(), False)) # type: ignore
+            getattr(Filing, prop.upper(), False)) # type: ignore[assignment]
+
         if api_attr and api_attr.startswith('attributes.'):
             attr_lib = prop
             attr_api = api_attr[11:]

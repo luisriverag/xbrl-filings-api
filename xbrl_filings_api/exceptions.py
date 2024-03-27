@@ -21,6 +21,21 @@ class FilingsAPIError(Exception):
     representing an error returned by JSON:API.
     """
 
+    def __str__(self) -> str:
+        msg = getattr(self, 'msg', '')
+        attrlist = []
+        for attr_name in dir(self):
+            if not (attr_name == 'msg'
+                    or attr_name.startswith('_')
+                    or getattr(Exception, attr_name, False)):
+                val = getattr(self, attr_name)
+                if attr_name != 'body':
+                    attrlist.append(f'{attr_name}={val!r}')
+                else:
+                    attrlist.append(f'len(body)={len(val)}')
+        attrstr = ', '.join(attrlist)
+        return ' '.join([msg, attrstr])
+
 
 class FilingsAPIWarning(Warning):
     """Base class for warnings in this library."""
@@ -45,6 +60,22 @@ class HTTPStatusError(FilingsAPIError):
         """Description of the HTTP status."""
         self.body = body
         """Body text of the response."""
+        super().__init__()
+
+
+class JSONAPIFormatError(FilingsAPIError):
+    """
+    The API returns a JSON:API document in bad format.
+
+    Attributes
+    ----------
+    msg : str
+    """
+
+    def __init__(self, msg: str) -> None:
+        """Initialize `JSONAPIFormatError`."""
+        self.msg = msg
+        """Error message."""
         super().__init__()
 
 

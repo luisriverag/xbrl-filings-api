@@ -5,7 +5,9 @@
 # SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any
+
+from xbrl_filings_api.constants import FileStringType
 
 
 @dataclass
@@ -15,7 +17,7 @@ class DownloadInfo:
     obj: Any
     """Filing object which is used as the origin for the download."""
 
-    file: Literal['json', 'package', 'xhtml']
+    file: FileStringType
     """
     File type to download.
 

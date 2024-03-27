@@ -10,9 +10,7 @@ Tests for downloading methods are in separate test module
 # SPDX-License-Identifier: MIT
 
 import logging
-import webbrowser
 from datetime import date, datetime, timezone
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -529,3 +527,36 @@ def test_open_arguments_open_viewer_false(get_asml22en_filing, monkeypatch):
     assert bbmock.call_kwargs['new'] == 2
     assert bbmock.call_kwargs['autoraise'] is False
     assert call_return is False
+
+
+@pytest.mark.parametrize('open_viewer,attr_name', [
+    (True, 'viewer_url'),
+    (False, 'xhtml_url'),
+    ])
+def test_open_none_url(
+        open_viewer, attr_name, get_asml22en_filing, monkeypatch):
+    """Test `Filing.open` when open URL attribute is None."""
+    monkeypatch.setattr(options, 'open_viewer', open_viewer)
+    filing: xf.Filing = get_asml22en_filing()
+    setattr(filing, attr_name, None)
+    bbmock = BaseBrowserMock(return_value=True)
+    monkeypatch.setattr(options, 'browser', bbmock)
+    with pytest.raises(
+            ValueError, match=rf'The attribute "{attr_name}" value is None.'):
+        _ = filing.open(
+            new=0,
+            autoraise=True
+            )
+
+
+def test_open_options_browser_none(get_asml22en_filing, monkeypatch):
+    """Test `Filing.open` when options.browser is None."""
+    monkeypatch.setattr(options, 'open_viewer', True)
+    filing: xf.Filing = get_asml22en_filing()
+    monkeypatch.setattr(options, 'browser', None)
+    with pytest.raises(
+            ValueError, match=r'Value options.browser is not set.'):
+        _ = filing.open(
+            new=0,
+            autoraise=True
+            )
