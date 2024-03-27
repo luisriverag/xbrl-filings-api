@@ -399,8 +399,8 @@ class Filing(APIResource):
 
     def _derive_language(self) -> Union[str, None]:
         stems = (
-            self._get_url_stem(self.package_url),
-            self._get_url_stem(self.xhtml_url)
+            self._get_url_stem(self.xhtml_url),
+            self._get_url_stem(self.package_url)
             )
         resolved = None
         for stem in stems:

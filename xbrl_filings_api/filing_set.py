@@ -363,8 +363,9 @@ class FilingSet(set[Filing]):
         return data
 
     def pop_duplicates(
-            self, languages: Union[Iterable[str], None] = ['en'],
-            use_reporting_date: bool = False) -> 'FilingSet':
+            self, languages: Union[Iterable[str], None] = ['en'], *,
+            use_reporting_date: bool = False, all_markets: bool = False
+            ) -> 'FilingSet':
         """
         Pops duplicates of the same enclosure from the set of filings.
 
@@ -375,6 +376,10 @@ class FilingSet(set[Filing]):
         i.e., one filing for each unique enclosure of the same entity
         for the same financial period. If `use_reporting_date` is True,
         grouping is based on `entity_api_id`, `reporting_date` instead.
+
+        Some entities report on multiple markets. If all these
+        country-specific filings are wished to retain, set
+        `all_markets=True`. Grouping will then also include `country`.
 
         The selected filing from the group is chosen primarily on
         `languages` parameter values matched on the `language`
@@ -389,9 +394,6 @@ class FilingSet(set[Filing]):
         `filing_index` and the last one is chosen which is practically
         the one with highest filing number part of `filing_index`.
 
-        Please note that if an entity files in multiple countries, only
-        a filing from one country is chosen.
-
         Parameters
         ----------
         languages : iterable of str or None, default ['en']
@@ -399,6 +401,8 @@ class FilingSet(set[Filing]):
         use_reporting_date : bool, default False
             Use `reporting_date` instead of `last_end_date` when
             grouping.
+        all_markets : bool, default False
+            Add `country` to grouping.
 
         Returns
         -------
@@ -417,10 +421,14 @@ class FilingSet(set[Filing]):
 
         enclosures: dict[str, set[Filing]] = {}
         for filing in self:
+            key = f'{filing.entity_api_id}'
             if use_reporting_date:
-                key = f'{filing.entity_api_id}:{filing.reporting_date}'
+                key += f':{filing.reporting_date}'
             else:
-                key = f'{filing.entity_api_id}:{filing.last_end_date}'
+                key += f':{filing.last_end_date}'
+            if all_markets:
+                key += f':{filing.country}'
+
             if enclosures.get(key):
                 enclosures[key].add(filing)
             else:

@@ -560,13 +560,14 @@ def test_pop_duplicates_raises_no_entities(multifilter_api_id_response):
             ValueError, match=r'Entities must be available on the FilingSet'):
         _ = fs.pop_duplicates(
             languages=['en'],
-            use_reporting_date=False
+            use_reporting_date=False,
+            all_markets=False
             )
     assert fs_before == set(fs)
 
 
-def test_pop_duplicates_two_markets(multifilter_api_id_entities_response):
-    """Test pop_duplicates method with two market enclosure."""
+def test_pop_duplicates_two_markets_all_markets_false(multifilter_api_id_entities_response):
+    """Test pop_duplicates method with two market enclosure, all_markets=False."""
     shell21_22_gb_nl_ids = '1134', '1135', '4496', '4529'
     fs = xf.get_filings(
         filters={'api_id': shell21_22_gb_nl_ids},
@@ -576,7 +577,8 @@ def test_pop_duplicates_two_markets(multifilter_api_id_entities_response):
         )
     popped = fs.pop_duplicates(
         languages=['en'],
-        use_reporting_date=False
+        use_reporting_date=False,
+        all_markets=False
         )
     assert isinstance(fs, xf.FilingSet)
     assert len(fs) == 2
@@ -590,6 +592,26 @@ def test_pop_duplicates_two_markets(multifilter_api_id_entities_response):
         assert filing.country == 'GB'
 
 
+def test_pop_duplicates_two_markets_all_markets_true(multifilter_api_id_entities_response):
+    """Test pop_duplicates method with two market enclosure, all_markets=True."""
+    shell21_22_gb_nl_ids = '1134', '1135', '4496', '4529'
+    fs = xf.get_filings(
+        filters={'api_id': shell21_22_gb_nl_ids},
+        sort=None,
+        max_size=4,
+        flags=xf.GET_ENTITY
+        )
+    popped = fs.pop_duplicates(
+        languages=['en'],
+        use_reporting_date=False,
+        all_markets=True
+        )
+    assert isinstance(fs, xf.FilingSet)
+    assert len(fs) == 4
+    assert isinstance(popped, xf.FilingSet)
+    assert len(popped) == 0
+
+
 @pytest.mark.parametrize('languages,match_lang,pop_lang', [
     (['en'], 'en', ('fr', 'nl')),
     (['fi', 'nl'], 'nl', ('fr', 'en')),
@@ -601,7 +623,8 @@ def test_pop_duplicates_3languages_2enclosures_match_language(
     fs: xf.FilingSet = ageas21_22_filingset
     popped = fs.pop_duplicates(
         languages=languages,
-        use_reporting_date=False
+        use_reporting_date=False,
+        all_markets=False
         )
     assert isinstance(fs, xf.FilingSet)
     assert len(fs) == 2
@@ -628,7 +651,8 @@ def test_pop_duplicates_3languages_2enclosures_max_filing_index(
     fs: xf.FilingSet = ageas21_22_filingset
     popped = fs.pop_duplicates(
         languages=languages,
-        use_reporting_date=False
+        use_reporting_date=False,
+        all_markets=False
         )
     assert isinstance(fs, xf.FilingSet)
     assert len(fs) == 2
@@ -663,7 +687,8 @@ def test_pop_duplicates_3languages_2enclosures_filing_index_none(
             filing.filing_index = None
     popped = fs.pop_duplicates(
         languages=None,
-        use_reporting_date=False
+        use_reporting_date=False,
+        all_markets=False
         )
     assert isinstance(fs, xf.FilingSet)
     assert len(fs) == 2
@@ -693,7 +718,8 @@ def test_pop_duplicates_use_reporting_date_false_faulty_last_end_date(
     fs: xf.FilingSet = applus20_21_filingset
     popped = fs.pop_duplicates(
         languages=None,
-        use_reporting_date=False
+        use_reporting_date=False,
+        all_markets=False
         )
     assert isinstance(fs, xf.FilingSet)
     assert len(fs) == 1
@@ -716,7 +742,8 @@ def test_pop_duplicates_use_reporting_date_true_faulty_last_end_date(
     fs: xf.FilingSet = applus20_21_filingset
     popped = fs.pop_duplicates(
         languages=None,
-        use_reporting_date=True
+        use_reporting_date=True,
+        all_markets=False
         )
     assert isinstance(fs, xf.FilingSet)
     assert len(fs) == 2
