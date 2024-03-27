@@ -19,11 +19,7 @@ import pytest
 import responses
 
 import xbrl_filings_api as xf
-from xbrl_filings_api.exceptions import (
-    DatabaseFileExistsError,
-    DatabasePathIsReservedError,
-    DatabaseSchemaUnmatchError,
-)
+from xbrl_filings_api.exceptions import DatabaseSchemaUnmatchError
 
 
 @pytest.fixture
@@ -293,7 +289,7 @@ def test_to_sqlite_update_more_but_false(
     edit_time_before = stbef.st_mtime, stbef.st_ctime
 
     fs_b: xf.FilingSet = asml22en_filingset
-    with pytest.raises(DatabaseFileExistsError):
+    with pytest.raises(FileExistsError):
         fs_b.to_sqlite(
             path=db_path,
             update=False,
@@ -389,7 +385,8 @@ def test_to_sqlite_path_reserved(
     reserved_path.mkdir()
 
     fs_a: xf.FilingSet = get_oldest3_fi_filingset()
-    with pytest.raises(DatabasePathIsReservedError):
+    with pytest.raises(
+            sqlite3.OperationalError, match=r'unable to open database file'):
         fs_a.to_sqlite(
             path=reserved_path,
             update=False,

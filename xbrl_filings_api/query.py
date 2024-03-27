@@ -167,11 +167,11 @@ def to_sqlite(
         * ``Filing.api_id = ValidationMessage.filing_api_id``
 
     If a file exists in `path` parameter path and `update` is
-    `False` (default), a `DatabaseFileExistsError` exception will be
-    raised. If `update` is `True`, retrieved records will update the
-    existing ones based on `api_id` and the new ones will be added.
-    A database to be updated may have additional tables and
-    additional columns. Missing tables and columns will be created.
+    `False` (default), a `FileExistsError` exception will be raised. If
+    `update` is `True`, retrieved records will update the existing ones
+    based on `api_id` and the new ones will be added. A database to be
+    updated may have additional tables and additional columns. Missing
+    tables and columns will be created.
 
     If the intermediary folders in `path` do not exist, they will be
     created.
@@ -221,12 +221,9 @@ def to_sqlite(
     HTTPStatusError
         If filings API does not return errors but HTTP status is not
         200.
-    DatabaseFileExistsError
+    FileExistsError
         When ``update=False``, if the intended save path for the
         database is an existing file.
-    DatabasePathIsReservedError
-        The intended save path for the database is already reserved
-        by a non-file database object.
     DatabaseSchemaUnmatchError
         When ``update=True``, if the file contains a database whose
         schema does not match the expected format.

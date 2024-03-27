@@ -37,7 +37,7 @@ class FilingsAPIError(Exception):
         return ' '.join([msg, attrstr])
 
 
-class FilingsAPIWarning(Warning):
+class FilingsAPIWarning(UserWarning):
     """Base class for warnings in this library."""
 
 
@@ -103,38 +103,6 @@ class CorruptDownloadError(FilingsAPIError):
         """Actual SHA-256 hash of the file in lowercase hex."""
         self.expected_hash = expected_hash
         """Expected SHA-256 hash of the file in lowercase hex."""
-        super().__init__()
-
-
-class DatabaseFileExistsError(FilingsAPIError):
-    """
-    The intended save path for the database is an existing file.
-
-    Set parameter `update` to `True` to update an existing database.
-
-    Attributes
-    ----------
-    path : str
-    """
-
-    def __init__(self, path: str):
-        self.path = path
-        """Intended save path for the file."""
-        super().__init__()
-
-
-class DatabasePathIsReservedError(FilingsAPIError):
-    """
-    The intended save path for the database is already reserved.
-
-    Attributes
-    ----------
-    path : str
-    """
-
-    def __init__(self, path: str):
-        self.path = path
-        """Intended save path for the file."""
         super().__init__()
 
 

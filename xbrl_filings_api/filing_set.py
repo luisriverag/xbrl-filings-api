@@ -266,12 +266,9 @@ class FilingSet(set[Filing]):
 
         Raises
         ------
-        DatabaseFileExistsError
+        FileExistsError
             When ``update=False``, if the intended save path for the
             database is an existing file.
-        DatabasePathIsReservedError
-            The intended save path for the database is already reserved
-            by a non-file database object.
         DatabaseSchemaUnmatchError
             When ``update=True``, if the file contains a database whose
             schema does not match the expected format.

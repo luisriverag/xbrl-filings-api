@@ -7,7 +7,9 @@
 # Double quotes are used in all SQL strings by default.
 # ruff: noqa: Q000
 
+import errno
 import logging
+import os
 import sqlite3
 from collections.abc import Collection, Sequence
 from datetime import datetime
@@ -24,11 +26,7 @@ from xbrl_filings_api.enums import (
     GET_VALIDATION_MESSAGES,
     ScopeFlag,
 )
-from xbrl_filings_api.exceptions import (
-    DatabaseFileExistsError,
-    DatabasePathIsReservedError,
-    DatabaseSchemaUnmatchError,
-)
+from xbrl_filings_api.exceptions import DatabaseSchemaUnmatchError
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.time_formats import TIME_FORMATS
 from xbrl_filings_api.validation_message import ValidationMessage
@@ -51,8 +49,7 @@ def sets_to_sqlite(
 
     Raises
     ------
-    DatabaseFileExistsError
-    DatabasePathIsReservedError
+    FileExistsError
     DatabaseSchemaUnmatchError
     sqlite3.DatabaseError
     """
@@ -72,16 +69,16 @@ def _validate_path(db_path: Path, *, update: bool) -> None:
 
     Raises
     ------
-    DatabaseFileExistsError
+    FileExistsError
         When file exists in path and `update` is `False`.
-    DatabasePathIsReservedError
-        When path is reserved.
     """
     if db_path.is_file():
         if not update:
-            raise DatabaseFileExistsError(str(db_path))
-    elif db_path.exists():
-        raise DatabasePathIsReservedError(str(db_path))
+            raise FileExistsError(
+                errno.EEXIST,
+                os.strerror(errno.EEXIST),
+                str(db_path)
+                )
 
 
 def _validate_views():
