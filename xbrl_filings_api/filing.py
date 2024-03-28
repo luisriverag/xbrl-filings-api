@@ -7,6 +7,7 @@
 import logging
 import re
 import urllib.parse
+import webbrowser
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath
@@ -663,13 +664,16 @@ class Filing(APIResource):
             attr_name = 'viewer_url' if options.open_viewer else 'xhtml_url'
             msg = f'The attribute "{attr_name}" value is None.'
             raise ValueError(msg)
-        if not options.browser:
+        if not (isinstance(options.browser, object)
+                and callable(getattr(options.browser, 'open', None))):
             msg = (
-                'Value options.browser is not set. It is likely that '
-                'webbrowser.get() failed and there is no runnable browser.'
+                'Value options.browser is not webbrowser.BaseBrowser. It is '
+                'likely that webbrowser.get() failed and there is no runnable '
+                'browser.'
                 )
-            raise ValueError(msg)
-        return options.browser.open(
+            raise TypeError(msg)
+        # Existence of open method is certain
+        return options.browser.open( # type: ignore[union-attr]
             url=file_url,
             new=new,
             autoraise=autoraise

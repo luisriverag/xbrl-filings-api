@@ -73,7 +73,7 @@ def construct(
                 items.append(full_item)
     else:
         msg = "Parameter 'files' is none of str, Iterable or Mapping"
-        raise ValueError(msg)
+        raise TypeError(msg)
     return items
 
 

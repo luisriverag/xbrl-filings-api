@@ -489,7 +489,7 @@ def test_download_files_as_int_raise(
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with pytest.raises(
-            ValueError,
+            TypeError,
             match=r"Parameter 'files' is none of str, Iterable or Mapping" ):
         target.download(
             files=2,
@@ -518,7 +518,7 @@ async def test_download_aiter_files_as_int_raise(
         max_concurrent=None
         )
     with pytest.raises(
-            ValueError,
+            TypeError,
             match=r"Parameter 'files' is none of str, Iterable or Mapping" ):
         async for _ in dliter:
             pass

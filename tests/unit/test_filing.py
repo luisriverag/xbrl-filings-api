@@ -555,7 +555,8 @@ def test_open_options_browser_none(get_asml22en_filing, monkeypatch):
     filing: xf.Filing = get_asml22en_filing()
     monkeypatch.setattr(options, 'browser', None)
     with pytest.raises(
-            ValueError, match=r'Value options.browser is not set.'):
+            TypeError,
+            match=r'Value options.browser is not webbrowser.BaseBrowser.'):
         _ = filing.open(
             new=0,
             autoraise=True

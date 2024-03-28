@@ -292,7 +292,7 @@ def _adapt_datetime(dt: datetime):
         fstr = TIME_FORMATS[options.time_accuracy]
     except KeyError:
         msg = "options.time_accuracy not in {'day', 'min', 'sec', 'max'}"
-        raise ValueError(msg)
+        raise ValueError(msg) from None
     return dt.strftime(fstr)
 
 
