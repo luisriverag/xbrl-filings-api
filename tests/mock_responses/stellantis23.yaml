@@ -1,0 +1,25 @@
+responses:
+- response:
+    auto_calculate_content_length: false
+    body: '{"data": [{"type": "filing", "attributes": {"country": "NL", "sha256":
+      "fd3a19cecd3f90b43947cad9f9a79f078977512cf0b9deee1a55c184e10ef74b", "viewer_url":
+      "/549300LKT9PW7ZIBDF31/2023-12-31/ESEF/NL/0/stellantis-2023-12-31-en/reports/ixbrlviewer.html",
+      "package_url": "/549300LKT9PW7ZIBDF31/2023-12-31/ESEF/NL/0/stellantis-2023-12-31-en.zip",
+      "report_url": "/549300LKT9PW7ZIBDF31/2023-12-31/ESEF/NL/0/stellantis-2023-12-31-en/reports/stellantis-2023-12-31-en.xhtml",
+      "inconsistency_count": 0, "json_url": "/549300LKT9PW7ZIBDF31/2023-12-31/ESEF/NL/0/stellantis-2023-12-31-en.json",
+      "period_end": "2023-12-31", "processed": "2024-02-27 12:35:42.888922", "warning_count":
+      0, "fxo_id": "549300LKT9PW7ZIBDF31-2023-12-31-ESEF-NL-0", "error_count": 0,
+      "date_added": "2024-02-27 12:02:54.199714"}, "relationships": {"entity": {"links":
+      {"related": "/api/entities/549300LKT9PW7ZIBDF31"}, "data": {"type": "entity",
+      "id": "779"}}, "validation_messages": {"links": {"related": "/api/filings/12398/validation_messages"}}},
+      "id": "12398", "links": {"self": "/api/filings/12398"}}], "links": {"self":
+      "https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&filter%5Bid%5D=12398&include=entity"},
+      "included": [{"type": "entity", "attributes": {"identifier": "549300LKT9PW7ZIBDF31",
+      "name": "STELLANTIS N.V."}, "relationships": {"filings": {"links": {"related":
+      "/api/entities/549300LKT9PW7ZIBDF31/filings"}}}, "id": "779", "links": {"self":
+      "/api/entities/549300LKT9PW7ZIBDF31"}}], "meta": {"count": 1}, "jsonapi": {"version":
+      "1.0"}}'
+    content_type: text/plain
+    method: GET
+    status: 200
+    url: https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&filter%5Bid%5D=12398&include=entity

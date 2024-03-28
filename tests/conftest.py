@@ -8,7 +8,6 @@ the aforementioned script.
 .. note::
     This script uses beta feature `responses._add_from_file` (as of
     `responses` version 0.23.3).
-
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
@@ -574,4 +573,28 @@ def applus20_21_response(urlmock):
     """Applus Services 2020, 2021 filings with entities, 2 filings, same last_end_date."""
     with responses.RequestsMock() as rsps:
         urlmock.apply(rsps, 'applus20_21')
+        yield rsps
+
+
+@pytest.fixture
+def stellantis21to22_response(urlmock):
+    """Stellantis 2021 to 2022 filings with entities."""
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'stellantis21to22')
+        yield rsps
+
+
+@pytest.fixture
+def stellantis23_response(urlmock):
+    """Stellantis 2023 filing with entities."""
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'stellantis23')
+        yield rsps
+
+
+@pytest.fixture
+def stellantis22to23_response(urlmock):
+    """Stellantis 2022 to 2023 filing with entities."""
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'stellantis22to23')
         yield rsps

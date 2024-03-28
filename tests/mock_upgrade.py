@@ -928,6 +928,57 @@ def _fetch_applus20_21():
 _addmock('applus20_21')
 
 
+@_recorder.record(file_path=urlmock.path('stellantis21to22'))
+def _fetch_stellantis21to22():
+    """Stellantis 2021 to 2022 filings with entities."""
+    stellantis21to22_ids = ['1034', '4325']
+    for req_i, api_id in enumerate(stellantis21to22_ids):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': 2 - req_i,
+                'filter[id]': api_id,
+                'include': 'entity'
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+_addmock('stellantis21to22')
+
+
+@_recorder.record(file_path=urlmock.path('stellantis23'))
+def _fetch_stellantis23():
+    """Stellantis 2023 filing with entities."""
+    _ = requests.get(
+        url=ENTRY_POINT_URL,
+        params={
+            'page[size]': 1,
+            'filter[id]': '12398',
+            'include': 'entity'
+            },
+        headers=JSON_API_HEADERS,
+        timeout=REQUEST_TIMEOUT
+        )
+_addmock('stellantis23')
+
+
+@_recorder.record(file_path=urlmock.path('stellantis22to23'))
+def _fetch_stellantis22to23():
+    """Stellantis 2022 to 2023 filing with entities."""
+    stellantis21to22_ids = ['4325', '12398']
+    for req_i, api_id in enumerate(stellantis21to22_ids):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params={
+                'page[size]': 2 - req_i,
+                'filter[id]': api_id,
+                'include': 'entity'
+                },
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+_addmock('stellantis22to23')
+
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 
 

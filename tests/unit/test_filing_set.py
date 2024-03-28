@@ -4,6 +4,9 @@ Define tests for `FilingSet`.
 Tests for downloading methods are in separate test module
 ``test_downloading`` and for the method get_pandas_data in module
 ``test_pandas_data``.
+
+Tests for operations of superclass `set` are found in module
+`test_filing_set_superclass`.
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
@@ -63,6 +66,16 @@ def applus20_21_filingset(urlmock):
             flags=xf.GET_ENTITY
             )
     return fs
+
+
+@pytest.mark.skip(reason='Not yet implemented')
+def test_init_not_filing(get_oldest3_fi_filingset):
+    """Test FilingSet attributes."""
+    fs: set[xf.Filing] = set(get_oldest3_fi_filingset())
+    fs.add('test')
+    with pytest.raises(
+            ValueError, match=r'All iterable items must be Filing objects.'):
+        _ = xf.FilingSet(fs)
 
 
 def test_attributes(get_oldest3_fi_filingset):
