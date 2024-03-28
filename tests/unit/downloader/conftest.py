@@ -1,3 +1,8 @@
+"""Configure `pytest.downloader` subpackage."""
+
+import hashlib
+import urllib.parse
+from pathlib import PurePosixPath
 from typing import Union
 
 import pytest
@@ -10,6 +15,16 @@ from xbrl_filings_api.downloader import DownloadSpecs
 def mock_response_data():
     """Arbitrary data to mock download."""
     return '0123456789' * 100
+
+
+@pytest.fixture(scope='module')
+def mock_response_sha256(mock_response_data):
+    """SHA-256 hash for `mock_response_data`."""
+    fhash = hashlib.sha256(
+        string=mock_response_data.encode(encoding='utf-8'),
+        usedforsecurity=False
+        )
+    return fhash.hexdigest()
 
 
 @pytest.fixture(scope='module')
@@ -94,3 +109,12 @@ def filename_renamed_specs():
             info=info
             )
     return _filename_renamed_specs
+
+
+@pytest.fixture(scope='module')
+def url_filename():
+    """Function for getting the filename from URL."""
+    def _url_filename(url):
+        url_path = urllib.parse.urlparse(url).path
+        return PurePosixPath(url_path).name
+    return _url_filename

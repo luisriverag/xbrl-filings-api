@@ -11,9 +11,7 @@ from types import FunctionType
 import pytest
 
 import xbrl_filings_api as xf
-from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
-from xbrl_filings_api.api_resource import APIResource
 
 
 def test_all_public_classes_have_repr():
@@ -24,17 +22,21 @@ def test_all_public_classes_have_repr():
         if inspect.isclass(getattr(xf, name))
         ]
     for pclass in pclasses:
+        if (issubclass(pclass, Exception)
+                and not issubclass(pclass, xf.APIObject)):
+            continue
         cname = pclass.__name__
         # Skip non-concrete classes
         if cname in ('APIObject', 'APIResource'):
             continue
         crepr = getattr(pclass, '__repr__', False)
-        assert isinstance(crepr, FunctionType), f'{cname} must have repr'
+        msg = f'{pclass} must have custom __repr__'
+        assert isinstance(crepr, FunctionType), msg
 
 
 def test_nonconcrete_classes_init_fails():
     """Test non-concrete classes cannot be initialized."""
     with pytest.raises(NotImplementedError):
-        APIObject(json_frag={}, api_request=_APIRequest('', datetime.now()))
+        xf.APIObject(json_frag={}, api_request=_APIRequest('', datetime.now()))
     with pytest.raises(NotImplementedError):
-        APIResource(json_frag={})
+        xf.APIResource(json_frag={})

@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 import hashlib
+import re
 from pathlib import Path
 
 import pytest
@@ -12,7 +13,6 @@ import requests
 import responses
 
 import xbrl_filings_api.downloader as downloader
-import xbrl_filings_api.exceptions as xf_exceptions
 
 pytestmark = pytest.mark.asyncio
 
@@ -186,23 +186,30 @@ async def test_sha256_success(mock_url_response, mock_response_data, tmp_path):
     assert save_path.stat().st_size > 0
 
 
-async def test_sha256_fail(mock_url_response, tmp_path):
+async def test_sha256_fail(mock_url_response, mock_response_sha256, tmp_path):
     """Test raising of `CorruptDownloadError` when `sha256` is incorrect."""
     filename = 'test_sha256_fail.zip'
     e_filename = f'{filename}.corrupt'
     url = f'https://filings.xbrl.org/download_async/{filename}'
-    e_file_sha256 = '0' * 64
+    e_expected_hash = '0' * 64
     with responses.RequestsMock() as rsps:
         mock_url_response(url, rsps)
-        with pytest.raises(xf_exceptions.CorruptDownloadError):
+        # Raises CorruptDownloadError of downloader package
+        with pytest.raises(downloader.CorruptDownloadError) as exc_info:
             await downloader.download_async(
                 url=url,
                 to_dir=tmp_path,
                 stem_pattern=None,
                 filename=None,
-                sha256=e_file_sha256,
+                sha256=e_expected_hash,
                 timeout=30.0
                 )
+        err = exc_info.value
+        assert err.path == str(tmp_path / e_filename)
+        assert err.url == url
+        assert err.calculated_hash == mock_response_sha256
+        assert err.expected_hash == e_expected_hash
+        # downloader.CorruptDownloadError has no __str__
     corrupt_path = tmp_path / e_filename
     assert corrupt_path.is_file()
     assert corrupt_path.stat().st_size > 0

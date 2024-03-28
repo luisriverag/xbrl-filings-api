@@ -21,6 +21,7 @@ from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import _ParseType
+from xbrl_filings_api.exceptions import CorruptDownloadError
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
 from xbrl_filings_api.validation_message import ValidationMessage
 
@@ -515,8 +516,8 @@ class Filing(APIResource):
         Raises
         ------
         CorruptDownloadError
-            Parameter `sha256` does not match the calculated hash of
-            package.
+            Filing attribute `package_sha256` does not match the
+            calculated hash of package file.
         requests.HTTPError
             HTTP status error occurs.
         requests.ConnectionError
@@ -544,6 +545,15 @@ class Filing(APIResource):
             for result in results
             if isinstance(result.err, Exception)
             ]
+        for err_i, err in enumerate(excs):
+            if isinstance(err, downloader.CorruptDownloadError):
+                # Wrap again with FilingsAPIError subclassed exception
+                excs[err_i] = CorruptDownloadError(
+                    path=err.path,
+                    url=err.url,
+                    calculated_hash=err.calculated_hash,
+                    expected_hash=err.expected_hash
+                    )
         if excs:
             raise excs[0]
 
@@ -607,6 +617,16 @@ class Filing(APIResource):
                     f'{res_info.file}_download_path',
                     result.path
                     )
+            if isinstance(result.err, downloader.CorruptDownloadError):
+                # Wrap again with FilingsAPIError subclassed exception
+                err = CorruptDownloadError(
+                    path=result.err.path,
+                    url=result.err.url,
+                    calculated_hash=result.err.calculated_hash,
+                    expected_hash=result.err.expected_hash
+                    )
+                result = downloader.DownloadResult(
+                    result.url, result.path, err, result.info)
             yield result
 
     def open(self, new: int = 0, autoraise: bool = True) -> bool:

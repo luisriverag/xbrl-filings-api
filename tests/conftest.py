@@ -8,6 +8,7 @@ the aforementioned script.
 .. note::
     This script uses beta feature `responses._add_from_file` (as of
     `responses` version 0.23.3).
+
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>

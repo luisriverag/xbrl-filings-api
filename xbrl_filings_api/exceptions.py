@@ -22,7 +22,11 @@ class FilingsAPIError(Exception):
     """
 
     def __str__(self) -> str:
-        msg = getattr(self, 'msg', '')
+        """Return error as text."""
+        parts = []
+        msg = getattr(self, 'msg', None)
+        if msg:
+            parts.append(msg)
         attrlist = []
         for attr_name in dir(self):
             if not (attr_name == 'msg'
@@ -34,7 +38,9 @@ class FilingsAPIError(Exception):
                 else:
                     attrlist.append(f'len(body)={len(val)}')
         attrstr = ', '.join(attrlist)
-        return ' '.join([msg, attrstr])
+        if attrstr:
+            parts.append(attrstr)
+        return ' '.join(parts)
 
 
 class FilingsAPIWarning(UserWarning):
@@ -102,7 +108,11 @@ class CorruptDownloadError(FilingsAPIError):
         self.calculated_hash = calculated_hash
         """Actual SHA-256 hash of the file in lowercase hex."""
         self.expected_hash = expected_hash
-        """Expected SHA-256 hash of the file in lowercase hex."""
+        """
+        Expected SHA-256 hash of the file in lowercase hex.
+
+        Originates from `Filing` attribute `package_sha256`.
+        """
         super().__init__()
 
 

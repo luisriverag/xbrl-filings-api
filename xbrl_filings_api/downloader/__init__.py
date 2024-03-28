@@ -19,3 +19,4 @@ from xbrl_filings_api.downloader.download_processor import (
 )
 from xbrl_filings_api.downloader.download_result import DownloadResult
 from xbrl_filings_api.downloader.download_specs import DownloadSpecs
+from xbrl_filings_api.downloader.exceptions import CorruptDownloadError

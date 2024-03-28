@@ -90,6 +90,13 @@ from xbrl_filings_api.enums import (
     GET_VALIDATION_MESSAGES,
     ScopeFlag,
 )
+from xbrl_filings_api.exceptions import (
+    CorruptDownloadError,
+    DatabaseSchemaUnmatchError,
+    FilingsAPIError,
+    HTTPStatusError,
+    JSONAPIFormatError,
+)
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set import FilingSet
 from xbrl_filings_api.filings_page import FilingsPage

@@ -31,6 +31,7 @@ from xbrl_filings_api.enums import (
     GET_VALIDATION_MESSAGES,
     ScopeFlag,
 )
+from xbrl_filings_api.exceptions import CorruptDownloadError
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
@@ -128,8 +129,8 @@ class FilingSet(set[Filing]):
         Raises
         ------
         CorruptDownloadError
-            Parameter `sha256` does not match the calculated hash of
-            package.
+            Filing attribute `package_sha256` does not match the
+            calculated hash of package file.
         requests.HTTPError
             HTTP status error occurs.
         requests.ConnectionError
@@ -163,6 +164,15 @@ class FilingSet(set[Filing]):
             result.err for result in results
             if isinstance(result.err, Exception)
             ]
+        for err_i, err in enumerate(excs):
+            if isinstance(err, downloader.CorruptDownloadError):
+                # Wrap again with FilingsAPIError subclassed exception
+                excs[err_i] = CorruptDownloadError(
+                    path=err.path,
+                    url=err.url,
+                    calculated_hash=err.calculated_hash,
+                    expected_hash=err.expected_hash
+                    )
         if excs:
             raise excs[0]
 
@@ -231,6 +241,16 @@ class FilingSet(set[Filing]):
                     f'{res_info.file}_download_path',
                     result.path
                     )
+            if isinstance(result.err, downloader.CorruptDownloadError):
+                # Wrap again with FilingsAPIError subclassed exception
+                err = CorruptDownloadError(
+                    path=result.err.path,
+                    url=result.err.url,
+                    calculated_hash=result.err.calculated_hash,
+                    expected_hash=result.err.expected_hash
+                    )
+                result = downloader.DownloadResult(
+                    result.url, result.path, err, result.info)
             yield result
 
     def to_sqlite(

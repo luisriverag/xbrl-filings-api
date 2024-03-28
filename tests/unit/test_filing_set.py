@@ -19,7 +19,6 @@ import pytest
 import responses
 
 import xbrl_filings_api as xf
-from xbrl_filings_api.exceptions import DatabaseSchemaUnmatchError
 
 
 @pytest.fixture
@@ -325,12 +324,16 @@ def test_to_sqlite_update_no_tables(
     edit_time_before = stbef.st_mtime, stbef.st_ctime
 
     fs_b: xf.FilingSet = asml22en_filingset
-    with pytest.raises(DatabaseSchemaUnmatchError):
+    with pytest.raises(xf.DatabaseSchemaUnmatchError) as exc_info:
         fs_b.to_sqlite(
             path=db_path,
             update=True,
             flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
             )
+    err = exc_info.value
+    assert err.path == str(db_path)
+    assert str(err) == f'path={str(db_path)!r}'
+
     assert db_path.is_file(), "Failed update won't delete database file"
     staft = db_path.stat()
     edit_time_after = staft.st_mtime, staft.st_ctime
@@ -364,12 +367,16 @@ def test_to_sqlite_update_no_api_id(
     edit_time_before = stbef.st_mtime, stbef.st_ctime
 
     fs_b: xf.FilingSet = asml22en_filingset
-    with pytest.raises(DatabaseSchemaUnmatchError):
+    with pytest.raises(xf.DatabaseSchemaUnmatchError) as exc_info:
         fs_b.to_sqlite(
             path=db_path,
             update=True,
             flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
             )
+    err = exc_info.value
+    assert err.path == str(db_path)
+    assert str(err) == f'path={str(db_path)!r}'
+
     assert db_path.is_file(), "Failed update won't delete database file"
     staft = db_path.stat()
     edit_time_after = staft.st_mtime, staft.st_ctime

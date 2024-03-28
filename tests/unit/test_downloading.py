@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MIT
 
 import logging
-import os
+import re
 import urllib.parse
 from pathlib import Path, PurePosixPath
 
@@ -13,7 +13,6 @@ import pytest
 import responses
 
 import xbrl_filings_api as xf
-import xbrl_filings_api.exceptions as xf_exceptions
 
 
 @pytest.fixture(scope='module')
@@ -59,7 +58,8 @@ def url_filename():
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
     """Test downloading `json_url` by `download`."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
@@ -232,17 +232,24 @@ async def test_download_aiter_package_check_corruption_success(
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_package_check_corruption_fail(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
-        tmp_path):
+        mock_response_sha256, tmp_path):
     """Test downloading `package_url` by `download` with sha256 check failure."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
+    e_expected_hash = '0'*64
+    e_paths = set()
+    e_urls = set()
     for filing in filings:
+        filename = f'{url_filename(filing.package_url)}.corrupt'
+        e_paths.add(str(tmp_path / filename))
+        e_urls.add(filing.package_url)
         # Filing objects are mutable
-        filing.package_sha256 = '0'*64
+        filing.package_sha256 = e_expected_hash
     with responses.RequestsMock() as rsps:
         for filing in filings:
             mock_url_response(filing.package_url, rsps)
-        with pytest.raises(xf_exceptions.CorruptDownloadError):
+        # Raises CorruptDownloadError of root library
+        with pytest.raises(xf.CorruptDownloadError) as exc_info:
             target.download(
                 files='package',
                 to_dir=tmp_path,
@@ -250,6 +257,16 @@ def test_download_package_check_corruption_fail(
                 check_corruption=True,
                 max_concurrent=None
                 )
+        err = exc_info.value
+        assert err.path in e_paths
+        assert err.url in e_urls
+        assert err.calculated_hash == mock_response_sha256
+        assert err.expected_hash == e_expected_hash
+        parts = str(err).split(', ')
+        assert len(parts) == 4
+        attr_re = re.compile(r'(calculated_hash|expected_hash|path|url)=')
+        for part in parts:
+            assert attr_re.match(part)
     for filing in filings:
         filename = url_filename(filing.package_url)
         corrupt_path = tmp_path / f'{filename}.corrupt'
@@ -263,13 +280,19 @@ def test_download_package_check_corruption_fail(
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_package_check_corruption_fail(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
-        tmp_path):
+        mock_response_sha256, tmp_path):
     """Test downloading `package_url` by `download_aiter` with sha256 check failure."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
+    e_expected_hash = '0'*64
+    e_paths = set()
+    e_urls = set()
     for filing in filings:
+        filename = f'{url_filename(filing.package_url)}.corrupt'
+        e_paths.add(str(tmp_path / filename))
+        e_urls.add(filing.package_url)
         # Filing objects are mutable
-        filing.package_sha256 = '0'*64
+        filing.package_sha256 = e_expected_hash
     with responses.RequestsMock() as rsps:
         for filing in filings:
             mock_url_response(filing.package_url, rsps)
@@ -281,8 +304,19 @@ async def test_download_aiter_package_check_corruption_fail(
             max_concurrent=None
             )
         res: xf.DownloadResult
+        attr_re = re.compile(r'(calculated_hash|expected_hash|path|url)=')
         async for res in dliter:
-            assert isinstance(res.err, xf_exceptions.CorruptDownloadError)
+            # `err` has CorruptDownloadError of root library
+            assert isinstance(res.err, xf.CorruptDownloadError)
+            assert res.err.path in e_paths
+            assert res.err.url in e_urls
+            assert res.err.calculated_hash == mock_response_sha256
+            assert res.err.expected_hash == e_expected_hash
+            parts = str(res.err).split(', ')
+            assert len(parts) == 4
+            for part in parts:
+                assert attr_re.match(part)
+
             res_info: xf.DownloadInfo = res.info
             assert res_info.file == 'package'
             filing: xf.Filing = res_info.obj

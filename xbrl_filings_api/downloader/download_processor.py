@@ -9,14 +9,14 @@ import hashlib
 import urllib.parse
 from collections.abc import AsyncIterator
 from pathlib import Path, PurePath
-from typing import NoReturn, Optional, Union
+from typing import Optional, Union
 
 import requests
 
 from xbrl_filings_api.downloader import stats
 from xbrl_filings_api.downloader.download_result import DownloadResult
 from xbrl_filings_api.downloader.download_specs import DownloadSpecs
-from xbrl_filings_api.exceptions import CorruptDownloadError
+from xbrl_filings_api.downloader.exceptions import CorruptDownloadError
 
 
 def download(
@@ -93,7 +93,8 @@ async def download_async(
     Raises
     ------
     CorruptDownloadError
-        Parameter `sha256` does not match the calculated hash.
+        Filing attribute `package_sha256` does not match the calculated
+        hash of package file.
     requests.HTTPError
         HTTP status error occurs.
     requests.ConnectionError

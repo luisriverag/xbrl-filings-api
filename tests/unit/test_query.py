@@ -15,7 +15,6 @@ import responses
 from requests import JSONDecodeError
 
 import xbrl_filings_api as xf
-import xbrl_filings_api.exceptions as xf_exceptions
 
 UTC = timezone.utc
 
@@ -89,17 +88,22 @@ def test_get_filings_http_status_error():
             body='Testing.',
             status=404
             )
-        with pytest.raises(xf_exceptions.HTTPStatusError) as exc_info:
+        with pytest.raises(xf.HTTPStatusError) as exc_info:
             _ = xf.get_filings(
                 filters=None,
                 sort=None,
                 max_size=100,
                 flags=xf.GET_ONLY_FILINGS
                 )
-        exc = exc_info.value
-        assert exc.status_code == 404
-        assert exc.status_text == 'Not Found'
-        assert exc.body == 'Testing.'
+        err = exc_info.value
+        assert err.status_code == 404
+        assert err.status_text == 'Not Found'
+        assert err.body == 'Testing.'
+        e_parts = (
+            'status_code=404', "status_text='Not Found'", 'len(body)=8')
+        parts = str(err).split(', ')
+        for part in parts:
+            assert part in e_parts
 
 
 def test_get_filings_jsonapi_format_error_array():
@@ -110,15 +114,16 @@ def test_get_filings_jsonapi_format_error_array():
             body='["test", "array"]',
             status=200
             )
-        with pytest.raises(xf_exceptions.JSONAPIFormatError) as exc_info:
+        with pytest.raises(xf.JSONAPIFormatError) as exc_info:
             _ = xf.get_filings(
                 filters=None,
                 sort=None,
                 max_size=100,
                 flags=xf.GET_ONLY_FILINGS
                 )
-        exc = exc_info.value
-        assert exc.msg == 'JSON:API document is not a JSON object'
+        err = exc_info.value
+        assert err.msg == 'JSON:API document is not a JSON object'
+        assert str(err) == 'JSON:API document is not a JSON object'
 
 
 def test_get_filings_jsonapi_format_error_missing_keys():
@@ -129,19 +134,20 @@ def test_get_filings_jsonapi_format_error_missing_keys():
             body='{"test": null}',
             status=200
             )
-        with pytest.raises(xf_exceptions.JSONAPIFormatError) as exc_info:
+        with pytest.raises(xf.JSONAPIFormatError) as exc_info:
             _ = xf.get_filings(
                 filters=None,
                 sort=None,
                 max_size=100,
                 flags=xf.GET_ONLY_FILINGS
                 )
-        exc = exc_info.value
+        err = exc_info.value
         e_msg = (
             'JSON:API document does not have any of the required keys "data", '
             '"errors", "meta".'
             )
-        assert exc.msg == e_msg
+        assert err.msg == e_msg
+        assert str(err) == e_msg
 
 
 def test_get_filings_max_size_minus():
