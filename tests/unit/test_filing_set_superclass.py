@@ -554,18 +554,16 @@ class TestAdd:
     def test_new_type(
             self, upm21to22_filingset, upm23en_filing):
         """Test type remains when adding new."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_23en: xf.Filing = upm23en_filing
-        fs_result = xf.FilingSet(fs_21_22)
         fs_result.add(filing_23en)
         assert isinstance(fs_result, xf.FilingSet)
 
     def test_new_filing_count(
             self, upm21to22_filingset, upm23en_filing):
         """Test FilingSet item count when adding new."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_23en: xf.Filing = upm23en_filing
-        fs_result = xf.FilingSet(fs_21_22)
         fs_result.add(filing_23en)
         msg = (
             '{21en, 21fi, 22en, 22fi}.add(23en) '
@@ -577,9 +575,8 @@ class TestAdd:
     def test_new_filing_api_id(
             self, upm21to22_filingset, upm23en_filing):
         """Test Filing api_id values when adding new."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_23en: xf.Filing = upm23en_filing
-        fs_result = xf.FilingSet(fs_21_22)
         fs_result.add(filing_23en)
 
         e_ids = {
@@ -605,9 +602,8 @@ class TestAdd:
     def test_new_entity_filings_count(
             self, upm21to22_filingset, upm23en_filing):
         """Test Entity.filings item count when adding new."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_23en: xf.Filing = upm23en_filing
-        fs_result = xf.FilingSet(fs_21_22)
         fs_result.add(filing_23en)
         ent_result: xf.Entity = next(iter(fs_result.entities))
         assert len(ent_result.filings) == 5, (
@@ -616,9 +612,8 @@ class TestAdd:
     def test_new_entity_filings_api_id(
             self, upm21to22_filingset, upm23en_filing):
         """Test Entity.filings api_id are the same as for FilingSet."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_23en: xf.Filing = upm23en_filing
-        fs_result = xf.FilingSet(fs_21_22)
         fs_result.add(filing_23en)
         ent_result: xf.Entity = next(iter(fs_result.entities))
         e_ids = {
@@ -629,17 +624,15 @@ class TestAdd:
 
     def test_existing_type(self, upm21to22_filingset, upm22en_filing):
         """Test type remains when adding existing."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_22en: xf.Filing = upm22en_filing
-        fs_result = xf.FilingSet(fs_21_22)
         fs_result.add(filing_22en)
         assert isinstance(fs_result, xf.FilingSet)
 
     def test_existing_filing_count(self, upm21to22_filingset, upm22en_filing):
         """Test FilingSet item count when adding existing."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_22en: xf.Filing = upm22en_filing
-        fs_result = xf.FilingSet(fs_21_22)
         fs_result.add(filing_22en)
         msg = (
             '{21en, 21fi, 22en, 22fi}.add(22en) '
@@ -650,9 +643,8 @@ class TestAdd:
 
     def test_existing_api_id(self, upm21to22_filingset, upm22en_filing):
         """Test Filing api_id values when adding existing."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_22en: xf.Filing = upm22en_filing
-        fs_result = xf.FilingSet(fs_21_22)
         fs_result.add(filing_22en)
         e_ids = {ID_UPM21_EN, ID_UPM21_FI, ID_UPM22_EN, ID_UPM22_FI}
         ids_result = {f.api_id for f in fs_result}
@@ -690,20 +682,18 @@ class TestRemoveDiscard:
     def test_success_type(
             self, method, upm21to22_filingset, upm22en_filing):
         """Test type remains when successful."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_22en: xf.Filing = upm22en_filing
-        fs_result = xf.FilingSet(fs_21_22)
-        _execute_operation(method, fs_21_22, filing_22en)
+        _execute_operation(method, fs_result, filing_22en)
         assert isinstance(fs_result, xf.FilingSet)
 
     @pytest.mark.parametrize('method', ['remove', 'discard'])
     def test_success_filing_count(
             self, method, upm21to22_filingset, upm22en_filing):
         """Test FilingSet item count when successful."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_22en: xf.Filing = upm22en_filing
-        fs_result = xf.FilingSet(fs_21_22)
-        _execute_operation(method, fs_21_22, filing_22en)
+        _execute_operation(method, fs_result, filing_22en)
         msg = (
         '{21en, 21fi, 22en, 22fi}'
         f'.{method}(22en) '
@@ -716,10 +706,9 @@ class TestRemoveDiscard:
     def test_success_filing_api_id(
             self, method, upm21to22_filingset, upm22en_filing):
         """Test Filing api_id values when successful."""
-        fs_21_22: xf.FilingSet = upm21to22_filingset
+        fs_result: xf.FilingSet = upm21to22_filingset
         filing_22en: xf.Filing = upm22en_filing
-        fs_result = xf.FilingSet(fs_21_22)
-        _execute_operation(method, fs_21_22, filing_22en)
+        _execute_operation(method, fs_result, filing_22en)
         e_ids = {ID_UPM21_EN, ID_UPM21_FI, ID_UPM22_FI}
         ids_result = {f.api_id for f in fs_result}
         assert ids_result == e_ids, 'Filing api_id values match expected'
@@ -731,7 +720,7 @@ class TestRemoveDiscard:
         fs_21_22: xf.FilingSet = upm21to22_filingset
         filing_22en: xf.Filing = upm22en_filing
         fs_result = xf.FilingSet(fs_21_22)
-        _execute_operation(method, fs_21_22, filing_22en)
+        _execute_operation(method, fs_result, filing_22en)
 
         fil = _build_ref_dict([(fs_result, 'result'), (fs_21_22, '21_22')])
         assert fil['21en_result'] is fil['21en_21_22'], 'Filing 21en retained from left'
