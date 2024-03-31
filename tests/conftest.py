@@ -577,24 +577,16 @@ def applus20_21_response(urlmock):
 
 
 @pytest.fixture
-def stellantis21to22_response(urlmock):
-    """Stellantis 2021 to 2022 filings with entities."""
+def upm21to22_response(urlmock):
+    """UPM-Kymmene 2021 to 2022 filings (en, fi) with entities, 4 filings."""
     with responses.RequestsMock() as rsps:
-        urlmock.apply(rsps, 'stellantis21to22')
+        urlmock.apply(rsps, 'upm21to22')
         yield rsps
 
 
 @pytest.fixture
-def stellantis23_response(urlmock):
-    """Stellantis 2023 filing with entities."""
+def upm22to23_response(urlmock):
+    """UPM-Kymmene 2022 to 2023 filings (en, fi) with entities, 4 filings."""
     with responses.RequestsMock() as rsps:
-        urlmock.apply(rsps, 'stellantis23')
-        yield rsps
-
-
-@pytest.fixture
-def stellantis22to23_response(urlmock):
-    """Stellantis 2022 to 2023 filing with entities."""
-    with responses.RequestsMock() as rsps:
-        urlmock.apply(rsps, 'stellantis22to23')
+        urlmock.apply(rsps, 'upm22to23')
         yield rsps

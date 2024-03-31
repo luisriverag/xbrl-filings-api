@@ -928,56 +928,42 @@ def _fetch_applus20_21():
 _addmock('applus20_21')
 
 
-@_recorder.record(file_path=urlmock.path('stellantis21to22'))
-def _fetch_stellantis21to22():
-    """Stellantis 2021 to 2022 filings with entities."""
-    stellantis21to22_ids = ['1034', '4325']
-    for req_i, api_id in enumerate(stellantis21to22_ids):
+@_recorder.record(file_path=urlmock.path('upm21to22'))
+def _fetch_upm21to22():
+    """UPM-Kymmene 2021 to 2022 filings (en, fi) with entities, 4 filings."""
+    # Order: 21en, 21fi, 22en, 22fi
+    upm21to22_ids = ['138', '137', '4455', '4456']
+    for req_i, api_id in enumerate(upm21to22_ids):
         _ = requests.get(
             url=ENTRY_POINT_URL,
             params={
-                'page[size]': 2 - req_i,
+                'page[size]': 4 - req_i,
                 'filter[id]': api_id,
-                'include': 'entity'
+                'include': 'entity,validation_messages'
                 },
             headers=JSON_API_HEADERS,
             timeout=REQUEST_TIMEOUT
             )
-_addmock('stellantis21to22')
+_addmock('upm21to22')
 
 
-@_recorder.record(file_path=urlmock.path('stellantis23'))
-def _fetch_stellantis23():
-    """Stellantis 2023 filing with entities."""
-    _ = requests.get(
-        url=ENTRY_POINT_URL,
-        params={
-            'page[size]': 1,
-            'filter[id]': '12398',
-            'include': 'entity'
-            },
-        headers=JSON_API_HEADERS,
-        timeout=REQUEST_TIMEOUT
-        )
-_addmock('stellantis23')
-
-
-@_recorder.record(file_path=urlmock.path('stellantis22to23'))
-def _fetch_stellantis22to23():
-    """Stellantis 2022 to 2023 filing with entities."""
-    stellantis21to22_ids = ['4325', '12398']
-    for req_i, api_id in enumerate(stellantis21to22_ids):
+@_recorder.record(file_path=urlmock.path('upm22to23'))
+def _fetch_upm22to23():
+    """UPM-Kymmene 2022 to 2023 filings (en, fi) with entities, 4 filings."""
+    # Order: 22en, 22fi, 23en, 23fi
+    upm22to23_ids = ['4455', '4456', '12499', '12500']
+    for req_i, api_id in enumerate(upm22to23_ids):
         _ = requests.get(
             url=ENTRY_POINT_URL,
             params={
-                'page[size]': 2 - req_i,
+                'page[size]': 4 - req_i,
                 'filter[id]': api_id,
-                'include': 'entity'
+                'include': 'entity,validation_messages'
                 },
             headers=JSON_API_HEADERS,
             timeout=REQUEST_TIMEOUT
             )
-_addmock('stellantis22to23')
+_addmock('upm22to23')
 
 ################ END OF MOCK URL COLLECTION DEFINITIONS ################
 
