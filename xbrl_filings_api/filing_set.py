@@ -13,7 +13,6 @@ import copy
 from collections.abc import AsyncIterator, Collection, Iterable, Mapping
 from datetime import date, datetime
 from pathlib import Path, PurePath
-from types import NotImplementedType
 from typing import Any, Optional, Union
 
 import xbrl_filings_api.options as options
@@ -620,7 +619,8 @@ class FilingSet(set[Filing]):
         self._union(fs, others, isedit=False)
         return fs
 
-    def __or__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+    # Any = types.NotImplementedType (n/a in Py3.9)
+    def __or__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Return set.union and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -631,7 +631,8 @@ class FilingSet(set[Filing]):
         self._check_arg_iters(others)
         self._union(self, others, isedit=True)
 
-    def __ior__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+    # Any = types.NotImplementedType (n/a in Py3.9)
+    def __ior__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Add others to FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -659,7 +660,8 @@ class FilingSet(set[Filing]):
         self._intersection(fs, others, isedit=False)
         return fs
 
-    def __and__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+    # Any = types.NotImplementedType (n/a in Py3.9)
+    def __and__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Return set.intersection and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -670,7 +672,8 @@ class FilingSet(set[Filing]):
         self._check_arg_iters(others)
         self._intersection(self, others, isedit=True)
 
-    def __iand__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+    # Any = types.NotImplementedType (n/a in Py3.9)
+    def __iand__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Leave common in others to FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -693,7 +696,8 @@ class FilingSet(set[Filing]):
         self._difference(fs, others, isedit=False)
         return fs
 
-    def __sub__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+    # Any = types.NotImplementedType (n/a in Py3.9)
+    def __sub__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Return set.difference and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -704,7 +708,8 @@ class FilingSet(set[Filing]):
         self._check_arg_iters(others)
         self._difference(self, others, isedit=True)
 
-    def __isub__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+    # Any = types.NotImplementedType (n/a in Py3.9)
+    def __isub__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Remove others from FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -731,7 +736,8 @@ class FilingSet(set[Filing]):
         self._symmetric_difference(fs, other, isedit=False)
         return fs
 
-    def __xor__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+    # Any = types.NotImplementedType (n/a in Py3.9)
+    def __xor__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Return set.symmetric_difference and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -742,7 +748,8 @@ class FilingSet(set[Filing]):
         self._check_arg_iters([other])
         self._symmetric_difference(self, other, isedit=True)
 
-    def __ixor__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+    # Any = types.NotImplementedType (n/a in Py3.9)
+    def __ixor__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Leave items only in one set to FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
