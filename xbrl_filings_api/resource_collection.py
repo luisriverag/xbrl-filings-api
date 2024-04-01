@@ -29,6 +29,16 @@ class ResourceCollection:
     Adding or removing filings from the `filingset` attribute object
     will change the set of resources in this collection.
 
+    `Entity` and `ValidationMessage` objects, as subclass of
+    `APIResource`, have a custom `__hash__` method and their hash is
+    based on a tuple of string 'APIResource', class `TYPE` and object
+    `api_id`. This means that equality checks (`==`) and related methods
+    are based on this tuple. For example, when the actual entity object
+    is not available, a fast way to check if an entity with `api_id`
+    '123' is included in the FilingSet is::
+
+        ('APIResource', Entity.TYPE, '123') in filing_set.entities
+
     Attributes
     ----------
     filingset : FilingSet
@@ -75,13 +85,10 @@ class ResourceCollection:
             count += 1
         return count
 
-    def __contains__(self, item: Any) -> bool:
-        """Return `True` if is instance of `item_class` and `api_id` exists."""
-        if not isinstance(item, self.item_class):
-            return False
-        match_id = item.api_id
-        for resource in self:
-            if resource.api_id == match_id:
+    def __contains__(self, elem: Any) -> bool:
+        """Return `True` if hash matches."""
+        for ent in self:
+            if ent == elem:
                 return True
         return False
 

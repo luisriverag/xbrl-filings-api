@@ -68,7 +68,6 @@ def applus20_21_filingset(urlmock):
     return fs
 
 
-@pytest.mark.skip(reason='Not yet implemented')
 def test_init_not_filing(get_oldest3_fi_filingset):
     """Test FilingSet attributes."""
     fs: set[xf.Filing] = set(get_oldest3_fi_filingset())
@@ -554,13 +553,12 @@ def test_contains_is_false_wrong_type(get_oldest3_fi_entities_filingset):
     assert filing.entity not in fs
 
 
-def test_contains_is_false_wrong_api_id(get_oldest3_fi_entities_filingset):
-    """Test `in` operator evaluates to False when wrong api_id."""
+def test_contains_is_true_hash_tuple_api_id(get_oldest3_fi_entities_filingset):
+    """Test `in` operator evaluates to True when compared with hash tuple."""
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     filing = next(iter(fs))
-    filing_copy = copy.deepcopy(filing)
-    filing_copy.api_id = 'abc'
-    assert filing_copy not in fs
+    hash_tuple = ('APIResource', xf.Filing.TYPE, filing.api_id)
+    assert hash_tuple in fs
 
 
 def test_pop_duplicates_raises_no_entities(multifilter_api_id_response):

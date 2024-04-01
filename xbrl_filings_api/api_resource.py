@@ -6,7 +6,7 @@
 
 from collections.abc import Iterable
 from datetime import datetime, timezone
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional, Union
 
 from xbrl_filings_api import order_columns
 from xbrl_filings_api.api_object import APIObject
@@ -81,6 +81,8 @@ class APIResource(APIObject):
 
         api_id = self._json.get('id')
         self.api_id = str(api_id)
+
+        self._hash = hash(('APIResource', self.TYPE, self.api_id))
 
     @classmethod
     def get_data_attributes(
@@ -173,3 +175,11 @@ class APIResource(APIObject):
             flags = GET_ENTITY
         cols = cls.get_data_attributes(flags, filings)
         return cols
+
+    def __eq__(self, other: Any) -> bool:
+        """Return true when hashes match."""
+        return self._hash == hash(other)
+
+    def __hash__(self):
+        """Return hash of tuple `('APIResource', TYPE, api_id)`."""
+        return self._hash

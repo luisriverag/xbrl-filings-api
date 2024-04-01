@@ -143,7 +143,7 @@ def get_filings(
     page_gen = request_processor.generate_pages(
         filters, max_size, flags, res_colls, sort, add_api_params)
     for page in page_gen:
-        filings.update(page.filing_list)
+        set.update(filings, page.filing_list)
     return filings
 
 

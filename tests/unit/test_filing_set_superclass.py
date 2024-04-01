@@ -25,9 +25,6 @@ import responses
 
 import xbrl_filings_api as xf
 
-pytestmark = pytest.mark.skip(reason='Not yet implemented')
-
-
 ID_UPM21_EN, ID_UPM21_FI = '138', '137'
 ID_UPM22_EN, ID_UPM22_FI = '4455', '4456'
 ID_UPM23_EN, ID_UPM23_FI = '12499', '12500'
@@ -65,11 +62,12 @@ BASIC_SET_OPERATION_METHODS = (
     *UNION_METHODS, *INTERSECTION_METHODS,
     *DIFFERENCE_METHODS, *SYMMETRIC_DIFFERENCE_METHODS
     )
-BASIC_SET_OPERATION_EDIT_METHODS = (
+EDIT_METHODS = (
     'update', '__ior__',
     'intersection_update', '__iand__',
     'difference_update', '__isub__',
-    'symmetric_difference_update', '__ixor__'
+    'symmetric_difference_update', '__ixor__',
+    'add', 'remove', 'discard', 'pop'
     )
 BASIC_SET_OPERATION_OPERATOR_METHODS = [
     v for v in BASIC_SET_OPERATION_METHODS if v.startswith('__')]
@@ -231,7 +229,7 @@ class TestBasicSetOperationFilingSet:
     def test_filingset_copy_or_retain(
             self, method, upm21to22_filingset, upm22to23_filingset):
         """Test union FilingSet identity."""
-        isedit = method in BASIC_SET_OPERATION_EDIT_METHODS
+        isedit = method in EDIT_METHODS
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -245,7 +243,7 @@ class TestBasicSetOperationFilingSet:
     def test_filing_deepcopy_or_retain(
             self, method, upm21to22_filingset, upm22to23_filingset):
         """Test Filing is retained (isedit=True, left) or deepcopied."""
-        isedit = method in BASIC_SET_OPERATION_EDIT_METHODS
+        isedit = method in EDIT_METHODS
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -762,11 +760,15 @@ def test_pop(upm21to22_filingset):
 # I.e. Entity and ValidationMessage counts and cross-references
 
 
-@pytest.mark.parametrize('method', [
-    *BASIC_SET_OPERATION_METHODS, *SIMPLE_METHODS])
+BASIC_SIMPLE_NO_COPY_METHODS = [
+    m for m in [*BASIC_SET_OPERATION_METHODS, *SIMPLE_METHODS]
+    if m != 'copy']
+
 class TestEntity:
     """Test Entity."""
 
+    @pytest.mark.parametrize('method', [
+        *BASIC_SET_OPERATION_METHODS, *SIMPLE_METHODS])
     def test_entity_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
         """Test Entity count as separate identities from Filing to Entity references."""
@@ -777,10 +779,11 @@ class TestEntity:
         ents_result = {f.entity for f in fs_result}
         assert len(ents_result) == 1, 'Same entity for all filings'
 
+    @pytest.mark.parametrize('method', BASIC_SIMPLE_NO_COPY_METHODS)
     def test_entity_identity(
             self, method, upm21to22_filingset, upm22to23_filingset):
         """Test Entity identity."""
-        isedit = method in BASIC_SET_OPERATION_EDIT_METHODS
+        isedit = method in EDIT_METHODS
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         right_operand: Union[xf.FilingSet, xf.Filing] = _get_right_operand(
             method, upm22to23_filingset)
@@ -805,6 +808,7 @@ class TestEntity:
         elif isinstance(right_operand, xf.Filing):
             assert ent_result is not right_operand.entity, 'Entity (deep)copied'
 
+    @pytest.mark.parametrize('method', BASIC_SIMPLE_NO_COPY_METHODS)
     def test_entity_filings_identity(
             self, method, upm21to22_filingset, upm22to23_filingset):
         """Test Entity.filings to Filing backreference identity."""
@@ -817,8 +821,8 @@ class TestEntity:
         fil = _build_ref_dict([
             (fs_result, 'result'), (ent_result.filings, 'backref')])
         msg = (
-            'Backreference for {} in Entity.filings is not the same as '
-            'FilingSet item'
+            'Backreference for {} in Entity.filings is the same as FilingSet '
+            'item'
             )
         if fil['21en_result']:
             assert fil['21en_result'] is fil['21en_backref'], msg.format('21en')
@@ -834,8 +838,6 @@ class TestEntity:
             assert fil['23fi_result'] is fil['23fi_backref'], msg.format('23fi')
 
 
-@pytest.mark.parametrize('method', [
-    *BASIC_SET_OPERATION_METHODS, *SIMPLE_METHODS])
 class TestValidationMessage:
     """Test ValidationMessage."""
 
@@ -861,6 +863,8 @@ class TestValidationMessage:
             assert len(vmsg_dups) == 1, (
                 'Only unique ValidationMessage.api_id values in results')
 
+    @pytest.mark.parametrize('method', [
+        *BASIC_SET_OPERATION_METHODS, *SIMPLE_METHODS])
     def test_validationmessage_filing_identity(
             self, method, upm21to22_filingset, upm22to23_filingset):
         """Test ValidationMessage.filing backreference identity."""
@@ -878,10 +882,11 @@ class TestValidationMessage:
             for vmsg in filing_result.validation_messages:
                 assert vmsg.filing is filing_result, filing_ref_msg
 
+    @pytest.mark.parametrize('method', BASIC_SIMPLE_NO_COPY_METHODS)
     def test_deepcopy_or_retain(
             self, method, upm21to22_filingset, upm22to23_filingset):
         """Test ValidationMessage is retained (isedit=True, left) or deepcopied."""
-        isedit = method in BASIC_SET_OPERATION_EDIT_METHODS
+        isedit = method in EDIT_METHODS
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         right_operand: Union[xf.FilingSet, xf.Filing] = _get_right_operand(
             method, upm22to23_filingset)

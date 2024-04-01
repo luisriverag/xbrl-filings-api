@@ -7,7 +7,6 @@
 import logging
 import re
 import urllib.parse
-import webbrowser
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath

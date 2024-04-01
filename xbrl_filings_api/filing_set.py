@@ -9,9 +9,11 @@ This is an extended set type with certain added attributes.
 #
 # SPDX-License-Identifier: MIT
 
+import copy
 from collections.abc import AsyncIterator, Collection, Iterable, Mapping
 from datetime import date, datetime
 from pathlib import Path, PurePath
+from types import NotImplementedType
 from typing import Any, Optional, Union
 
 import xbrl_filings_api.options as options
@@ -38,10 +40,33 @@ from xbrl_filings_api.validation_message import ValidationMessage
 
 
 class FilingSet(set[Filing]):
-    """Set for `Filing` objects.
+    """Subclassed `set` for `Filing` objects.
 
     The class is an extended set type with certain filing-related
-    attributes and functionality.
+    attributes and methods.
+
+    Support for all set operations and other methods of the `set` class
+    are implemented. It is possible to mix FilingSets from different
+    queries into a single FilingSet without redundant copies. Due to
+    cross-referencing, the operations returning a new set (e.g. `union`
+    method and `|` operator) always deep copy all objects to the results
+    set. The in-place operations (e.g. `update` method and `|=`
+    operator) retain the objects from the left set but deep copy
+    everything from the right set. If working with large sets, it is
+    recommended to use in-place operations over new set operations.
+
+    `Filing` objects, as subclass of `APIResource`, have a custom
+    `__hash__` method and their hash is based on a tuple of string
+    'APIResource', class `TYPE` and object `api_id`. This means that
+    equality checks (`==`) and related methods are based on this tuple.
+    For example, when the actual filing object is not available, the
+    fastest way to check if a filing with `api_id` '123' is included in
+    the FilingSet is::
+
+        ('APIResource', Filing.TYPE, '123') in filing_set
+
+    Same applies in `entities` and `validation_messages`. These
+    collections are, however, lazy iterators.
 
     Attributes
     ----------
@@ -54,6 +79,11 @@ class FilingSet(set[Filing]):
         if filings is None:
             super().__init__()
         else:
+            if not isinstance(filings, FilingSet):
+                for filing in filings:
+                    if not isinstance(filing, Filing):
+                        msg = 'All iterable items must be Filing objects.'
+                        raise ValueError(msg)
             super().__init__(filings)
         self.entities = ResourceCollection(self, 'entity', Entity)
         self.validation_messages = ResourceCollection(
@@ -527,6 +557,247 @@ class FilingSet(set[Filing]):
             has_entities=self.entities.exist
             )
 
+    def _check_arg_iters(self, args) -> None:
+        for arg in args:
+            if not isinstance(arg, Iterable):
+                msg = f'{type(arg).__name__!r} object is not iterable'
+                raise TypeError(msg)
+            if any(not isinstance(item, Filing) for item in arg):
+                msg = 'Arguments must be iterables of Filing objects.'
+                raise ValueError(msg)
+
+    def _deepcopy_filing_with_vmessages(self, source: Filing) -> Filing:
+        """
+        Deep copy Filing and its `validation_messages`.
+
+        Retain `entity` reference without copying.
+        """
+        orig_entity = source.entity
+        source.entity = None
+        new = copy.deepcopy(source)
+        source.entity = new.entity = orig_entity
+        return new
+
+    def _deepcopy_entity(self, source: Entity) -> Entity:
+        """Deep copy Entity and shallow copy its `filings`."""
+        orig_filings = source.filings
+        source.filings = set()
+        new = copy.deepcopy(source)
+        source.filings = orig_filings
+        new.filings = orig_filings.copy()
+        return new
+
+    def _deepcopy_filingset_contents(self, fs: 'FilingSet'):
+        new_filings = [self._deepcopy_filing_with_vmessages(f) for f in fs]
+        fs.clear()
+        set.update(fs, new_filings)
+        ents = list(fs.entities) # Freeze lazy collection
+        for ent in ents:
+            new_ent = self._deepcopy_entity(ent)
+            new_ent_filings = set()
+            for filing in new_ent.filings:
+                match_id = filing.api_id
+                new_filing = next(f for f in fs if f.api_id == match_id)
+                new_ent_filings.add(new_filing)
+                new_filing.entity = new_ent
+            new_ent.filings = new_ent_filings
+
+    # Superclass operations
+
+    def _union(
+            self, fs: 'FilingSet', others: tuple['FilingSet', ...],
+            *, isedit: bool) -> None:
+        if not isedit:
+            self._deepcopy_filingset_contents(fs)
+        for fs_arg in others:
+            for filing in fs_arg:
+                fs.add(filing)
+
+    def union(self, *others: Iterable[Filing]) -> 'FilingSet':
+        """Return set.union and update cross-references."""
+        self._check_arg_iters(others)
+        fs = FilingSet(self)
+        self._union(fs, others, isedit=False)
+        return fs
+
+    def __or__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+        """Return set.union and update cross-references."""
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        return self.union(other)
+
+    def update(self, *others: Iterable[Filing]) -> None:
+        """Add others to FilingSet and update cross-references."""
+        self._check_arg_iters(others)
+        self._union(self, others, isedit=True)
+
+    def __ior__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+        """Add others to FilingSet and update cross-references."""
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        self.update(other)
+        return self
+
+    def _intersection(
+            self, fs: 'FilingSet', others: tuple['FilingSet', ...], *,
+            isedit: bool) -> None:
+        if not isedit:
+            self._deepcopy_filingset_contents(fs)
+        id_differs = {filing: True for filing in self}
+        for fs_arg in others:
+            for filing in fs_arg:
+                if filing in id_differs:
+                    id_differs[filing] = False
+        for filing, differs in id_differs.items():
+            if differs:
+                fs.remove(filing)
+
+    def intersection(self, *others: Iterable[Filing]) -> 'FilingSet':
+        """Return set.intersection and update cross-references."""
+        self._check_arg_iters(others)
+        fs = FilingSet(self)
+        self._intersection(fs, others, isedit=False)
+        return fs
+
+    def __and__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+        """Return set.intersection and update cross-references."""
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        return self.intersection(other)
+
+    def intersection_update(self, *others: Iterable[Filing]) -> None:
+        """Leave common in others to FilingSet and update cross-references."""
+        self._check_arg_iters(others)
+        self._intersection(self, others, isedit=True)
+
+    def __iand__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+        """Leave common in others to FilingSet and update cross-references."""
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        self.intersection_update(other)
+        return self
+
+    def _difference(
+            self, fs: 'FilingSet', others: tuple['FilingSet', ...], *,
+            isedit: bool) -> None:
+        if not isedit:
+            self._deepcopy_filingset_contents(fs)
+        for fs_arg in others:
+            for filing in fs_arg:
+                fs.discard(filing)
+
+    def difference(self, *others: Iterable[Filing]) -> 'FilingSet':
+        """Return set.difference and update cross-references."""
+        self._check_arg_iters(others)
+        fs = FilingSet(self)
+        self._difference(fs, others, isedit=False)
+        return fs
+
+    def __sub__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+        """Return set.difference and update cross-references."""
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        return self.difference(other)
+
+    def difference_update(self, *others: Iterable[Filing]) -> None:
+        """Remove others from FilingSet and update cross-references."""
+        self._check_arg_iters(others)
+        self._difference(self, others, isedit=True)
+
+    def __isub__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+        """Remove others from FilingSet and update cross-references."""
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        self.difference_update(other)
+        return self
+
+    def _symmetric_difference(self, fs: 'FilingSet', other: 'FilingSet', *,
+            isedit: bool) -> None:
+        if not isedit:
+            self._deepcopy_filingset_contents(fs)
+        id_other_differs = {filing: True for filing in other}
+        for filing in other:
+            if filing in fs:
+                fs.discard(filing)
+                id_other_differs[filing] = False
+        for filing, other_differs in id_other_differs.items():
+            if other_differs:
+                fs.add(filing)
+
+    def symmetric_difference(self, other: Iterable[Filing]) -> 'FilingSet':
+        """Return set.symmetric_difference and update cross-references."""
+        self._check_arg_iters([other])
+        fs = FilingSet(self)
+        self._symmetric_difference(fs, other, isedit=False)
+        return fs
+
+    def __xor__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+        """Return set.symmetric_difference and update cross-references."""
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        return self.symmetric_difference(other)
+
+    def symmetric_difference_update(self, other: Iterable[Filing]) -> None:
+        """Leave items only in one set to FilingSet and update cross-references."""
+        self._check_arg_iters([other])
+        self._symmetric_difference(self, other, isedit=True)
+
+    def __ixor__(self, other: Iterable[Filing]) -> Union['FilingSet', NotImplementedType]:
+        """Leave items only in one set to FilingSet and update cross-references."""
+        if not isinstance(other, Iterable):
+            return NotImplemented
+        self.symmetric_difference_update(other)
+        return self
+
+    def add(self, elem: Filing) -> None:
+        """Add and update cross-references."""
+        if not isinstance(elem, Filing):
+            msg = 'FilingSet can only contain Filing objects'
+            raise TypeError(msg)
+        if elem in self:
+            return
+        new_elem = self._deepcopy_filing_with_vmessages(elem)
+        if elem.entity_api_id:
+            id_ent = elem.entity_api_id
+            ent_existing: Entity = next(
+                (e for e in self.entities if e.api_id == id_ent), None)
+            if ent_existing:
+                ent_existing.filings.add(new_elem)
+                new_elem.entity = ent_existing
+        super().add(new_elem)
+
+    def discard(self, elem: Filing) -> None:
+        """Discard and update cross-references."""
+        try:
+            self.remove(elem)
+        except KeyError:
+            pass
+
+    def remove(self, elem: Filing) -> None:
+        """Remove and update cross-references."""
+        if not isinstance(elem, Filing):
+            msg = repr(elem)
+            raise KeyError(msg)
+        id_filing = elem.api_id
+        match_elem = next((f for f in self if f.api_id == id_filing), None)
+        if not match_elem:
+            msg = repr(elem)
+            raise KeyError(msg)
+        if match_elem and match_elem.entity:
+            match_elem.entity.filings.remove(match_elem)
+        super().remove(match_elem)
+
+    def pop(self) -> Filing:
+        """Pop and update cross-references."""
+        elem = super().pop()
+        if elem.entity:
+            elem.entity.filings.remove(elem)
+        return elem
+
+    def copy(self):
+        """Return new FilingSet."""
+        return FilingSet(self)
+
     def __repr__(self) -> str:
         """Return string repr of filing set."""
         subreslist = ''
@@ -539,13 +810,3 @@ class FilingSet(set[Filing]):
             f'{type(self).__name__}('
             f'len(self)={len(self)}{subreslist})'
             )
-
-    def __contains__(self, item: Any) -> bool:
-        """Return `True` if is instance of `Filing` and `api_id` exists."""
-        if not isinstance(item, Filing):
-            return False
-        match_id = item.api_id
-        for filing in self:
-            if filing.api_id == match_id:
-                return True
-        return False

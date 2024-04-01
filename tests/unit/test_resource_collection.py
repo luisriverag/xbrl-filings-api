@@ -190,7 +190,6 @@ def test_contains_is_true_diff_identities(get_oldest3_fi_entities_filingset):
     fs_a: xf.FilingSet = get_oldest3_fi_entities_filingset()
     fs_b: xf.FilingSet = get_oldest3_fi_entities_filingset()
     ent_a = next(iter(fs_a.entities))
-    # Determined by type and api_id
     assert ent_a in fs_b.entities
 
 
@@ -201,10 +200,9 @@ def test_contains_is_false_wrong_type(get_oldest3_fi_entities_filingset):
     assert filing not in fs.entities
 
 
-def test_contains_is_false_wrong_api_id(get_oldest3_fi_entities_filingset):
-    """Test `in` operator evaluates to False when wrong api_id."""
+def test_contains_is_true_hash_tuple_api_id(get_oldest3_fi_entities_filingset):
+    """Test `in` operator evaluates to True when compared with hash tuple."""
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     ent = next(iter(fs)).entity
-    ent_copy = copy.deepcopy(ent)
-    ent_copy.api_id = 'abc'
-    assert ent_copy not in fs.entities
+    hash_tuple = ('APIResource', xf.Entity.TYPE, ent.api_id)
+    assert hash_tuple in fs.entities
