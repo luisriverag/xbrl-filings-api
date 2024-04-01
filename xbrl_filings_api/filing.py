@@ -424,6 +424,23 @@ class Filing(APIResource):
                 resolved = LANG_CODE_TRANSFORM.get(last_part)
                 if resolved:
                     break
+        resolved = self._correct_common_language_code_mistakes(
+            resolved, self.country)
+        return resolved
+
+    def _correct_common_language_code_mistakes(
+            self, resolved: Union[str, None], country: Union[str, None]
+            ) -> str:
+        if country == 'CZ' and resolved == 'cz':
+            resolved = 'cs'
+        if country == 'SE' and resolved == 'se':
+            resolved = 'sv'
+        if country == 'DK' and resolved == 'dk':
+            resolved = 'da'
+        if country == 'NO' and resolved in ('nb', 'nn'):
+            # Not an actual mistake but specifying Bokmaal or Nynorsk
+            # ortography is way too specific
+            resolved = 'no'
         return resolved
 
     def _derive_reporting_date(self) -> Union[date, None]:

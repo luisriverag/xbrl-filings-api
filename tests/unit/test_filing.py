@@ -439,6 +439,46 @@ def test_language_from_xhtml_url(
     assert fortum23fi.language == 'fi'
 
 
+LANGUAGE_URL_PREFIX = (
+    'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0')
+
+
+@pytest.mark.parametrize('country,orig_language,e_language', [
+    ('CZ', 'cz', 'cs'),
+    ('SE', 'se', 'sv'),
+    ('DK', 'dk', 'da'),
+    ('NO', 'nb', 'no'),
+    ('NO', 'nn', 'no'),
+    ])
+def test_derive_language_correct_common_mistakes(
+        country, orig_language, e_language, asml22en_entities_filing):
+    """Test _correct_common_language_code_mistakes with via _derive_language."""
+    filing: xf.Filing = asml22en_entities_filing
+    filing.country = country
+    filing.package_url = (
+        f'{LANGUAGE_URL_PREFIX}/743700KMZL7E8PLI5X73-2020-12-31-{orig_language}.zip')
+    filing.xhtml_url = None # Disable fallback
+    assert filing._derive_language() == e_language
+
+
+def test_derive_language_3letters(asml22en_entities_filing):
+    """Test _derive_language with 3 letter language."""
+    filing: xf.Filing = asml22en_entities_filing
+    filing.package_url = (
+        f'{LANGUAGE_URL_PREFIX}/743700KMZL7E8PLI5X73-2020-12-31_fin.zip')
+    filing.xhtml_url = None # Disable fallback
+    assert filing._derive_language() == 'fi'
+
+
+def test_derive_language_bad_3letter_language(asml22en_entities_filing):
+    """Test _derive_language with a bad 3-letter language 'XYZ'."""
+    filing: xf.Filing = asml22en_entities_filing
+    filing.package_url = (
+        f'{LANGUAGE_URL_PREFIX}/743700KMZL7E8PLI5X73-2020-12-31_XYZ.zip')
+    filing.xhtml_url = None # Disable fallback
+    assert filing._derive_language() is None
+
+
 def test_str_no_entity_name(asml22en_entities_filing):
     """Test __str__ method without entity.name."""
     e_str = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0 2022 [en]'
@@ -451,14 +491,6 @@ def test_str_no_reporting_date(asml22en_entities_filing):
     e_str = 'ASML Holding N.V. [en]'
     asml22en_entities_filing.reporting_date = None
     assert str(asml22en_entities_filing) == e_str
-
-
-def test_derive_language_3letters(asml22en_entities_filing):
-    """Test _derive_language with 3 letter language."""
-    filing: xf.Filing = asml22en_entities_filing
-    filing.package_url = (
-        'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0/743700KMZL7E8PLI5X73-2020-12-31_fin.zip')
-    assert filing._derive_language() == 'fi'
 
 
 def test_derive_reporting_date_bad_date(asml22en_entities_filing):
@@ -486,15 +518,6 @@ def test_get_url_stem_space_chr_value():
     """Test _get_url_stem with stem as a space character."""
     emptypath_url = 'https://filing.xbrl.org/path/%20/'
     assert xf.Filing._get_url_stem(None, emptypath_url) is None
-
-
-def test_derive_language_bad_3letter_language(asml22en_entities_filing):
-    """Test _derive_language with a bad 3-letter language 'XYZ'."""
-    filing: xf.Filing = asml22en_entities_filing
-    filing.package_url = (
-        'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0/743700KMZL7E8PLI5X73-2020-12-31_XYZ.zip')
-    filing.xhtml_url = None # Disable fallback
-    assert filing._derive_language() is None
 
 
 def test_open_arguments_open_viewer_true(get_asml22en_filing, monkeypatch):
