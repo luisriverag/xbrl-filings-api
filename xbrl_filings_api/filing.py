@@ -430,7 +430,7 @@ class Filing(APIResource):
 
     def _correct_common_language_code_mistakes(
             self, resolved: Union[str, None], country: Union[str, None]
-            ) -> str:
+            ) -> Union[str, None]:
         if country == 'CZ' and resolved == 'cz':
             resolved = 'cs'
         if country == 'SE' and resolved == 'se':

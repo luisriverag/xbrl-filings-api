@@ -592,19 +592,20 @@ class FilingSet(set[Filing]):
         set.update(fs, new_filings)
         ents = list(fs.entities) # Freeze lazy collection
         for ent in ents:
-            new_ent = self._deepcopy_entity(ent)
-            new_ent_filings = set()
+            new_ent = self._deepcopy_entity(ent) # type: ignore[arg-type]
+            new_ent_filings: set[Filing] = set()
+            # Type of `filings` is `set[object]` due to cross-references
             for filing in new_ent.filings:
-                match_id = filing.api_id
+                match_id = filing.api_id # type: ignore[attr-defined]
                 new_filing = next(f for f in fs if f.api_id == match_id)
                 new_ent_filings.add(new_filing)
                 new_filing.entity = new_ent
-            new_ent.filings = new_ent_filings
+            new_ent.filings = new_ent_filings # type: ignore[assignment]
 
     # Superclass operations
 
     def _union(
-            self, fs: 'FilingSet', others: tuple['FilingSet', ...],
+            self, fs: 'FilingSet', others: tuple[Iterable[Filing], ...],
             *, isedit: bool) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
@@ -612,16 +613,18 @@ class FilingSet(set[Filing]):
             for filing in fs_arg:
                 fs.add(filing)
 
-    def union(self, *others: Iterable[Filing]) -> 'FilingSet':
-        """Return set.union and update cross-references."""
+    def union( # type: ignore[override]
+            self, *others: Iterable[Filing]) -> 'FilingSet':
+        """Return union and update cross-references."""
         self._check_arg_iters(others)
         fs = FilingSet(self)
         self._union(fs, others, isedit=False)
         return fs
 
     # Any = types.NotImplementedType (n/a in Py3.9)
-    def __or__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return set.union and update cross-references."""
+    def __or__( # type: ignore[override]
+            self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
+        """Return union and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.union(other)
@@ -632,7 +635,8 @@ class FilingSet(set[Filing]):
         self._union(self, others, isedit=True)
 
     # Any = types.NotImplementedType (n/a in Py3.9)
-    def __ior__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
+    def __ior__( # type: ignore[override]
+            self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Add others to FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -640,7 +644,7 @@ class FilingSet(set[Filing]):
         return self
 
     def _intersection(
-            self, fs: 'FilingSet', others: tuple['FilingSet', ...], *,
+            self, fs: 'FilingSet', others: tuple[Iterable[Filing], ...], *,
             isedit: bool) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
@@ -653,16 +657,18 @@ class FilingSet(set[Filing]):
             if differs:
                 fs.remove(filing)
 
-    def intersection(self, *others: Iterable[Filing]) -> 'FilingSet':
-        """Return set.intersection and update cross-references."""
+    def intersection( # type: ignore[override]
+            self, *others: Iterable[Filing]) -> 'FilingSet':
+        """Return intersection and update cross-references."""
         self._check_arg_iters(others)
         fs = FilingSet(self)
         self._intersection(fs, others, isedit=False)
         return fs
 
     # Any = types.NotImplementedType (n/a in Py3.9)
-    def __and__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return set.intersection and update cross-references."""
+    def __and__( # type: ignore[override]
+            self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
+        """Return intersection and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.intersection(other)
@@ -673,7 +679,8 @@ class FilingSet(set[Filing]):
         self._intersection(self, others, isedit=True)
 
     # Any = types.NotImplementedType (n/a in Py3.9)
-    def __iand__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
+    def __iand__( # type: ignore[override]
+            self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Leave common in others to FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -681,7 +688,7 @@ class FilingSet(set[Filing]):
         return self
 
     def _difference(
-            self, fs: 'FilingSet', others: tuple['FilingSet', ...], *,
+            self, fs: 'FilingSet', others: tuple[Iterable[Filing], ...], *,
             isedit: bool) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
@@ -689,16 +696,18 @@ class FilingSet(set[Filing]):
             for filing in fs_arg:
                 fs.discard(filing)
 
-    def difference(self, *others: Iterable[Filing]) -> 'FilingSet':
-        """Return set.difference and update cross-references."""
+    def difference( # type: ignore[override]
+            self, *others: Iterable[Filing]) -> 'FilingSet':
+        """Return difference and update cross-references."""
         self._check_arg_iters(others)
         fs = FilingSet(self)
         self._difference(fs, others, isedit=False)
         return fs
 
     # Any = types.NotImplementedType (n/a in Py3.9)
-    def __sub__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return set.difference and update cross-references."""
+    def __sub__( # type: ignore[override]
+            self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
+        """Return difference and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.difference(other)
@@ -709,14 +718,15 @@ class FilingSet(set[Filing]):
         self._difference(self, others, isedit=True)
 
     # Any = types.NotImplementedType (n/a in Py3.9)
-    def __isub__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
+    def __isub__( # type: ignore[override]
+            self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Remove others from FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.difference_update(other)
         return self
 
-    def _symmetric_difference(self, fs: 'FilingSet', other: 'FilingSet', *,
+    def _symmetric_difference(self, fs: 'FilingSet', other: Iterable[Filing], *,
             isedit: bool) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
@@ -729,16 +739,18 @@ class FilingSet(set[Filing]):
             if other_differs:
                 fs.add(filing)
 
-    def symmetric_difference(self, other: Iterable[Filing]) -> 'FilingSet':
-        """Return set.symmetric_difference and update cross-references."""
+    def symmetric_difference( # type: ignore[override]
+            self, other: Iterable[Filing]) -> 'FilingSet':
+        """Return symmetric difference and update cross-references."""
         self._check_arg_iters([other])
         fs = FilingSet(self)
         self._symmetric_difference(fs, other, isedit=False)
         return fs
 
     # Any = types.NotImplementedType (n/a in Py3.9)
-    def __xor__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return set.symmetric_difference and update cross-references."""
+    def __xor__( # type: ignore[override]
+            self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
+        """Return symmetric difference and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.symmetric_difference(other)
@@ -749,7 +761,8 @@ class FilingSet(set[Filing]):
         self._symmetric_difference(self, other, isedit=True)
 
     # Any = types.NotImplementedType (n/a in Py3.9)
-    def __ixor__(self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
+    def __ixor__( # type: ignore[override]
+            self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
         """Leave items only in one set to FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
@@ -766,8 +779,10 @@ class FilingSet(set[Filing]):
         new_elem = self._deepcopy_filing_with_vmessages(elem)
         if elem.entity_api_id:
             id_ent = elem.entity_api_id
-            ent_existing: Entity = next(
-                (e for e in self.entities if e.api_id == id_ent), None)
+            ent_existing: Union[Entity, None] = next(
+                (e for e in self.entities if e.api_id == id_ent), # type: ignore[misc]
+                None
+                )
             if ent_existing:
                 ent_existing.filings.add(new_elem)
                 new_elem.entity = ent_existing
