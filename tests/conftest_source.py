@@ -6,23 +6,30 @@ EDITABLE: This file is the editable version of `conftest.py`. Script
 flag ``-n`` / ``--new``).
 
 .. note::
-    This script uses beta feature `responses._add_from_file` (as of
-    `responses` version 0.23.3).
+    Fixture method `urlmock.apply` uses beta feature
+    `responses._add_from_file` (as of `responses` version 0.23.3).
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
+# Allow unnecessary double quotes as file includes SQL statements.
+# ruff: noqa: Q000
+
 import hashlib
+from datetime import datetime, timezone
 from typing import Union
 
 import pytest
-import responses  # noqa: F401
+import responses
 
 import xbrl_filings_api as xf
 from tests.urlmock import UrlMock
 from xbrl_filings_api import FilingSet, ResourceCollection
+from xbrl_filings_api.api_request import _APIRequest
+
+UTC = timezone.utc
 
 MOCK_URL_DIR_NAME = 'mock_responses'
 
@@ -35,7 +42,9 @@ def urlmock() -> UrlMock:
     Methods
     -------
     path
-        Get absolute file path of the mock URL collection file.
+        Get absolute file path of the mock URL response file.
+    apply
+        Apply the mock URL response on the test for requests library.
     """
     instance = UrlMock()
     return instance
@@ -43,13 +52,13 @@ def urlmock() -> UrlMock:
 
 @pytest.fixture
 def filings() -> FilingSet:
-    """Return FilingSet."""
+    """Empty FilingSet."""
     return FilingSet()
 
 
 @pytest.fixture
 def res_colls(filings) -> dict[str, ResourceCollection]:
-    """Return subresource collections for filings fixture."""
+    """Subresource collections as dict, keyed with class names."""
     return {
         'Entity': filings.entities,
         'ValidationMessage': filings.validation_messages
@@ -58,7 +67,7 @@ def res_colls(filings) -> dict[str, ResourceCollection]:
 
 @pytest.fixture(scope='package')
 def db_record_count():
-    """Function for getting total count of Filing database table."""
+    """Get total count of database records in Filing table."""
     def _db_record_count(cur):
         cur.execute("SELECT COUNT(*) FROM Filing")
         return cur.fetchone()[0]
@@ -67,13 +76,13 @@ def db_record_count():
 
 @pytest.fixture(scope='module')
 def mock_response_data():
-    """Arbitrary data to mock download."""
+    """Arbitrary data for mock download, 1000 chars."""
     return '0123456789' * 100
 
 
 @pytest.fixture(scope='module')
 def mock_response_sha256(mock_response_data):
-    """SHA-256 hash for `mock_response_data`."""
+    """SHA-256 hash for fixture mock_response_data."""
     fhash = hashlib.sha256(
         string=mock_response_data.encode(encoding='utf-8'),
         usedforsecurity=False
@@ -83,7 +92,7 @@ def mock_response_sha256(mock_response_data):
 
 @pytest.fixture(scope='module')
 def mock_url_response(mock_response_data):
-    """Function to add a `responses` mock URL with `mock_response_data` body."""
+    """Add a `responses` mock URL with fixt mock_response_data body."""
     def _mock_url_response(
             url: str, rsps: Union[responses.RequestsMock, None] = None):
         if rsps is None:
@@ -99,7 +108,7 @@ def mock_url_response(mock_response_data):
 
 @pytest.fixture(scope='package')
 def get_oldest3_fi_filingset(urlmock):
-    """Get FilingSet from mock response ``oldest3_fi``."""
+    """Get FilingSet from mock response oldest3_fi."""
     def _get_oldest3_fi_filingset():
         fs = None
         with responses.RequestsMock() as rsps:
@@ -117,7 +126,7 @@ def get_oldest3_fi_filingset(urlmock):
 
 @pytest.fixture(scope='package')
 def get_oldest3_fi_entities_filingset(urlmock):
-    """Get FilingSet from mock response ``oldest3_fi_entities`` with entities."""
+    """Get FilingSet from mock response oldest3_fi_entities."""
     def _get_oldest3_fi_entities_filingset():
         fs = None
         with responses.RequestsMock() as rsps:
@@ -135,7 +144,7 @@ def get_oldest3_fi_entities_filingset(urlmock):
 
 @pytest.fixture(scope='package')
 def get_oldest3_fi_vmessages_filingset(urlmock):
-    """Get FilingSet from mock response ``oldest3_fi_vmessages`` with validation messages."""
+    """Get FilingSet from mock response oldest3_fi_vmessages."""
     def _get_oldest3_fi_vmessages_filingset():
         fs = None
         with responses.RequestsMock() as rsps:
@@ -153,7 +162,7 @@ def get_oldest3_fi_vmessages_filingset(urlmock):
 
 @pytest.fixture(scope='package')
 def get_oldest3_fi_ent_vmessages_filingset(urlmock):
-    """Get FilingSet from mock response ``oldest3_fi_ent_vmessages`` with entities and validation messages."""
+    """Get FilingSet from mock response ``oldest3_fi_ent_vmessages``."""
     def _get_oldest3_fi_ent_vmessages_filingset():
         fs = None
         with responses.RequestsMock() as rsps:
@@ -167,3 +176,12 @@ def get_oldest3_fi_ent_vmessages_filingset(urlmock):
                 )
         return fs
     return _get_oldest3_fi_ent_vmessages_filingset
+
+
+@pytest.fixture(scope='package')
+def dummy_api_request():
+    """Dummy _APIRequest object."""
+    return _APIRequest(
+        'https://filings.xbrl.org/api/filings?Dummy=Url',
+        query_time=datetime(2000, 1, 1, 12, 0, 0, tzinfo=UTC)
+        )

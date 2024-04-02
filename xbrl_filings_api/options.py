@@ -29,6 +29,7 @@ views : iterable of SQLiteView, default DEFAULT_VIEWS
 #
 # SPDX-License-Identifier: MIT
 
+import logging
 import webbrowser
 from collections.abc import Iterable
 from typing import Union
@@ -36,6 +37,9 @@ from typing import Union
 from xbrl_filings_api.constants import YearFilterMonthsType
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
 from xbrl_filings_api.sqlite_view import SQLiteView
+
+logger = logging.getLogger(__name__)
+
 
 entry_point_url: str = 'https://filings.xbrl.org/api/filings'
 """JSON-API entry point URL."""
@@ -83,5 +87,5 @@ open_viewer: bool = True
 
 try:
     browser = webbrowser.get()
-except:
-    pass
+except: # noqa: E722 # Not sure about type but default browser n/a still
+    logger.warning('No default webbrowser resolved for options.browser.')

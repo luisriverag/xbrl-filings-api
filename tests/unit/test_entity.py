@@ -65,7 +65,7 @@ class TestEntityAsml:
         ent.identifier = None
         assert str(ent) == ''
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '1969'),
         ('identifier', '724500Y6DUVHQD6OXN27'),
         ('name', 'ASML Holding N.V.'),

@@ -83,7 +83,10 @@ def assicurazioni21it_vmessages_filing(
 
 @pytest.fixture
 def assicurazioni21it_duplicate_str_msg(assicurazioni21it_vmessages_filing):
-    """Validation message with id '104877' from `assicurazioni21it_vmessages`."""
+    """
+    Validation message with id '104877' from
+    `assicurazioni21it_vmessages`.
+    """
     filing: xf.Filing = assicurazioni21it_vmessages_filing
     vmsg: xf.ValidationMessage = next(filter(
         lambda vm: vm.api_id == '104877',
@@ -108,7 +111,9 @@ def tecnotree21fi_vmessages_filing(
 
 @pytest.fixture
 def tecnotree21fi_duplicate_num_msg(res_colls, tecnotree21fi_vmessages_filing):
-    """Validation message with id '41766' from `tecnotree21fi_vmessages`."""
+    """
+    Validation message with id '41766' from `tecnotree21fi_vmessages`.
+    """
     filing: xf.Filing = tecnotree21fi_vmessages_filing
     vmsg: xf.ValidationMessage = next(filter(
         lambda vm: vm.api_id == '41766',
@@ -129,7 +134,7 @@ class TestCalcMsg:
         """Test __str__ method."""
         assert str(asml22en_calc_msg) == ASML22EN_CALC_TEXT
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '66614'),
         ('severity', 'INCONSISTENCY'),
         ('text', ASML22EN_CALC_TEXT),
@@ -141,12 +146,15 @@ class TestCalcMsg:
         """Test non-derived data attributes."""
         assert getattr(asml22en_calc_msg, attr_name) == expected
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('calc_computed_sum', 6_830_200_000.0),
         ('calc_reported_sum', 7_043_900_000.0),
-        ('calc_context_id', 'i7b009074c59c4f71a2c42ac624464775_D20210101-20211231'),
+        ('calc_context_id', (
+            'i7b009074c59c4f71a2c42ac624464775_D20210101-20211231')),
         ('calc_line_item', 'ifrs-full:ProfitLossFromOperatingActivities'),
-        ('calc_short_role', 'StatementofcomprehensiveincomeprofitorlossbyfunctionofexpenseStatement'),
+        ('calc_short_role', (
+            'Statementofcomprehensiveincomeprofitorlossby'
+            'functionofexpenseStatement')),
         ('calc_unreported_items', ['ifrs-full:OtherIncome']),
         ('duplicate_greater', None),
         ('duplicate_lesser', None),
@@ -179,7 +187,7 @@ class TestPositiveMsg:
         """Test __str__ method."""
         assert str(asml22en_positive_msg) == 'Reported value is below 0'
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '66615'),
         ('severity', 'WARNING'),
         ('text', 'Reported value is below 0'),
@@ -215,7 +223,9 @@ class TestPositiveMsg:
 
 
 class TestDuplicateStrMsg:
-    """Test duplicate strings in Assicurazioni 2021 filing in Italian."""
+    """
+    Test duplicate strings in Assicurazioni 2021 filing in Italian.
+    """
 
     def test_repr(self, assicurazioni21it_duplicate_str_msg):
         """Test __repr__ method."""
@@ -227,7 +237,7 @@ class TestDuplicateStrMsg:
         vmsg: xf.ValidationMessage = assicurazioni21it_duplicate_str_msg
         assert str(vmsg) == ASSICURAZIONI21IT_DUPLICATE_STR_TEXT
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '104877'),
         ('severity', 'WARNING'),
         ('text', ASSICURAZIONI21IT_DUPLICATE_STR_TEXT),
@@ -277,7 +287,7 @@ class TestDuplicateNumMsg:
         vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
         assert str(vmsg) == TECNOTREE21FI_DUPLICATE_NUM_TEXT
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '41766'),
         ('severity', 'WARNING'),
         ('text', TECNOTREE21FI_DUPLICATE_NUM_TEXT),
@@ -289,7 +299,7 @@ class TestDuplicateNumMsg:
         """Test non-derived data attributes."""
         assert getattr(tecnotree21fi_duplicate_num_msg, attr_name) == expected
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('calc_computed_sum', None),
         ('calc_reported_sum', None),
         ('calc_context_id', None),

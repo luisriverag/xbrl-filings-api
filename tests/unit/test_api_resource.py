@@ -4,13 +4,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-from datetime import datetime
-
 import pytest
 
 import xbrl_filings_api as xf
-from xbrl_filings_api.api_request import _APIRequest
-from xbrl_filings_api.constants import PROTOTYPE
+from xbrl_filings_api.constants import _PROTOTYPE
 
 
 def test_raises_APIResource_init():
@@ -26,8 +23,8 @@ def test_raises_Filing_init_without_api_request():
 
 
 def test_raises_Filing_init_prototype():
-    """Test initiating Filing prototype with PROTOTYPE argument."""
-    fproto = xf.Filing(PROTOTYPE)
+    """Test initiating Filing prototype with `_PROTOTYPE` argument."""
+    fproto = xf.Filing(_PROTOTYPE)
     assert fproto.api_id == 'None'
 
 
@@ -49,7 +46,8 @@ def test_Filing_get_data_attributes_sanity_check():
 
 def test_Filing_get_data_attributes_GET_ONLY_FILINGS():
     """Test Filing.get_data_attributes, flags=GET_ONLY_FILINGS."""
-    dattrs = xf.Filing.get_data_attributes(flags=xf.GET_ONLY_FILINGS, filings=None)
+    dattrs = xf.Filing.get_data_attributes(
+        flags=xf.GET_ONLY_FILINGS, filings=None)
     assert 'entity_api_id' not in dattrs
 
 
@@ -67,8 +65,12 @@ def test_Filing_get_data_attributes_filings_no_paths(get_oldest3_fi_filingset):
         assert not dattr.endswith('_download_path')
 
 
-def test_Filing_get_data_attributes_filings_xhtml_path(get_oldest3_fi_filingset):
-    """Test Filing.get_data_attributes with a FilingSet, has xhtml_download_path."""
+def test_Filing_get_data_attributes_filings_xhtml_path(
+        get_oldest3_fi_filingset):
+    """
+    Test Filing.get_data_attributes with a FilingSet, has
+    xhtml_download_path.
+    """
     fs: xf.FilingSet = get_oldest3_fi_filingset()
     fsiter = iter(fs)
     next(fsiter)

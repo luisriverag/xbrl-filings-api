@@ -257,7 +257,7 @@ async def download_parallel_aiter(
             )
         tasks.add(task)
 
-    for item_i in range(itemlen):
+    for _ in range(itemlen):
         result = await resultque.get()
         yield result
 

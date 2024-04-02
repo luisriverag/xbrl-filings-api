@@ -27,17 +27,32 @@ ASML22EN_ENT_VMSG_FILING_FRAG = {
     'attributes': {
         'date_added': '2023-02-16 14:33:58.236220',
         'country': 'NL',
-        'sha256': '3f44981c656dc2bcd0ed3a88e6d062e6b8c041a656f420257bccd63535c2b6ac',
-        'report_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/asml-2022-12-31-en.xhtml',
+        'sha256': (
+            '3f44981c656dc2bcd0ed3a88e6d062e6'
+            'b8c041a656f420257bccd63535c2b6ac'
+            ),
+        'report_url': (
+            '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en'
+            '/reports/asml-2022-12-31-en.xhtml'
+            ),
         'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
         'error_count': 0,
         'inconsistency_count': 4,
-        'viewer_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/ixbrlviewer.html',
-        'json_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.json',
+        'viewer_url': (
+            '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en'
+            '/reports/ixbrlviewer.html'
+            ),
+        'json_url': (
+            '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+            '/asml-2022-12-31-en.json'
+            ),
         'processed': '2023-04-19 10:20:23.668110',
         'warning_count': 7,
         'period_end': '2022-12-31',
-        'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+        'package_url': (
+            '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+            '/asml-2022-12-31-en.zip'
+            )
         },
     'relationships': {
         'validation_messages': {
@@ -66,14 +81,15 @@ ASML22EN_ENT_VMSG_FILING_FRAG = {
     }
 
 @pytest.fixture
-def reset_jsontree_state(monkeypatch):
+def _reset_jsontree_state(monkeypatch):
     """Reset the state of the _JSONTree type object."""
     monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
     monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
     monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
 
 
-def test_init(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_init():
     """Test init function."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -86,7 +102,8 @@ def test_init(reset_jsontree_state):
     assert _JSONTree.unexpected_resource_types == set()
 
 
-def test_close_prematurely(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_close_prematurely():
     """Test making a get call after tree has been closed."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -100,7 +117,8 @@ def test_close_prematurely(reset_jsontree_state):
         jtree.get(key_path='attributes.country', parse_type=None)
 
 
-def test_close_twice(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_close_twice():
     """Test closing the _JSONTree twice."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -115,7 +133,8 @@ def test_close_twice(reset_jsontree_state):
 
 
 @pytest.mark.date
-def test_get_date_value(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_date_value():
     """Test reading a date value from the tree."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -131,7 +150,8 @@ def test_get_date_value(reset_jsontree_state):
 
 
 @pytest.mark.date
-def test_get_date_value_bad_date(reset_jsontree_state, caplog):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_date_value_bad_date(caplog):
     """Test reading a bad date value from the tree."""
     caplog.set_level(logging.WARNING)
     filing_frag = copy.deepcopy(ASML22EN_ENT_VMSG_FILING_FRAG)
@@ -155,7 +175,8 @@ def test_get_date_value_bad_date(reset_jsontree_state, caplog):
 
 
 @pytest.mark.date
-def test_get_date_value_unparsed(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_date_value_unparsed():
     """Test reading a date value from the tree unparsed."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -171,8 +192,10 @@ def test_get_date_value_unparsed(reset_jsontree_state):
 
 
 @pytest.mark.datetime
-def test_get_datetime_value(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_datetime_value():
     """Test reading a datetime value from the tree."""
+    e_datetime = datetime(2023, 4, 19, 10, 20, 23, 668110, tzinfo=UTC)
     jtree = _JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
@@ -182,13 +205,14 @@ def test_get_datetime_value(reset_jsontree_state):
         key_path='attributes.processed',
         parse_type=_ParseType.DATETIME
         )
-    assert processed_time == datetime(2023, 4, 19, 10, 20, 23, 668110, tzinfo=UTC)
+    assert processed_time == e_datetime
     assert processed_time.tzinfo == UTC
     jtree.close()
 
 
 @pytest.mark.datetime
-def test_get_datetime_value_bad_datetime(reset_jsontree_state, caplog):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_datetime_value_bad_datetime(caplog):
     """Test reading a bad datetime value from the tree."""
     caplog.set_level(logging.WARNING)
     filing_frag = copy.deepcopy(ASML22EN_ENT_VMSG_FILING_FRAG)
@@ -212,8 +236,10 @@ def test_get_datetime_value_bad_datetime(reset_jsontree_state, caplog):
 
 
 @pytest.mark.datetime
-def test_get_datetime_timezone0200_value(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_datetime_timezone0200_value():
     """Test reading a datetime value from the tree."""
+    e_datetime = datetime(2023, 4, 19, 8, 20, 23, 668110, tzinfo=UTC)
     filing_frag = copy.deepcopy(ASML22EN_ENT_VMSG_FILING_FRAG)
     filing_frag['attributes']['processed'] = '2023-04-19 10:20:23.668110+0200'
     jtree = _JSONTree(
@@ -226,13 +252,14 @@ def test_get_datetime_timezone0200_value(reset_jsontree_state):
         parse_type=_ParseType.DATETIME
         )
     # 2 hours less in UTC
-    assert processed_time == datetime(2023, 4, 19, 8, 20, 23, 668110, tzinfo=UTC)
+    assert processed_time == e_datetime
     assert processed_time.tzinfo == timezone(timedelta(seconds=7200))
     jtree.close()
 
 
 @pytest.mark.datetime
-def test_get_datetime_value_unparsed(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_datetime_value_unparsed():
     """Test reading a datetime value from the tree unparsed."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -247,9 +274,15 @@ def test_get_datetime_value_unparsed(reset_jsontree_state):
     jtree.close()
 
 
-def test_get_url_value(reset_jsontree_state, monkeypatch):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_url_value(monkeypatch):
     """Test reading a URL value from the tree."""
-    monkeypatch.setattr(options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+    monkeypatch.setattr(
+        options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+    e_url = (
+        'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+        '/asml-2022-12-31-en/reports/ixbrlviewer.html'
+        )
     jtree = _JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
@@ -259,14 +292,15 @@ def test_get_url_value(reset_jsontree_state, monkeypatch):
         key_path='attributes.viewer_url',
         parse_type=_ParseType.URL
         )
-    assert viewer_url == (
-        'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/ixbrlviewer.html')
+    assert viewer_url == e_url
     jtree.close()
 
 
-def test_get_url_value_bad_url(reset_jsontree_state, monkeypatch, caplog):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_url_value_bad_url(monkeypatch, caplog):
     """Test reading a bad URL value from the tree."""
-    monkeypatch.setattr(options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+    monkeypatch.setattr(
+        options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
     caplog.set_level(logging.WARNING)
     filing_frag = copy.deepcopy(ASML22EN_ENT_VMSG_FILING_FRAG)
     filing_frag['attributes']['viewer_url'] = 'http://[1:2:3:4:5:6/'
@@ -288,8 +322,13 @@ def test_get_url_value_bad_url(reset_jsontree_state, monkeypatch, caplog):
     jtree.close()
 
 
-def test_get_url_value_unparsed(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_url_value_unparsed():
     """Test reading a URL value from the tree unparsed."""
+    e_url = (
+        '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports'
+        '/ixbrlviewer.html'
+        )
     jtree = _JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
@@ -299,12 +338,12 @@ def test_get_url_value_unparsed(reset_jsontree_state):
         key_path='attributes.viewer_url',
         parse_type=None
         )
-    assert viewer_url == (
-        '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/ixbrlviewer.html')
+    assert viewer_url == e_url
     jtree.close()
 
 
-def test_get_int_value(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_int_value():
     """Test reading an int value from the tree."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -319,7 +358,8 @@ def test_get_int_value(reset_jsontree_state):
     jtree.close()
 
 
-def test_get_int_value_as_url_noop(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_int_value_as_url_noop():
     """Test reading an int value as an URL (no-op) from the tree."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -334,7 +374,8 @@ def test_get_int_value_as_url_noop(reset_jsontree_state):
     jtree.close()
 
 
-def test_get_dict_value(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_dict_value():
     """Test reading a subdict value from the tree."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -347,8 +388,12 @@ def test_get_dict_value(reset_jsontree_state):
     jtree.close()
 
 
-def test_get_dict_value_parse_datetime_noop(reset_jsontree_state):
-    """Test reading a subdict value from the tree, parse_type=DATETIME (no-op)."""
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_get_dict_value_parse_datetime_noop():
+    """
+    Test reading a subdict value from the tree, parse_type=DATETIME
+    (no-op).
+    """
     jtree = _JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
@@ -363,7 +408,8 @@ def test_get_dict_value_parse_datetime_noop(reset_jsontree_state):
     jtree.close()
 
 
-def test_do_not_track_false(reset_jsontree_state):
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_do_not_track_false():
     """Test do_not_track=False reading."""
     jtree = _JSONTree(
         class_name='Filing',
@@ -387,7 +433,9 @@ def test_do_not_track_false(reset_jsontree_state):
     assert 'attributes.country' not in uakpaths
     assert len(uakpaths) == 20
 
-def test_raises_do_not_track_true(reset_jsontree_state):
+
+@pytest.mark.usefixtures('_reset_jsontree_state')
+def test_raises_do_not_track_true():
     """Test do_not_track=True reading."""
     jtree = _JSONTree(
         class_name='Filing',

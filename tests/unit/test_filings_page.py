@@ -14,7 +14,10 @@ import xbrl_filings_api as xf
 
 @pytest.fixture
 def oldest3_fi_ent_vmessages_filingspage(oldest3_fi_ent_vmessages_response):
-    """FilingPage for ``oldest3_fi_ent_vmessages`` with entities and validation messages."""
+    """
+    FilingPage for ``oldest3_fi_ent_vmessages`` with entities and
+    validation messages.
+    """
     piter = xf.filing_page_iter(
         filters={'country': 'FI'},
         sort='date_added',
@@ -65,7 +68,10 @@ def test_included_resource_api_id_as_int():
             'type': 'filing',
             'attributes': {
                 'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
-                'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+                'package_url': (
+                    '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+                    '/asml-2022-12-31-en.zip'
+                    )
                 },
             'relationships': {
                 'entity': {
@@ -73,7 +79,8 @@ def test_included_resource_api_id_as_int():
                     'data': {'type': 'entity', 'id': 123456789}
                     },
                 'validation_messages': {
-                    'links': {'related': '/api/filings/123/validation_messages'},
+                    'links': {
+                        'related': '/api/filings/123/validation_messages'},
                     'data': [
                         {'type': 'validation_message', 'id': 987654}
                         ]
@@ -135,7 +142,10 @@ def test_rogue_validation_messages_logging(caplog):
             'type': 'filing',
             'attributes': {
                 'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
-                'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+                'package_url': (
+                    '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+                    '/asml-2022-12-31-en.zip'
+                    )
                 },
             'id': '123',
             'links': {'self': '/api/filings/123'}

@@ -12,13 +12,9 @@ currently unsupported.
 #
 # SPDX-License-Identifier: MIT
 
-from datetime import date, datetime, timezone
-
 import pytest
 
 import xbrl_filings_api as xf
-
-UTC = timezone.utc
 
 
 @pytest.mark.xfail(

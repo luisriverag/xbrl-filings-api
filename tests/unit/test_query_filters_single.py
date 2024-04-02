@@ -387,7 +387,10 @@ def test_get_filings_added_time_datetime_utc(
 @pytest.mark.datetime
 def test_to_sqlite_added_time_datetime_utc(
         filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
-    """Requested `added_time` as datetime (UTC) is inserted into a database."""
+    """
+    Requested `added_time` as datetime (UTC) is inserted into a
+    database.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
@@ -421,7 +424,7 @@ def test_get_filings_added_time_datetime_naive(
         filter_added_time_2_response, monkeypatch):
     """Querying `added_time` as datetime (naive) returns filing(s)."""
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
-    dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029)
+    dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=None)
     time_str = '2023-05-09 13:27:02.676029'
     fs = xf.get_filings(
         filters={
@@ -533,7 +536,8 @@ def test_get_filings_package_sha256(filter_package_sha256_response):
 
 @pytest.mark.sqlite
 def test_to_sqlite_package_sha256(
-        filter_package_sha256_response, db_record_count, tmp_path, monkeypatch):
+        filter_package_sha256_response, db_record_count, tmp_path,
+        monkeypatch):
     """Requested `package_sha256` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     filter_sha = (
@@ -616,7 +620,8 @@ def test_to_sqlite_2filters_country_last_end_date_str(
 
 
 @pytest.mark.date
-def test_get_filings_2filters_country_last_end_date_date(finnish_jan22_response):
+def test_get_filings_2filters_country_last_end_date_date(
+        finnish_jan22_response):
     """Filters `country` and `last_end_date` as date work."""
     fs = xf.get_filings(
         filters={

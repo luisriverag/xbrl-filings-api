@@ -88,7 +88,7 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 from xbrl_filings_api import request_processor
-from xbrl_filings_api.enums import GET_ONLY_FILINGS, ScopeFlag
+from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.filing_set import FilingSet
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.resource_collection import ResourceCollection
@@ -99,7 +99,7 @@ def get_filings(
         *,
         sort: Optional[Union[str, Sequence[str]]] = None,
         max_size: int = 100,
-        flags: ScopeFlag = GET_ONLY_FILINGS,
+        flags: ScopeFlag = ScopeFlag.GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> FilingSet:
     """
@@ -155,7 +155,7 @@ def to_sqlite(
         filters: Optional[Mapping[str, Union[Any, Iterable[Any]]]] = None,
         sort: Optional[Union[str, Sequence[str]]] = None,
         max_size: int = 100,
-        flags: ScopeFlag = GET_ONLY_FILINGS,
+        flags: ScopeFlag = ScopeFlag.GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> None:
     """
@@ -260,7 +260,7 @@ def filing_page_iter(
         filters: Optional[Mapping[str, Union[Any, Iterable[Any]]]] = None,
         sort: Optional[Union[str, Sequence[str]]] = None,
         max_size: int = 100,
-        flags: ScopeFlag = GET_ONLY_FILINGS,
+        flags: ScopeFlag = ScopeFlag.GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> Iterator[FilingsPage]:
     """

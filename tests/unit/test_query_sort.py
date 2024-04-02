@@ -10,7 +10,6 @@
 from datetime import datetime, timezone
 
 import pytest
-import responses
 
 import xbrl_filings_api as xf
 
@@ -88,9 +87,10 @@ def test_sort_asc_package_sha256(sort_asc_package_sha256_latvia_response):
         flags=xf.GET_ONLY_FILINGS
         )
     fpage: xf.FilingsPage = next(iter(pageiter))
-    assert fpage.filing_list[0].package_sha256 <= fpage.filing_list[1].package_sha256
-    assert fpage.filing_list[1].package_sha256 <= fpage.filing_list[2].package_sha256
-    assert fpage.filing_list[2].package_sha256 <= fpage.filing_list[3].package_sha256
+    filing_list = fpage.filing_list
+    assert filing_list[0].package_sha256 <= filing_list[1].package_sha256
+    assert filing_list[1].package_sha256 <= filing_list[2].package_sha256
+    assert filing_list[2].package_sha256 <= fpage.filing_list[3].package_sha256
 
 
 def test_sort_desc_package_sha256(sort_desc_package_sha256_latvia_response):
@@ -104,6 +104,7 @@ def test_sort_desc_package_sha256(sort_desc_package_sha256_latvia_response):
         flags=xf.GET_ONLY_FILINGS
         )
     fpage: xf.FilingsPage = next(iter(pageiter))
-    assert fpage.filing_list[0].package_sha256 >= fpage.filing_list[1].package_sha256
-    assert fpage.filing_list[1].package_sha256 >= fpage.filing_list[2].package_sha256
-    assert fpage.filing_list[2].package_sha256 >= fpage.filing_list[3].package_sha256
+    filing_list = fpage.filing_list
+    assert filing_list[0].package_sha256 >= filing_list[1].package_sha256
+    assert filing_list[1].package_sha256 >= filing_list[2].package_sha256
+    assert filing_list[2].package_sha256 >= filing_list[3].package_sha256

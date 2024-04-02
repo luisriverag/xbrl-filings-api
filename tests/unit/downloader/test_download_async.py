@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT
 
 import hashlib
-import re
 from pathlib import Path
 
 import pytest
@@ -21,7 +20,8 @@ async def test_connection_error(tmp_path):
     """Test raising of `requests.ConnectionError`."""
     e_filename = 'test_connection_error.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
-    with responses.RequestsMock() as rsps:
+    # `responses` used solely to block internet connection
+    with responses.RequestsMock():
         with pytest.raises(requests.exceptions.ConnectionError):
             await downloader.download_async(
                 url=url,
@@ -103,8 +103,14 @@ async def test_with_filename(mock_url_response, tmp_path):
 
 
 async def test_stem_pattern_filename(mock_url_response, tmp_path):
-    """Test filename stem in attr `stem_pattern` will be used for saved file."""
-    url = 'https://filings.xbrl.org/download_async/test_stem_pattern_filename.zip'
+    """
+    Test filename stem in attr `stem_pattern` will be used for saved
+    file.
+    """
+    url = (
+        'https://filings.xbrl.org/download_async'
+        '/test_stem_pattern_filename.zip'
+        )
     e_filename = 'test_stem_pattern_filename' + '_test' + '.zip'
     path_str = None
     with responses.RequestsMock() as rsps:
@@ -124,7 +130,10 @@ async def test_stem_pattern_filename(mock_url_response, tmp_path):
 
 
 async def test_stem_pattern_no_placeholder(tmp_path):
-    """Test raising error when attr `stem_pattern` misses placeholder ``/name/``."""
+    """
+    Test raising error when attr `stem_pattern` misses placeholder
+    ``/name/``.
+    """
     e_filename = 'test_stem_pattern_no_placeholder.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     e_filename = 'test_stem_pattern_filename' + '_test' + '.zip'
@@ -187,7 +196,9 @@ async def test_sha256_success(mock_url_response, mock_response_data, tmp_path):
 
 
 async def test_sha256_fail(mock_url_response, mock_response_sha256, tmp_path):
-    """Test raising of `CorruptDownloadError` when `sha256` is incorrect."""
+    """
+    Test raising of `CorruptDownloadError` when `sha256` is incorrect.
+    """
     filename = 'test_sha256_fail.zip'
     e_filename = f'{filename}.corrupt'
     url = f'https://filings.xbrl.org/download_async/{filename}'
@@ -218,7 +229,10 @@ async def test_sha256_fail(mock_url_response, mock_response_sha256, tmp_path):
 
 
 async def test_autocreate_dir(mock_url_response, tmp_path):
-    """Test the non-existent intermediary directories in `to_dir` are created."""
+    """
+    Test the non-existent intermediary directories in `to_dir` are
+    created.
+    """
     e_filename = 'test_autocreate_dir.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     path_str = None
@@ -241,7 +255,9 @@ async def test_autocreate_dir(mock_url_response, tmp_path):
 
 
 async def test_overwrite_file(mock_url_response, tmp_path):
-    """Test an already existing file in the directory gets overwritten."""
+    """
+    Test an already existing file in the directory gets overwritten.
+    """
     e_filename = 'test_overwrite_file.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
 

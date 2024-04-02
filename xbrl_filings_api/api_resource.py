@@ -6,22 +6,17 @@
 
 from collections.abc import Iterable
 from datetime import datetime, timezone
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, overload
 
 from xbrl_filings_api import order_columns
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.constants import (
+    _PROTOTYPE,
     ATTRS_ALWAYS_EXCLUDE_FROM_DATA,
-    PROTOTYPE,
-    Prototype,
+    _Prototype,
 )
-from xbrl_filings_api.enums import (
-    GET_ENTITY,
-    GET_ONLY_FILINGS,
-    GET_VALIDATION_MESSAGES,
-    ScopeFlag,
-)
+from xbrl_filings_api.enums import ScopeFlag
 
 UTC = timezone.utc
 
@@ -43,9 +38,13 @@ class APIResource(APIObject):
     TYPE: Union[str, None] = None
     _FILING_FLAG: ScopeFlag
 
+    @overload
+    def __init__(self, json_frag: _Prototype) -> None: ...
+    @overload
+    def __init__(self, json_frag: dict, api_request: _APIRequest) -> None: ...
     def __init__(
             self,
-            json_frag: Union[dict, Prototype],
+            json_frag: Union[dict, _Prototype],
             api_request: Union[_APIRequest, None] = None
             ) -> None:
         """
@@ -53,16 +52,16 @@ class APIResource(APIObject):
 
         Parameters
         ----------
-        json_frag : dict or PROTOTYPE
-            JSON fragment in an API response. PROTOTYPE constant may be
-            given to create a dummy instance.
+        json_frag : dict or _PROTOTYPE
+            JSON fragment in an API response. `_PROTOTYPE` constant may
+            be given to create a dummy instance.
         """
         if type(self) is APIResource:
             msg = 'APIResource can only be initialized via subclassing'
             raise NotImplementedError(msg)
 
         is_prototype = False
-        if json_frag == PROTOTYPE:
+        if json_frag == _PROTOTYPE:
             is_prototype = True
             json_frag = {}
             api_request = _APIRequest('', datetime.now(UTC))
@@ -71,7 +70,7 @@ class APIResource(APIObject):
             raise ValueError(msg)
 
         super().__init__(
-            json_frag=json_frag, # type: ignore[arg-type] # Never PROTOTYPE
+            json_frag=json_frag, # type: ignore[arg-type] # Never _PROTOTYPE
             api_request=api_request,
             do_not_track=is_prototype
             )
@@ -109,7 +108,7 @@ class APIResource(APIObject):
         """
         if cls is APIResource:
             raise NotImplementedError()
-        resource_proto = cls(PROTOTYPE)
+        resource_proto = cls(_PROTOTYPE)
         attrs = [
             attr for attr in dir(resource_proto)
             if not (
@@ -123,7 +122,7 @@ class APIResource(APIObject):
                 exclude_dlpaths = (
                     cls._get_unused_download_paths(filings))
                 attrs = [attr for attr in attrs if attr not in exclude_dlpaths]
-            if not flags or GET_ENTITY not in flags:
+            if not flags or ScopeFlag.GET_ENTITY not in flags:
                 attrs.remove('entity_api_id')
         return order_columns.order_columns(attrs)
 
@@ -138,7 +137,7 @@ class APIResource(APIObject):
         ----------
         filings : iterable of Filing
         """
-        fproto = cls(PROTOTYPE)
+        fproto = cls(_PROTOTYPE)
         dlattrs = [
             att for att in dir(fproto)
             if not att.startswith('_') and att.endswith('_download_path')
@@ -170,9 +169,9 @@ class APIResource(APIObject):
         """
         if cls is APIResource:
             raise NotImplementedError()
-        flags = GET_ONLY_FILINGS
+        flags = ScopeFlag.GET_ONLY_FILINGS
         if has_entities:
-            flags = GET_ENTITY
+            flags = ScopeFlag.GET_ENTITY
         cols = cls.get_data_attributes(flags, filings)
         return cols
 

@@ -122,11 +122,20 @@ max-doc-length = 72
 # __about__.py does not have a docstring
 "__about__.py" = ["D100"]
 # Tests allow non-imperative docstrings (D401), mixed case names (N801, N802),
-# have shortened 'self' (N805), may leave parameters/fixtures unused (ARG001),
-# and decorators unparenthesised (PT023), do not expect docstring imperative
-# mood due to fixtures (D401)
-"test_*" = ["D401", "N801", "N802", "N805", "ARG001", "PT023", "D401"]
+# may leave parameters/fixtures unused due to response mocks (ARG001), and
+# decorators unparenthesised (PT023), do not expect docstring imperative mood
+# due to fixtures (D401), allow long summary docstrings (D200, D205), allow use
+# of naive datetimes in tests (DTZ001), allow mixed case arguments/fixtures
+# (N803)
+"test_*" = [
+    "D401", "N801", "N802", "ARG001", "PT023", "D401", "DTZ001", "D200",
+    "D205", "N803"
+    ]
+"conftest.py" = ["D401", "D200", "D205"]
+"conftest_source.py" = ["D401"]
+# Allow non-imperative docstrings (D401) and allow print() in scripts (T201),
+# allow long summary docstrings for URL mocks (D200, D205)
+"mock_upgrade.py" = ["D401", "T201", "D200", "D205"]
 # Allow print() in scripts
 "examples.py" = ["T201"]
 "__main__.py" = ["T201"]
-"mock_upgrade.py" = ["T201"]

@@ -17,14 +17,20 @@ import xbrl_filings_api as xf
 
 @pytest.fixture(scope='module')
 def get_asml22en_or_oldest3_fi(urlmock):
-    """Function for single Filing or FilingSet of either `asml22en` or `oldest3_fi`."""
+    """
+    Function for single Filing or FilingSet of either `asml22en` or
+    `oldest3_fi`.
+    """
     def _get_asml22en_or_oldest3_fi(libclass):
         if libclass is xf.Filing:
             fset = None
             with responses.RequestsMock() as rsps:
                 urlmock.apply(rsps, 'asml22en')
                 fset = xf.get_filings(
-                    filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
+                    filters={
+                        'filing_index': (
+                            '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')
+                        },
                     sort=None,
                     max_size=1,
                     flags=xf.GET_ONLY_FILINGS,
@@ -83,7 +89,8 @@ def test_download_json(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
     """Test downloading `json_url` by `download_aiter`."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
@@ -113,8 +120,11 @@ async def test_download_aiter_json(
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_package_no_check_corruption(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
-    """Test downloading `package_url` by `download` without sha256 check."""
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """
+    Test downloading `package_url` by `download` without sha256 check.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
@@ -137,8 +147,12 @@ def test_download_package_no_check_corruption(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_package_no_check_corruption(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
-    """Test downloading `package_url` by `download_aiter` without sha256 check."""
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """
+    Test downloading `package_url` by `download_aiter` without sha256
+    check.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
@@ -169,7 +183,10 @@ async def test_download_aiter_package_no_check_corruption(
 def test_download_package_check_corruption_success(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
         mock_response_sha256, tmp_path):
-    """Test downloading `package_url` by `download` with sha256 check success."""
+    """
+    Test downloading `package_url` by `download` with sha256 check
+    success.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     for filing in filings:
@@ -198,7 +215,10 @@ def test_download_package_check_corruption_success(
 async def test_download_aiter_package_check_corruption_success(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
         mock_response_sha256, tmp_path):
-    """Test downloading `package_url` by `download_aiter` with sha256 check success."""
+    """
+    Test downloading `package_url` by `download_aiter` with sha256 check
+    success.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     for filing in filings:
@@ -233,7 +253,10 @@ async def test_download_aiter_package_check_corruption_success(
 def test_download_package_check_corruption_fail(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
         mock_response_sha256, tmp_path):
-    """Test downloading `package_url` by `download` with sha256 check failure."""
+    """
+    Test downloading `package_url` by `download` with sha256 check
+    failure.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     e_expected_hash = '0'*64
@@ -281,7 +304,10 @@ def test_download_package_check_corruption_fail(
 async def test_download_aiter_package_check_corruption_fail(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
         mock_response_sha256, tmp_path):
-    """Test downloading `package_url` by `download_aiter` with sha256 check failure."""
+    """
+    Test downloading `package_url` by `download_aiter` with sha256 check
+    failure.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     e_expected_hash = '0'*64
@@ -385,7 +411,9 @@ async def test_download_aiter_xhtml(
 def test_download_json_to_dir_none(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
         tmp_path, monkeypatch):
-    """Test downloading `json_url` with to_dir=None (cwd) by `download`."""
+    """
+    Test downloading `json_url` with to_dir=None (cwd) by `download`.
+    """
     monkeypatch.chdir(tmp_path)
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
@@ -412,7 +440,10 @@ def test_download_json_to_dir_none(
 async def test_download_aiter_json_to_dir_none(
         libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
         tmp_path, monkeypatch):
-    """Test downloading `json_url` with to_dir=None (cwd) by `download_aiter`."""
+    """
+    Test downloading `json_url` with to_dir=None (cwd) by
+    `download_aiter`.
+    """
     monkeypatch.chdir(tmp_path)
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
@@ -464,7 +495,9 @@ def test_download_viewer_raise(
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_viewer_raise(
         libclass, get_asml22en_or_oldest3_fi, url_filename, tmp_path):
-    """Test raising when downloading `viewer_url` by `download_aiter`."""
+    """
+    Test raising when downloading `viewer_url` by `download_aiter`.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     dliter = target.download_aiter(
@@ -474,7 +507,10 @@ async def test_download_aiter_viewer_raise(
         check_corruption=True,
         max_concurrent=None
         )
-    with pytest.raises(ValueError, match=r"File 'viewer' is not among"):
+    # Repress PT012 as `async for` is in fact simplest statement for
+    # Py3.9 in `pytest.raises` (no anext function)
+    with pytest.raises( # noqa: PT012
+            ValueError, match=r"File 'viewer' is not among"):
         async for _ in dliter:
             pass
     for filing in filings:
@@ -517,7 +553,9 @@ async def test_download_aiter_files_as_int_raise(
         check_corruption=True,
         max_concurrent=None
         )
-    with pytest.raises(
+    # Repress PT012 as `async for` is in fact simplest statement for
+    # Py3.9 in `pytest.raises` (no anext function)
+    with pytest.raises( # noqa: PT012
             TypeError,
             match=r"Parameter 'files' is none of str, Iterable or Mapping" ):
         async for _ in dliter:
@@ -549,7 +587,9 @@ def test_download_json_missing_log(
     counter = 0
     for record in caplog.records:
         if (record.levelname == 'WARNING'
-                and record.message.startswith('JSON not available for Filing(')):
+                and record.message.startswith(
+                    'JSON not available for Filing(')
+            ):
             counter += 1
     assert counter == len(filings)
 
@@ -579,7 +619,9 @@ async def test_download_aiter_json_missing_log(
     counter = 0
     for record in caplog.records:
         if (record.levelname == 'WARNING'
-                and record.message.startswith('JSON not available for Filing(')):
+                and record.message.startswith(
+                    'JSON not available for Filing(')
+            ):
             counter += 1
     assert counter == len(filings)
 
@@ -606,7 +648,9 @@ def test_download_package_missing_log(
     counter = 0
     for record in caplog.records:
         if (record.levelname == 'WARNING'
-                and record.message.startswith('Package not available for Filing(')):
+                and record.message.startswith(
+                    'Package not available for Filing(')
+            ):
             counter += 1
     assert counter == len(filings)
 
@@ -614,7 +658,10 @@ def test_download_package_missing_log(
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_package_missing_files_mapping_log(
         libclass, get_asml22en_or_oldest3_fi, tmp_path, caplog):
-    """Test logging when package is missing (files as mapping) by `download`."""
+    """
+    Test logging when package is missing (files as mapping) by
+    `download`.
+    """
     caplog.set_level(logging.WARNING)
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
@@ -639,14 +686,17 @@ def test_download_package_missing_files_mapping_log(
     counter = 0
     for record in caplog.records:
         if (record.levelname == 'WARNING'
-                and record.message.startswith('Package not available for Filing(')):
+                and record.message.startswith(
+                    'Package not available for Filing(')
+            ):
             counter += 1
     assert counter == len(filings)
 
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_and_xhtml(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
     """Test downloading `json_url` and `xhtml_url` by `download`."""
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
@@ -675,8 +725,11 @@ def test_download_json_and_xhtml(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json_and_xhtml(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
-    """Test downloading `json_url` and `xhtml_url` by `download_aiter`."""
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """
+    Test downloading `json_url` and `xhtml_url` by `download_aiter`.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
@@ -714,8 +767,11 @@ async def test_download_aiter_json_and_xhtml(
 
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_DownloadItem(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `download` with `DownloadItem` setup."""
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """
+    Test downloading `json_url` by `download` with `DownloadItem` setup.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
@@ -744,8 +800,12 @@ def test_download_json_DownloadItem(
 @pytest.mark.asyncio
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json_DownloadItem(
-        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `download_aiter` with `DownloadItem` setup."""
+        libclass, get_asml22en_or_oldest3_fi, url_filename, mock_url_response,
+        tmp_path):
+    """
+    Test downloading `json_url` by `download_aiter` with `DownloadItem`
+    setup.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
@@ -780,7 +840,10 @@ async def test_download_aiter_json_DownloadItem(
 
 def test_download_json_Filing_DownloadItem_rename(
         get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `Filing.download` with `DownloadItem` renamed setup."""
+    """
+    Test downloading `json_url` by `Filing.download` with `DownloadItem`
+    renamed setup.
+    """
     filing: xf.Filing
     filing, _ = get_asml22en_or_oldest3_fi(xf.Filing)
     with responses.RequestsMock() as rsps:
@@ -806,13 +869,18 @@ def test_download_json_Filing_DownloadItem_rename(
 
 def test_download_json_FilingSet_DownloadItem_rename_raise(
         get_asml22en_or_oldest3_fi, tmp_path):
-    """Test raising when downloading `json_url` by `FilingSet.download` with `DownloadItem` renamed setup."""
+    """
+    Test raising when downloading `json_url` by `FilingSet.download`
+    with `DownloadItem` renamed setup.
+    """
     filingset: xf.FilingSet
     filingset, filings = get_asml22en_or_oldest3_fi(xf.FilingSet)
     filing: xf.Filing
     with pytest.raises(
             ValueError,
-            match=r'The attribute DownloadItem\.filename may not be other than None'):
+            match=(
+                r'The attribute DownloadItem\.filename may not be '
+                r'other than None')):
         filingset.download(
             files={
                 'json': xf.DownloadItem(
@@ -835,7 +903,10 @@ def test_download_json_FilingSet_DownloadItem_rename_raise(
 @pytest.mark.asyncio
 async def test_download_aiter_json_Filing_DownloadItem_rename(
         get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `Filing.download_aiter` with `DownloadItem` renamed setup."""
+    """
+    Test downloading `json_url` by `Filing.download_aiter` with
+    `DownloadItem` renamed setup.
+    """
     filing: xf.Filing
     filing, _ = get_asml22en_or_oldest3_fi(xf.Filing)
     with responses.RequestsMock() as rsps:
@@ -870,7 +941,10 @@ async def test_download_aiter_json_Filing_DownloadItem_rename(
 @pytest.mark.asyncio
 async def test_download_aiter_json_FilingSet_DownloadItem_rename_raise(
         get_asml22en_or_oldest3_fi, tmp_path):
-    """Test raising when downloading `json_url` by `FilingSet.download_aiter` with `DownloadItem` renamed setup."""
+    """
+    Test raising when downloading `json_url` by
+    `FilingSet.download_aiter` with `DownloadItem` renamed setup.
+    """
     filingset: xf.FilingSet
     filingset, filings = get_asml22en_or_oldest3_fi(xf.FilingSet)
     dliter = filingset.download_aiter(
@@ -886,9 +960,13 @@ async def test_download_aiter_json_FilingSet_DownloadItem_rename_raise(
         check_corruption=True,
         max_concurrent=None
         )
-    with pytest.raises(
+    # Repress PT012 as `async for` is in fact simplest statement for
+    # Py3.9 in `pytest.raises` (no anext function)
+    with pytest.raises( # noqa: PT012
             ValueError,
-            match=r'The attribute DownloadItem\.filename may not be other than None'):
+            match=(
+                r'The attribute DownloadItem\.filename may not be '
+                r'other than None')):
         async for _ in dliter:
             pass
     for filing in filings:
@@ -900,7 +978,10 @@ async def test_download_aiter_json_FilingSet_DownloadItem_rename_raise(
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_DownloadItem_2_to_dir(
         libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `download` with `DownloadItem` 2 different to_dir."""
+    """
+    Test downloading `json_url` by `download` with `DownloadItem` 2
+    different to_dir.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     json_path = tmp_path / 'json'
     xhtml_path = tmp_path / 'xhtml'
@@ -942,7 +1023,9 @@ def test_download_json_DownloadItem_2_to_dir(
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json_DownloadItem_2_to_dir(
         libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `download_aiter` 2 different to_dir."""
+    """
+    Test downloading `json_url` by `download_aiter` 2 different to_dir.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     json_path = tmp_path / 'json'
     xhtml_path = tmp_path / 'xhtml'
@@ -987,7 +1070,10 @@ async def test_download_aiter_json_DownloadItem_2_to_dir(
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 def test_download_json_DownloadItem_2_stem_pattern(
         libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `download` with `DownloadItem` 2 different stem_pattern."""
+    """
+    Test downloading `json_url` by `download` with `DownloadItem` 2
+    different stem_pattern.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:
@@ -1023,7 +1109,10 @@ def test_download_json_DownloadItem_2_stem_pattern(
 @pytest.mark.parametrize('libclass', [xf.Filing, xf.FilingSet])
 async def test_download_aiter_json_DownloadItem_2_stem_pattern(
         libclass, get_asml22en_or_oldest3_fi, mock_url_response, tmp_path):
-    """Test downloading `json_url` by `download_aiter` 2 different stem_pattern."""
+    """
+    Test downloading `json_url` by `download_aiter` 2 different
+    stem_pattern.
+    """
     target, filings = get_asml22en_or_oldest3_fi(libclass)
     filing: xf.Filing
     with responses.RequestsMock() as rsps:

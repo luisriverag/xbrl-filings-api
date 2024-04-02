@@ -20,7 +20,9 @@ pytestmark = [pytest.mark.multifilter, pytest.mark.date]
 
 def test_last_end_date_only_year(
         multifilter_belgium20_short_date_year_response, monkeypatch):
-    """Test getting Belgian filings for financial year 2020, max_size=100."""
+    """
+    Test getting Belgian filings for financial year 2020, max_size=100.
+    """
     e_dates_with_filings = {date(2020, 12, 31), date(2021, 3, 31)}
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (1, 8)))
     monkeypatch.setattr(xf.options, 'max_page_size', 200)
@@ -40,7 +42,10 @@ def test_last_end_date_only_year(
 
 def test_last_end_date_only_year_no_limit(
         multifilter_belgium20_short_date_year_no_limit_response, monkeypatch):
-    """Test getting Belgian filings for financial year 2020, max_size=NO_LIMIT."""
+    """
+    Test getting Belgian filings for financial year 2020,
+    max_size=NO_LIMIT.
+    """
     e_dates_with_filings = {date(2020, 12, 31), date(2021, 3, 31)}
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (1, 8)))
     monkeypatch.setattr(xf.options, 'max_page_size', 200)
@@ -60,7 +65,10 @@ def test_last_end_date_only_year_no_limit(
 
 def test_last_end_date_only_year_as_int(
         multifilter_belgium20_short_date_year_response, monkeypatch):
-    """Test getting Belgian filings for financial year 2020, filter value int, max_size=100."""
+    """
+    Test getting Belgian filings for financial year 2020, filter value
+    int, max_size=100.
+    """
     e_dates_with_filings = {date(2020, 12, 31), date(2021, 3, 31)}
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (1, 8)))
     monkeypatch.setattr(xf.options, 'max_page_size', 200)
@@ -83,7 +91,8 @@ def test_last_end_date_only_year_jan_to_dec(monkeypatch):
     e_year = 2024
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 1), (1, 1)))
     monkeypatch.setattr(xf.options, 'max_page_size', 200)
-    page_json = {'data': [], 'meta': {'count': 0}, 'jsonapi': {'version': '1.0'}}
+    page_json = {
+        'data': [], 'meta': {'count': 0}, 'jsonapi': {'version': '1.0'}}
     cal = Calendar()
     with responses.RequestsMock() as rsps:
         for month_num in range(1, 13):
@@ -110,11 +119,15 @@ def test_last_end_date_only_year_jan_to_dec(monkeypatch):
 
 
 def test_last_end_date_only_year_earlier_dec_to_next_jan(monkeypatch):
-    """Test correct URL params for last_end_date earlier Dec to next Jan (14 months) in 2024."""
+    """
+    Test correct URL params for last_end_date earlier Dec to next Jan
+    (14 months) in 2024.
+    """
     e_year = 2024
     monkeypatch.setattr(xf.options, 'year_filter_months', ((-1, 12), (1, 2)))
     monkeypatch.setattr(xf.options, 'max_page_size', 200)
-    page_json = {'data': [], 'meta': {'count': 0}, 'jsonapi': {'version': '1.0'}}
+    page_json = {
+        'data': [], 'meta': {'count': 0}, 'jsonapi': {'version': '1.0'}}
     with responses.RequestsMock() as rsps:
         caliters = [
             (e_year-1, [12]),
@@ -128,7 +141,8 @@ def test_last_end_date_only_year_earlier_dec_to_next_jan(monkeypatch):
                 # period_end = last_end_date
                 param_matcher = matchers.query_param_matcher({
                     'page[size]': '100',
-                    'filter[period_end]': f'{year_num}-{month_num:02}-{last_day}'
+                    'filter[period_end]': (
+                        f'{year_num}-{month_num:02}-{last_day}')
                     })
                 rsps.get(
                     url='https://filings.xbrl.org/api/filings',
@@ -147,11 +161,15 @@ def test_last_end_date_only_year_earlier_dec_to_next_jan(monkeypatch):
 
 
 def test_last_end_date_only_year_two_finyears(monkeypatch):
-    """Test correct URL params for last_end_date in financial years 2023 & 2024."""
+    """
+    Test correct URL params for last_end_date in financial years 2023 &
+    2024.
+    """
     e_year = 2023
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (2, 8)))
     monkeypatch.setattr(xf.options, 'max_page_size', 200)
-    page_json = {'data': [], 'meta': {'count': 0}, 'jsonapi': {'version': '1.0'}}
+    page_json = {
+        'data': [], 'meta': {'count': 0}, 'jsonapi': {'version': '1.0'}}
     with responses.RequestsMock() as rsps:
         caliters = [
             (e_year, range(8, 13)),
@@ -165,7 +183,8 @@ def test_last_end_date_only_year_two_finyears(monkeypatch):
                 # period_end = last_end_date
                 param_matcher = matchers.query_param_matcher({
                     'page[size]': '100',
-                    'filter[period_end]': f'{year_num}-{month_num:02}-{last_day}'
+                    'filter[period_end]': (
+                        f'{year_num}-{month_num:02}-{last_day}')
                     })
                 rsps.get(
                     url='https://filings.xbrl.org/api/filings',
@@ -188,8 +207,8 @@ def test_raises_only_year_options_year_filter_months_start_month0(monkeypatch):
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 0), (1, 12)))
     with pytest.raises(
             expected_exception=ValueError,
-            match=r'options\.year_filter_months start month definition must be '
-                  r'in 1\.\.12'):
+            match=r'options\.year_filter_months start month definition must '
+                  r'be in 1\.\.12'):
         _ = xf.get_filings(
             filters={
                 'last_end_date': '2024'
@@ -220,7 +239,8 @@ def test_raises_only_year_options_year_filter_months_stop_month13(monkeypatch):
 def test_last_end_date_year_and_month(monkeypatch):
     """Test correct URL params for last_end_date in Feb 2024."""
     monkeypatch.setattr(xf.options, 'max_page_size', 200)
-    page_json = {'data': [], 'meta': {'count': 0}, 'jsonapi': {'version': '1.0'}}
+    page_json = {
+        'data': [], 'meta': {'count': 0}, 'jsonapi': {'version': '1.0'}}
     with responses.RequestsMock() as rsps:
         # period_end = last_end_date
         param_matcher = matchers.query_param_matcher({
@@ -245,7 +265,7 @@ def test_last_end_date_year_and_month(monkeypatch):
 
 def test_raises_last_end_date_year_and_month_month0(monkeypatch):
     """Test raising for last_end_date month zero in 2024."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError): # noqa: PT011 # msg from `datetime`
         _ = xf.get_filings(
             filters={
                 'last_end_date': '2024-00'

@@ -37,7 +37,10 @@ async def test_item_counter_one_successful(
 
 async def test_item_counter_combined_2_successful_1_fail(
         plain_specs, mock_url_response, tmp_path, monkeypatch):
-    """Test `item_counter` when downloading 2 items successfully and 1 fail."""
+    """
+    Test `item_counter` when downloading 2 items successfully and 1
+    fail.
+    """
     monkeypatch.setattr(downloader.stats, 'item_counter', 0, raising=True)
     e_filestem = 'test_item_counter_2_successful_1_fail'
     url_prefix = 'https://filings.xbrl.org/stats/'
@@ -120,7 +123,10 @@ async def test_byte_counter_one_successful(
 async def test_byte_counter_combined_2_successful_1_fail(
         mock_response_data_charcount, plain_specs, mock_url_response, tmp_path,
         monkeypatch):
-    """Test `byte_counter` when downloading 2 items successfully and 1 fail."""
+    """
+    Test `byte_counter` when downloading 2 items successfully and 1
+    fail.
+    """
     monkeypatch.setattr(downloader.stats, 'byte_counter', 0, raising=True)
     e_filestem = 'test_byte_counter_2_successful_1_fail'
     url_prefix = 'https://filings.xbrl.org/stats/'

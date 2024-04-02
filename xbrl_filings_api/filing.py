@@ -16,7 +16,7 @@ import xbrl_filings_api.options as options
 from xbrl_filings_api import download_specs_construct, downloader
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.constants import PROTOTYPE, FileStringType, Prototype
+from xbrl_filings_api.constants import _PROTOTYPE, FileStringType, _Prototype
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
@@ -100,7 +100,7 @@ class Filing(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, Prototype],
+            json_frag: Union[dict, _Prototype],
             api_request: Union[_APIRequest, None] = None,
             entity_iter: Union[Iterable[Entity], None] = None,
             message_iter: Union[Iterable[ValidationMessage], None] = None
@@ -364,7 +364,8 @@ class Filing(APIResource):
         if self.entity:
             rrepdate = 'None'
             if self.reporting_date:
-                rrepdate = f"date({self.reporting_date.strftime('%Y, %m, %d')})"
+                rdate_str = self.reporting_date.strftime('%Y, %m, %d')
+                rrepdate = f'date({rdate_str})'
             return (
                 start + f'entity.name={self.entity.name!r}, '
                 f'reporting_date={rrepdate}, '
@@ -394,7 +395,7 @@ class Filing(APIResource):
         return ' '.join(parts)
 
     def _get_simple_filing_date(self, rdate: date) -> str:
-        if rdate.month == 12 and rdate.day == 31:
+        if rdate.month == 12 and rdate.day == 31: # noqa: PLR2004 # No magic
             return str(rdate.year)
         if rdate.month != (rdate + timedelta(days=1)).month:
             return rdate.strftime('%b-%Y')
@@ -418,9 +419,12 @@ class Filing(APIResource):
             part_len = len(last_part)
             last_part = last_part.lower()
             if part_len == 2:  # noqa: PLR2004
+                # Looks like an alpha-2 code, quacks like an alpha-2
+                # code
                 resolved = last_part
                 break
-            elif part_len == 3:
+            elif part_len == 3: # noqa: PLR2004
+                # Seems like a translatable alpha-3 code
                 resolved = LANG_CODE_TRANSFORM.get(last_part)
                 if resolved:
                     break
@@ -627,12 +631,14 @@ class Filing(APIResource):
             timeout=options.timeout_sec
             )
         async for result in dliter:
-            if result.path:
-                res_info: DownloadInfo = result.info
+            yresult = result
+            if yresult.path:
+                # Set Filing.<file>_download_path attribute
+                res_info: DownloadInfo = yresult.info
                 setattr(
                     res_info.obj,
                     f'{res_info.file}_download_path',
-                    result.path
+                    yresult.path
                     )
             if isinstance(result.err, downloader.CorruptDownloadError):
                 # Wrap again with FilingsAPIError subclassed exception
@@ -642,11 +648,19 @@ class Filing(APIResource):
                     calculated_hash=result.err.calculated_hash,
                     expected_hash=result.err.expected_hash
                     )
-                result = downloader.DownloadResult(
-                    result.url, result.path, err, result.info)
-            yield result
+                yresult = downloader.DownloadResult(
+                    yresult.url, yresult.path, err, yresult.info)
+            yield yresult
 
-    def open(self, new: int = 0, autoraise: bool = True) -> bool:
+    # Plethora of classes have `open` method despite builtin function
+    # (A003).
+    # Mirror `BaseBrowser.open` signature without mandated keyword names
+    # for booleans (FBT001, FBT002).
+    def open( # noqa: A003
+            self,
+            new: int = 0,
+            autoraise: bool = True # noqa: FBT001, FBT002
+            ) -> bool:
         """
         Open the filing on web browser.
 
@@ -698,10 +712,10 @@ class Filing(APIResource):
     def _search_entity(
             self,
             entity_iter: Union[Iterable[Entity], None],
-            json_frag: Union[dict, Prototype]
+            json_frag: Union[dict, _Prototype]
             ) -> Union[Entity, None]:
         """Search for an `Entity` object for the filing."""
-        if json_frag == PROTOTYPE or entity_iter is None:
+        if json_frag == _PROTOTYPE or entity_iter is None:
             return None
         if not self.entity_api_id:
             msg = f'No entity defined for {self!r}, api_id={self.api_id}'
@@ -725,10 +739,10 @@ class Filing(APIResource):
     def _search_validation_messages(
             self,
             message_iter: Union[Iterable[ValidationMessage], None],
-            json_frag: Union[dict, Prototype]
+            json_frag: Union[dict, _Prototype]
             ) -> Union[set[ValidationMessage], None]:
         """Search `ValidationMessage` objects for this filing."""
-        if json_frag == PROTOTYPE or message_iter is None:
+        if json_frag == _PROTOTYPE or message_iter is None:
             return None
 
         found_msgs = set()
@@ -736,10 +750,11 @@ class Filing(APIResource):
             self.VALIDATION_MESSAGES)
         if msgs_relfrags:
             for rel_api_id in (mf['id'] for mf in msgs_relfrags):
-                if not isinstance(rel_api_id, str):
-                    rel_api_id = str(rel_api_id)
+                match_id = rel_api_id
+                if not isinstance(match_id, str):
+                    match_id = str(rel_api_id)
                 for vmsg in message_iter:
-                    if vmsg.api_id == rel_api_id:
+                    if vmsg.api_id == match_id:
                         vmsg.filing_api_id = self.api_id
                         vmsg.filing = self
                         found_msgs.add(vmsg)

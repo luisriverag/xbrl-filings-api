@@ -9,8 +9,6 @@ The tests for the method `get_pandas_data` are in separate module
 #
 # SPDX-License-Identifier: MIT
 
-import copy
-
 import pytest
 
 import xbrl_filings_api as xf
@@ -109,8 +107,12 @@ def test_with_vmessages(get_oldest3_fi_vmessages_filingset):
     assert fs.validation_messages.filingset is fs
 
 
-def test_add_entities(get_oldest3_fi_entities_filingset, asml22en_entities_filingset):
-    """Test FilingsSet with entities which will be updated with more filings and entities."""
+def test_add_entities(
+        get_oldest3_fi_entities_filingset, asml22en_entities_filingset):
+    """
+    Test FilingsSet with entities which will be updated with more
+    filings and entities.
+    """
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     fs_add: xf.FilingSet = asml22en_entities_filingset
     assert isinstance(fs.entities, xf.ResourceCollection)
@@ -186,7 +188,10 @@ def test_repr_vmessages(get_oldest3_fi_vmessages_filingset):
 
 
 def test_contains_is_true_diff_identities(get_oldest3_fi_entities_filingset):
-    """Test `in` operator evaluates to True if filing is same but identity different."""
+    """
+    Test `in` operator evaluates to True if filing is same but identity
+    different.
+    """
     fs_a: xf.FilingSet = get_oldest3_fi_entities_filingset()
     fs_b: xf.FilingSet = get_oldest3_fi_entities_filingset()
     ent_a = next(iter(fs_a.entities))
@@ -201,7 +206,9 @@ def test_contains_is_false_wrong_type(get_oldest3_fi_entities_filingset):
 
 
 def test_contains_is_true_hash_tuple_api_id(get_oldest3_fi_entities_filingset):
-    """Test `in` operator evaluates to True when compared with hash tuple."""
+    """
+    Test `in` operator evaluates to True when compared with hash tuple.
+    """
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     ent = next(iter(fs)).entity
     hash_tuple = ('APIResource', xf.Entity.TYPE, ent.api_id)

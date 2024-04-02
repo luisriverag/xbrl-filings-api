@@ -13,12 +13,7 @@ from xbrl_filings_api.api_page import _APIPage
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import (
-    GET_ENTITY,
-    GET_ONLY_FILINGS,
-    GET_VALIDATION_MESSAGES,
-    ScopeFlag,
-)
+from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
@@ -66,7 +61,7 @@ class FilingsPage(_APIPage):
             type_obj=Entity,
             api_request=api_request,
             received_api_ids=received_api_ids,
-            flag_member=GET_ENTITY,
+            flag_member=ScopeFlag.GET_ENTITY,
             flags=flags
             )
         # type_obj=Entity always returns list[Entity] | None
@@ -82,7 +77,7 @@ class FilingsPage(_APIPage):
             type_obj=ValidationMessage,
             api_request=api_request,
             received_api_ids=received_api_ids,
-            flag_member=GET_VALIDATION_MESSAGES,
+            flag_member=ScopeFlag.GET_VALIDATION_MESSAGES,
             flags=flags
             )
         # type_obj=ValidationMessage always returns
@@ -141,14 +136,14 @@ class FilingsPage(_APIPage):
             received_set.add(res_id)
             entity_iter: Union[Iterable[Entity], None] = None
             message_iter: Union[Iterable[ValidationMessage], None] = None
-            if GET_ONLY_FILINGS not in flags:
-                if GET_ENTITY in flags:
+            if ScopeFlag.GET_ONLY_FILINGS not in flags:
+                if ScopeFlag.GET_ENTITY in flags:
                     ents = self.entity_list if self.entity_list else ()
                     entity_iter = chain(
                         ents,
                         res_colls['Entity'] # type: ignore[arg-type]
                         )
-                if GET_VALIDATION_MESSAGES in flags:
+                if ScopeFlag.GET_VALIDATION_MESSAGES in flags:
                     vmsgs = (
                         self.validation_message_list
                         if self.validation_message_list else ()
@@ -168,7 +163,7 @@ class FilingsPage(_APIPage):
             flag_member: ScopeFlag,
             flags: ScopeFlag
             ) -> Union[list[APIResource], None]:
-        if (GET_ONLY_FILINGS in flags or flag_member not in flags):
+        if (ScopeFlag.GET_ONLY_FILINGS in flags or flag_member not in flags):
             return None
 
         resource_list = []
@@ -206,7 +201,8 @@ class FilingsPage(_APIPage):
 
     def __repr__(self) -> str:
         """Return string repr of filings page."""
-        query_time = f"datetime({self.query_time.strftime('%Y, %m, %d, %H, %M, %S')})"
+        time_str = self.query_time.strftime('%Y, %m, %d, %H, %M, %S')
+        query_time = f'datetime({time_str})'
         subreslist = ''
         if self.entity_list is not None:
             subreslist += f', len(entity_list)={len(self.entity_list)}'

@@ -22,7 +22,8 @@ async def test_aiter_connection_error(plain_specs, tmp_path):
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     items = [plain_specs(url, tmp_path)]
     res_list: list[downloader.DownloadResult] = []
-    with responses.RequestsMock() as rsps:
+    # `responses` used solely to block internet connection
+    with responses.RequestsMock():
         dl_aiter = downloader.download_parallel_aiter(
             items=items,
             max_concurrent=None,
@@ -63,7 +64,8 @@ async def test_aiter_not_found_error(plain_specs, tmp_path):
     assert not empty_path.is_file()
 
 
-async def test_aiter_original_filename(plain_specs, mock_url_response, tmp_path):
+async def test_aiter_original_filename(
+        plain_specs, mock_url_response, tmp_path):
     """Test filename from URL will be used for saved file."""
     e_filename = 'test_aiter_original_filename.zip'
     url = f'https://filings.xbrl.org/download_parallel_aiter/{e_filename}'
@@ -88,7 +90,9 @@ async def test_aiter_original_filename(plain_specs, mock_url_response, tmp_path)
 
 async def test_aiter_sha256_fail(
         hashfail_specs, mock_url_response, mock_response_sha256, tmp_path):
-    """Test raising of `CorruptDownloadError` when `sha256` is incorrect."""
+    """
+    Test raising of `CorruptDownloadError` when `sha256` is incorrect.
+    """
     filename = 'test_aiter_sha256_fail.zip'
     e_filename = f'{filename}.corrupt'
     url = f'https://filings.xbrl.org/download_async/{filename}'
@@ -181,7 +185,7 @@ async def test_4_items_at_once(
             save_path = Path(res.path)
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
-            assert save_path.name == f'renamed.abc'
+            assert save_path.name == 'renamed.abc'
         else:
             assert pytest.fail('Info is other than one defined in test')
 
@@ -246,7 +250,7 @@ async def test_4_items_sequentially(
             save_path = Path(res.path)
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
-            assert save_path.name == f'renamed.abc'
+            assert save_path.name == 'renamed.abc'
         else:
             assert pytest.fail('Info is other than one defined in test')
 
@@ -312,14 +316,17 @@ async def test_4_items_max_concurrent_2(
             save_path = Path(res.path)
             assert save_path.is_file()
             assert save_path.stat().st_size > 0
-            assert save_path.name == f'renamed.abc'
+            assert save_path.name == 'renamed.abc'
         else:
             assert pytest.fail('Info is other than one defined in test')
 
 
 async def test_items_request_start_order(
         plain_specs, mock_url_response, tmp_path):
-    """Test that downloads are started according to order of `items`, n=50, max_concurrent=17."""
+    """
+    Test that downloads are started according to order of `items`, n=50,
+    max_concurrent=17.
+    """
     e_filestem = 'test_items_request_order'
     url_prefix = 'https://filings.xbrl.org/download_parallel_aiter/'
     item_count = 50

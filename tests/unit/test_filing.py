@@ -31,7 +31,10 @@ def get_asml22en_filing(urlmock):
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'asml22en')
             fs = xf.get_filings(
-                filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
+                filters={
+                    'filing_index': (
+                        '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')
+                    },
                 sort=None,
                 max_size=1,
                 flags=xf.GET_ONLY_FILINGS,
@@ -75,12 +78,8 @@ def get_creditsuisse21en_entity_filing(urlmock):
 
 
 @pytest.fixture
-def entity_list():
+def entity_list(dummy_api_request):
     """Made-up entity list: companies A, B and C (id 1-3)."""
-    req = request_processor._APIRequest(
-        'https://filings.xbrl.org/api/filings',
-        datetime.now(tz=UTC)
-        )
     ent_list = [
         xf.Entity({
             'type': 'entity',
@@ -95,7 +94,7 @@ def entity_list():
                 }}},
             'links': {'self': f'/api/entities/{num}'}
             },
-            req
+            dummy_api_request
             )
         for num in range(1, 4)
         ]
@@ -103,12 +102,8 @@ def entity_list():
 
 
 @pytest.fixture
-def vmessage_list():
+def vmessage_list(dummy_api_request):
     """Made-up validation message list: codes A, B and C (id 1-3)."""
-    req = request_processor._APIRequest(
-        'https://filings.xbrl.org/api/filings',
-        datetime.now(tz=UTC)
-        )
     ent_list = [
         xf.ValidationMessage({
             'type': 'validation_message',
@@ -119,21 +114,22 @@ def vmessage_list():
                 },
             'id': str(num)
             },
-            req
+            dummy_api_request
             )
         for num in range(1, 4)
         ]
     return ent_list
 
 
-class BaseBrowserMock():
+class BaseBrowserMock:
     """Mock webbrowser.BaseBrowser with open()."""
 
     def __init__(self, return_value):
         self.return_value = return_value
         self.call_kwargs = None
 
-    def open(self, **kwargs):
+    def open(self, **kwargs): # noqa: A003 # Shadows open(), huh?
+        """Assign keyword arguments to attribute `call_kwargs`."""
         self.call_kwargs = kwargs
         return self.return_value
 
@@ -154,43 +150,53 @@ class TestFilingAsml22enNoEntity:
         filing: xf.Filing = get_asml22en_filing()
         assert str(filing) == e_str
 
-    @pytest.mark.parametrize('attr_name,expected', [
-        ('json_url', 'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.json'),
-        ('package_url', 'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'),
-        ('viewer_url', 'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/ixbrlviewer.html'),
-        ('xhtml_url', 'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/asml-2022-12-31-en.xhtml'),
+    URL_PREFIX = (
+        'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0')
+
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
+        ('json_url', f'{URL_PREFIX}/asml-2022-12-31-en.json'),
+        ('package_url', f'{URL_PREFIX}/asml-2022-12-31-en.zip'),
+        (
+            'viewer_url',
+            f'{URL_PREFIX}/asml-2022-12-31-en/reports/ixbrlviewer.html'
+        ),
+        (
+            'xhtml_url',
+            f'{URL_PREFIX}/asml-2022-12-31-en/reports/asml-2022-12-31-en.xhtml'
+        ),
         ])
     def test_url_data_attributes(
             self, get_asml22en_filing, attr_name, expected, monkeypatch):
         """Test non-derived data attributes."""
-        monkeypatch.setattr(options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+        monkeypatch.setattr(
+            options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
         filing: xf.Filing = get_asml22en_filing()
         assert getattr(filing, attr_name) == expected
 
-    @pytest.mark.parametrize('attr_name,expected', [
-        pytest.param(
-            'last_end_date', date(2022, 12, 31),
-            marks=pytest.mark.date),
-        pytest.param(
-            'added_time', datetime(2023, 2, 16, 14, 33, 58, 236220, tzinfo=UTC),
-            marks=pytest.mark.datetime),
-        pytest.param(
-            'added_time_str', '2023-02-16 14:33:58.236220',
-            marks=pytest.mark.datetime),
-        pytest.param(
-            'processed_time', datetime(2023, 4, 19, 10, 20, 23, 668110, tzinfo=UTC),
-            marks=pytest.mark.datetime),
-        pytest.param(
-            'processed_time_str', '2023-04-19 10:20:23.668110',
-            marks=pytest.mark.datetime),
+    @pytest.mark.date
+    def test_date_data_attributes(self, get_asml22en_filing):
+        """Test datetime.date data attributes (last_end_date)."""
+        filing: xf.Filing = get_asml22en_filing()
+        assert filing.last_end_date == date(2022, 12, 31)
+
+    @pytest.mark.datetime
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
+        ('added_time', datetime(2023, 2, 16, 14, 33, 58, 236220, tzinfo=UTC)),
+        ('added_time_str', '2023-02-16 14:33:58.236220'),
+        ('processed_time', (
+            datetime(2023, 4, 19, 10, 20, 23, 668110, tzinfo=UTC))),
+        ('processed_time_str', '2023-04-19 10:20:23.668110'),
         ])
-    def test_date_and_datetime_data_attributes(
-            self, get_asml22en_filing, attr_name, expected):
-        """Test data attributes which are not URLs, derived or datetimes."""
+    def test_datetime_data_attributes(
+            self, attr_name, expected, get_asml22en_filing):
+        """
+        Test data attributes which are not URLs, derived, dates or
+        datetimes.
+        """
         filing: xf.Filing = get_asml22en_filing()
         assert getattr(filing, attr_name) == expected
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '4261'),
         ('country', 'NL'),
         ('filing_index', '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'),
@@ -201,15 +207,19 @@ class TestFilingAsml22enNoEntity:
         ('json_download_path', None),
         ('package_download_path', None),
         ('xhtml_download_path', None),
-        ('package_sha256', '3f44981c656dc2bcd0ed3a88e6d062e6b8c041a656f420257bccd63535c2b6ac'),
+        ('package_sha256', (
+            '3f44981c656dc2bcd0ed3a88e6d062e6'
+            'b8c041a656f420257bccd63535c2b6ac')),
         ])
     def test_other_data_attributes(
             self, get_asml22en_filing, attr_name, expected):
-        """Test data attributes which are not URLs, derived or datetimes."""
+        """
+        Test data attributes which are not URLs, derived or datetimes.
+        """
         filing: xf.Filing = get_asml22en_filing()
         assert getattr(filing, attr_name) == expected
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('language', 'en'),
         pytest.param(
             'reporting_date', date(2022, 12, 31), marks=pytest.mark.date),
@@ -246,7 +256,7 @@ class TestFilingAsml22enWithEntity:
         e_str = 'ASML Holding N.V. 2022 [en]'
         assert str(asml22en_entities_filing) == e_str
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('filing_index', '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'),
         ('entity_api_id', '1969'),
         ])
@@ -263,7 +273,10 @@ class TestFilingAsml22enWithEntity:
 
 
 class TestFilingCreditsuisse21enWithEntity:
-    """Test Credit Suisse 2021 English AFR filing as Filing object with entity."""
+    """
+    Test Credit Suisse 2021 English AFR filing as Filing object with
+    entity.
+    """
 
     def test_repr(self, get_creditsuisse21en_entity_filing):
         """Test __repr__ method."""
@@ -280,33 +293,39 @@ class TestFilingCreditsuisse21enWithEntity:
         filing: xf.Filing = get_creditsuisse21en_entity_filing()
         assert str(filing) == e_str
 
-    @pytest.mark.parametrize('attr_name,expected', [
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('json_url', None),
-        ('package_url', 'https://filings.xbrl.org/E58DKGMJYYYJLN8C3868/2021-12-31/ESEF/LU/0/E58DKGMJYYYJLN8C3868-2021-12-31.zip'),
+        ('package_url', (
+            'https://filings.xbrl.org/E58DKGMJYYYJLN8C3868/2021-12-31/ESEF/LU'
+            '/0/E58DKGMJYYYJLN8C3868-2021-12-31.zip')),
         ('viewer_url', None),
         ('xhtml_url', None),
         ])
     def test_url_data_attributes(
-            self, get_creditsuisse21en_entity_filing, attr_name, expected, monkeypatch):
+            self, get_creditsuisse21en_entity_filing, attr_name, expected,
+            monkeypatch):
         """Test data attributes which are not URLs or derived."""
-        monkeypatch.setattr(options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+        monkeypatch.setattr(
+            options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
         filing: xf.Filing = get_creditsuisse21en_entity_filing()
         assert getattr(filing, attr_name) == expected
 
-    @pytest.mark.parametrize('attr_name,expected', [
-        pytest.param(
-            'processed_time', datetime(2023, 1, 18, 11, 2, 9, 42110, tzinfo=UTC),
-            marks=pytest.mark.datetime),
-        pytest.param(
-            'processed_time_str', '2023-01-18 11:02:09.042110',
-            marks=pytest.mark.datetime),
-        ('entity_api_id', '123'),
+    @pytest.mark.datetime
+    @pytest.mark.parametrize(('attr_name', 'expected'), [
+        ('processed_time', datetime(2023, 1, 18, 11, 2, 9, 42110, tzinfo=UTC)),
+        ('processed_time_str', '2023-01-18 11:02:09.042110'),
         ])
-    def test_other_data_attributes(
+    def test_datetime_data_attributes(
             self, get_creditsuisse21en_entity_filing, attr_name, expected):
         """Test data attributes which are not URLs or derived."""
         filing: xf.Filing = get_creditsuisse21en_entity_filing()
         assert getattr(filing, attr_name) == expected
+
+    def test_other_data_attributes(
+            self, get_creditsuisse21en_entity_filing):
+        """Test data attributes which are not URLs or derived."""
+        filing: xf.Filing = get_creditsuisse21en_entity_filing()
+        assert filing.entity_api_id == '123'
 
     def test_other_attributes(self, get_creditsuisse21en_entity_filing):
         """Test the meta and object reference attributes."""
@@ -316,7 +335,7 @@ class TestFilingCreditsuisse21enWithEntity:
 
 
 @pytest.mark.date
-@pytest.mark.parametrize('date_obj,expected', [
+@pytest.mark.parametrize(('date_obj', 'expected'), [
     (date(2022, 12, 31), '2022'),
     (date(2022, 12, 1), '2022-12-01'),
     (date(2022, 11, 30), 'Nov-2022'),
@@ -331,7 +350,7 @@ def test_get_simple_filing_date(
     assert filing._get_simple_filing_date(date_obj) == expected
 
 
-@pytest.mark.parametrize('api_id,expected_name', [
+@pytest.mark.parametrize(('api_id', 'expected_name'), [
     ('1', 'Company A'),
     ('3', 'Company C'),
     ])
@@ -352,7 +371,9 @@ def test_search_entity_success(
     ])
 def test_search_entity_fail(
         api_id, caplog, get_asml22en_filing, entity_list):
-    """Test method `test_search_entity_fail` used by `entity` for failures."""
+    """
+    Test method `test_search_entity_fail` used by `entity` for failures.
+    """
     caplog.set_level(logging.WARNING)
     filing: xf.Filing = get_asml22en_filing()
     filing.entity_api_id = api_id
@@ -362,13 +383,17 @@ def test_search_entity_fail(
     if api_id is None:
         assert 'No entity defined for' in caplog.text
     else:
-        assert 'Entity with api_id=' in caplog.text and ' not found' in caplog.text
+        assert 'Entity with api_id=' in caplog.text
+        assert ' not found' in caplog.text
     assert found_entity is None
 
 
 def test_search_validation_messages_success(
         monkeypatch, get_asml22en_filing, vmessage_list):
-    """Test method `_search_validation_messages` used by `validation_messages`."""
+    """
+    Test method `_search_validation_messages` used by
+    `validation_messages`.
+    """
     filing: xf.Filing = get_asml22en_filing()
 
     def patch_json_get(key_path: Any = '', parse_type: Any = None):
@@ -388,7 +413,10 @@ def test_search_validation_messages_success(
 
 def test_search_validation_messages_fail(
         caplog, monkeypatch, get_asml22en_filing, vmessage_list):
-    """Test method `_search_validation_messages` used by `validation_messages` for failures."""
+    """
+    Test method `_search_validation_messages` used by
+    `validation_messages` for failures.
+    """
     caplog.set_level(logging.WARNING)
     filing: xf.Filing = get_asml22en_filing()
 
@@ -406,8 +434,10 @@ def test_search_validation_messages_fail(
     assert found_vmessages == set()
 
 
-URL_START = 'https://filings.xbrl.org/api/filings/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/'
-@pytest.mark.parametrize('url,expected', [
+URL_START = (
+    'https://filings.xbrl.org/api/filings/724500Y6DUVHQD6OXN27'
+    '/2022-12-31/ESEF/NL/0/')
+@pytest.mark.parametrize(('url', 'expected'), [
     (None, None),
     ('httpsfilings xbrl asml-2022-12-31-en zip', None),
     (' ', None),
@@ -417,7 +447,9 @@ URL_START = 'https://filings.xbrl.org/api/filings/724500Y6DUVHQD6OXN27/2022-12-3
     ((URL_START + 'asml/'), 'asml'),
     ])
 def test_get_url_stem(url, expected, get_asml22en_filing):
-    """Test method `_get_url_stem` used by `language` and `reporting_date`."""
+    """
+    Test method `_get_url_stem` used by `language` and `reporting_date`.
+    """
     filing: xf.Filing = get_asml22en_filing()
     if expected is None:
         assert filing._get_url_stem(url) is None
@@ -427,7 +459,10 @@ def test_get_url_stem(url, expected, get_asml22en_filing):
 
 def test_language_from_xhtml_url(
         fortum23fi_xhtml_language_response, res_colls):
-    """Test language derived from `xhtml_url` when not available in `package_url`."""
+    """
+    Test language derived from `xhtml_url` when not available in
+    `package_url`.
+    """
     fs = xf.get_filings(
         filters={'api_id': '12366'},
         sort=None,
@@ -443,7 +478,7 @@ LANGUAGE_URL_PREFIX = (
     'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0')
 
 
-@pytest.mark.parametrize('country,orig_language,e_language', [
+@pytest.mark.parametrize(('country', 'orig_language', 'e_language'), [
     ('CZ', 'cz', 'cs'),
     ('SE', 'se', 'sv'),
     ('DK', 'dk', 'da'),
@@ -452,11 +487,16 @@ LANGUAGE_URL_PREFIX = (
     ])
 def test_derive_language_correct_common_mistakes(
         country, orig_language, e_language, asml22en_entities_filing):
-    """Test _correct_common_language_code_mistakes with via _derive_language."""
+    """
+    Test _correct_common_language_code_mistakes with via
+    _derive_language.
+    """
     filing: xf.Filing = asml22en_entities_filing
     filing.country = country
     filing.package_url = (
-        f'{LANGUAGE_URL_PREFIX}/743700KMZL7E8PLI5X73-2020-12-31-{orig_language}.zip')
+        f'{LANGUAGE_URL_PREFIX}/743700KMZL7E8PLI5X73-2020-12-31-'
+        f'{orig_language}.zip'
+        )
     filing.xhtml_url = None # Disable fallback
     assert filing._derive_language() == e_language
 
@@ -494,10 +534,14 @@ def test_str_no_reporting_date(asml22en_entities_filing):
 
 
 def test_derive_reporting_date_bad_date(asml22en_entities_filing):
-    """Test _derive_reporting_date with a nonexistent date '2020-02-31'."""
+    """
+    Test _derive_reporting_date with a nonexistent date '2020-02-31'.
+    """
     filing: xf.Filing = asml22en_entities_filing
     filing.package_url = (
-        'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF/FI/0/743700KMZL7E8PLI5X73-2020-02-31_fin.zip')
+        'https://filings.xbrl.org/743700KMZL7E8PLI5X73/2021-12-31/ESEF'
+        '/FI/0/743700KMZL7E8PLI5X73-2020-02-31_fin.zip'
+        )
     filing.last_end_date = None # Disable fallback when could not derive
     assert filing._derive_reporting_date() is None
 
@@ -521,7 +565,10 @@ def test_get_url_stem_space_chr_value():
 
 
 def test_open_arguments_open_viewer_true(get_asml22en_filing, monkeypatch):
-    """Test `Filing.open` calls `BaseBrowser.open` with correct arguments, options.open_viewer=True."""
+    """
+    Test `Filing.open` calls `BaseBrowser.open` with correct arguments,
+    options.open_viewer=True.
+    """
     monkeypatch.setattr(options, 'open_viewer', True)
     filing: xf.Filing = get_asml22en_filing()
     bbmock = BaseBrowserMock(return_value=True)
@@ -537,7 +584,10 @@ def test_open_arguments_open_viewer_true(get_asml22en_filing, monkeypatch):
 
 
 def test_open_arguments_open_viewer_false(get_asml22en_filing, monkeypatch):
-    """Test `Filing.open` calls `BaseBrowser.open` with correct arguments, options.open_viewer=False."""
+    """
+    Test `Filing.open` calls `BaseBrowser.open` with correct arguments,
+    options.open_viewer=False.
+    """
     monkeypatch.setattr(options, 'open_viewer', False)
     filing: xf.Filing = get_asml22en_filing()
     bbmock = BaseBrowserMock(return_value=False)
@@ -552,7 +602,7 @@ def test_open_arguments_open_viewer_false(get_asml22en_filing, monkeypatch):
     assert call_return is False
 
 
-@pytest.mark.parametrize('open_viewer,attr_name', [
+@pytest.mark.parametrize(('open_viewer', 'attr_name'), [
     (True, 'viewer_url'),
     (False, 'xhtml_url'),
     ])

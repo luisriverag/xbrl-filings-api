@@ -13,9 +13,10 @@ Tests for operations of superclass `set` are found in module
 #
 # SPDX-License-Identifier: MIT
 
-import copy
+# Allow unnecessary double quotes as file includes SQL statements.
+# ruff: noqa: Q000
+
 import sqlite3
-from collections.abc import Collection
 from datetime import date
 
 import pytest
@@ -40,6 +41,7 @@ def asml22en_filingset(asml22en_response):
 
 @pytest.fixture
 def ageas21_22_filingset(urlmock):
+    """FilingSet for mock URL ageas21_22, with entities, 6 filings."""
     ageas21_22_ids = '3314', '3316', '3315', '5139', '5140', '5141'
     fs = None
     with responses.RequestsMock() as rsps:
@@ -55,6 +57,7 @@ def ageas21_22_filingset(urlmock):
 
 @pytest.fixture
 def applus20_21_filingset(urlmock):
+    """FilingSet for mock URL applus20_21, with entities, 2 filings."""
     applus20_21_ids = '1733', '1734'
     fs = None
     with responses.RequestsMock() as rsps:
@@ -88,7 +91,8 @@ def test_attributes(get_oldest3_fi_filingset):
 
 
 @pytest.mark.sqlite
-def test_to_sqlite(get_oldest3_fi_filingset, db_record_count, tmp_path, monkeypatch):
+def test_to_sqlite(
+        get_oldest3_fi_filingset, db_record_count, tmp_path, monkeypatch):
     """Test method `to_sqlite`."""
     monkeypatch.setattr(xf.options, 'views', None)
     e_fxo_ids = {
@@ -115,9 +119,12 @@ def test_to_sqlite(get_oldest3_fi_filingset, db_record_count, tmp_path, monkeypa
 
 @pytest.mark.sqlite
 def test_to_sqlite_update_same_add_entities(
-        get_oldest3_fi_filingset, get_oldest3_fi_entities_filingset, db_record_count,
-        tmp_path, monkeypatch):
-    """Test method `to_sqlite` with update=True updating same records, adding Entity."""
+        get_oldest3_fi_filingset, get_oldest3_fi_entities_filingset,
+        db_record_count, tmp_path, monkeypatch):
+    """
+    Test method `to_sqlite` with update=True updating same records,
+    adding Entity.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     e_fxo_ids = {
         '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0',
@@ -175,9 +182,12 @@ def test_to_sqlite_update_same_add_entities(
 
 @pytest.mark.sqlite
 def test_to_sqlite_update_same_add_vmessages(
-        get_oldest3_fi_filingset, get_oldest3_fi_vmessages_filingset, db_record_count,
-        tmp_path, monkeypatch):
-    """Test method `to_sqlite` with update=True updating same records, adding ValidationMessage."""
+        get_oldest3_fi_filingset, get_oldest3_fi_vmessages_filingset,
+        db_record_count, tmp_path, monkeypatch):
+    """
+    Test method `to_sqlite` with update=True updating same records,
+    adding ValidationMessage.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     e_fxo_ids = {
         '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0',
@@ -285,7 +295,10 @@ def test_to_sqlite_update_more(
 @pytest.mark.sqlite
 def test_to_sqlite_update_more_but_false(
         get_oldest3_fi_filingset, asml22en_filingset, tmp_path, monkeypatch):
-    """Test method `to_sqlite` trying to update existing database but update=False."""
+    """
+    Test method `to_sqlite` trying to update existing database but
+    update=False.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = tmp_path / 'test_to_sqlite_update_more_but_false.db'
 
@@ -315,7 +328,10 @@ def test_to_sqlite_update_more_but_false(
 @pytest.mark.sqlite
 def test_to_sqlite_update_no_tables(
     asml22en_filingset, tmp_path, monkeypatch):
-    """Test method `to_sqlite` trying to update database without expected tables."""
+    """
+    Test method `to_sqlite` trying to update database without expected
+    tables.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = tmp_path / 'test_to_sqlite_update_no_tables.db'
 
@@ -355,7 +371,10 @@ def test_to_sqlite_update_no_tables(
 @pytest.mark.sqlite
 def test_to_sqlite_update_no_api_id(
     asml22en_filingset, tmp_path, monkeypatch):
-    """Test method `to_sqlite` trying to update database whose table has no api_id."""
+    """
+    Test method `to_sqlite` trying to update database whose table has
+    no api_id.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = tmp_path / 'test_to_sqlite_update_no_api_id.db'
 
@@ -442,7 +461,10 @@ def test_get_data_sets_entities(get_oldest3_fi_entities_filingset):
 
 
 def test_get_data_sets_entities_out(get_oldest3_fi_entities_filingset):
-    """Test method `_get_data_sets` when set has entities but leaves them out."""
+    """
+    Test method `_get_data_sets` when set has entities but leaves them
+    out.
+    """
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     flags = xf.GET_ONLY_FILINGS
     data_objs, flags = fs._get_data_sets(flags)
@@ -468,8 +490,12 @@ def test_get_data_sets_vmessages(get_oldest3_fi_vmessages_filingset):
         assert isinstance(vmsg, xf.ValidationMessage)
 
 
-def test_get_data_sets_entities_vmessages(get_oldest3_fi_ent_vmessages_filingset):
-    """Test method `_get_data_sets` when set has entities and validation messages."""
+def test_get_data_sets_entities_vmessages(
+        get_oldest3_fi_ent_vmessages_filingset):
+    """
+    Test method `_get_data_sets` when set has entities and validation
+    messages.
+    """
     fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
     flags = (xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES)
     data_objs, flags = fs._get_data_sets(flags)
@@ -486,8 +512,12 @@ def test_get_data_sets_entities_vmessages(get_oldest3_fi_ent_vmessages_filingset
         assert isinstance(vmsg, xf.ValidationMessage)
 
 
-def test_get_data_sets_entities_vmessages_ent_out(get_oldest3_fi_ent_vmessages_filingset):
-    """Test method `_get_data_sets` when set has entities and validation messages leaving entities."""
+def test_get_data_sets_entities_vmessages_ent_out(
+        get_oldest3_fi_ent_vmessages_filingset):
+    """
+    Test method `_get_data_sets` when set has entities and validation
+    messages leaving entities.
+    """
     fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
     flags = xf.GET_VALIDATION_MESSAGES
     data_objs, flags = fs._get_data_sets(flags)
@@ -501,8 +531,12 @@ def test_get_data_sets_entities_vmessages_ent_out(get_oldest3_fi_ent_vmessages_f
         assert isinstance(vmsg, xf.ValidationMessage)
 
 
-def test_get_data_sets_entities_vmessages_all_out(get_oldest3_fi_ent_vmessages_filingset):
-    """Test method `_get_data_sets` when set has entities and validation messages but selects only filings."""
+def test_get_data_sets_entities_vmessages_all_out(
+        get_oldest3_fi_ent_vmessages_filingset):
+    """
+    Test method `_get_data_sets` when set has entities and validation
+    messages but selects only filings.
+    """
     fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
     flags = xf.GET_ONLY_FILINGS
     data_objs, flags = fs._get_data_sets(flags)
@@ -514,6 +548,7 @@ def test_get_data_sets_entities_vmessages_all_out(get_oldest3_fi_ent_vmessages_f
 
 
 def test_columns_property(get_oldest3_fi_filingset):
+    """Test `columns` property of FilingSet."""
     fs: xf.FilingSet = get_oldest3_fi_filingset()
     assert isinstance(fs.columns, list)
     assert len(fs.columns) > 0
@@ -538,7 +573,10 @@ def test_repr_ent_vmessages(get_oldest3_fi_ent_vmessages_filingset):
 
 
 def test_contains_is_true_diff_identities(get_oldest3_fi_filingset):
-    """Test `in` operator evaluates to True if filing is same but identity different."""
+    """
+    Test `in` operator evaluates to True if filing is same but identity
+    different.
+    """
     fs_a: xf.FilingSet = get_oldest3_fi_filingset()
     fs_b: xf.FilingSet = get_oldest3_fi_filingset()
     filing_a = next(iter(fs_a))
@@ -554,7 +592,9 @@ def test_contains_is_false_wrong_type(get_oldest3_fi_entities_filingset):
 
 
 def test_contains_is_true_hash_tuple_api_id(get_oldest3_fi_entities_filingset):
-    """Test `in` operator evaluates to True when compared with hash tuple."""
+    """
+    Test `in` operator evaluates to True when compared with hash tuple.
+    """
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     filing = next(iter(fs))
     hash_tuple = ('APIResource', xf.Filing.TYPE, filing.api_id)
@@ -581,8 +621,12 @@ def test_pop_duplicates_raises_no_entities(multifilter_api_id_response):
     assert fs_before == set(fs)
 
 
-def test_pop_duplicates_two_markets_all_markets_false(multifilter_api_id_entities_response):
-    """Test pop_duplicates method with two market enclosure, all_markets=False."""
+def test_pop_duplicates_two_markets_all_markets_false(
+        multifilter_api_id_entities_response):
+    """
+    Test pop_duplicates method with two market enclosure,
+    all_markets=False.
+    """
     shell21_22_gb_nl_ids = '1134', '1135', '4496', '4529'
     fs = xf.get_filings(
         filters={'api_id': shell21_22_gb_nl_ids},
@@ -607,8 +651,12 @@ def test_pop_duplicates_two_markets_all_markets_false(multifilter_api_id_entitie
         assert filing.country == 'GB'
 
 
-def test_pop_duplicates_two_markets_all_markets_true(multifilter_api_id_entities_response):
-    """Test pop_duplicates method with two market enclosure, all_markets=True."""
+def test_pop_duplicates_two_markets_all_markets_true(
+        multifilter_api_id_entities_response):
+    """
+    Test pop_duplicates method with two market enclosure,
+    all_markets=True.
+    """
     shell21_22_gb_nl_ids = '1134', '1135', '4496', '4529'
     fs = xf.get_filings(
         filters={'api_id': shell21_22_gb_nl_ids},
@@ -627,9 +675,9 @@ def test_pop_duplicates_two_markets_all_markets_true(multifilter_api_id_entities
     assert len(popped) == 0
 
 
-@pytest.mark.parametrize('languages,match_lang,pop_lang', [
-    (['en'], 'en', ('fr', 'nl')),
-    (['fi', 'nl'], 'nl', ('fr', 'en')),
+@pytest.mark.parametrize(('languages', 'match_lang', 'pop_lang'), [
+    (['en'],             'en', ('fr', 'nl')),
+    (['fi', 'nl'],       'nl', ('fr', 'en')),
     ([None, 'fr', 'nl'], 'fr', ('nl', 'en')),
     ])
 def test_pop_duplicates_3languages_2enclosures_match_language(
@@ -662,7 +710,10 @@ def test_pop_duplicates_3languages_2enclosures_match_language(
 @pytest.mark.parametrize('languages', [None, [None], ['fi', 'sv']])
 def test_pop_duplicates_3languages_2enclosures_max_filing_index(
         languages, ageas21_22_filingset):
-    """Test pop_duplicates method with 3 languages, 2 enclosures, fallback max filing_index."""
+    """
+    Test pop_duplicates method with 3 languages, 2 enclosures, fallback
+    max filing_index.
+    """
     fs: xf.FilingSet = ageas21_22_filingset
     popped = fs.pop_duplicates(
         languages=languages,
@@ -693,7 +744,10 @@ def test_pop_duplicates_3languages_2enclosures_max_filing_index(
 
 def test_pop_duplicates_3languages_2enclosures_filing_index_none(
         ageas21_22_filingset):
-    """Test pop_duplicates method with 3 languages, 2 enclosures, max filing_index as None."""
+    """
+    Test pop_duplicates method with 3 languages, 2 enclosures, max
+    filing_index as None.
+    """
     fs: xf.FilingSet = ageas21_22_filingset
     for filing in fs:
         if filing.filing_index in (
@@ -729,7 +783,10 @@ def test_pop_duplicates_3languages_2enclosures_filing_index_none(
 
 def test_pop_duplicates_use_reporting_date_false_faulty_last_end_date(
         applus20_21_filingset):
-    """Test pop_duplicates method with faulty last_end_date, use_reporting_date=False."""
+    """
+    Test pop_duplicates method with faulty last_end_date,
+    use_reporting_date=False.
+    """
     fs: xf.FilingSet = applus20_21_filingset
     popped = fs.pop_duplicates(
         languages=None,
@@ -753,7 +810,10 @@ def test_pop_duplicates_use_reporting_date_false_faulty_last_end_date(
 
 def test_pop_duplicates_use_reporting_date_true_faulty_last_end_date(
         applus20_21_filingset):
-    """Test pop_duplicates method with faulty last_end_date, use_reporting_date=True."""
+    """
+    Test pop_duplicates method with faulty last_end_date,
+    use_reporting_date=True.
+    """
     fs: xf.FilingSet = applus20_21_filingset
     popped = fs.pop_duplicates(
         languages=None,

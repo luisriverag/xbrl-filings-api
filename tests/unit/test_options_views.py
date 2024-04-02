@@ -21,7 +21,9 @@ def get_asml22en_entities_filingset(urlmock):
         with responses.RequestsMock() as rsps:
             urlmock.apply(rsps, 'asml22en_entities')
             fs = xf.get_filings(
-                filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
+                filters={
+                    'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+                    },
                 sort=None,
                 max_size=1,
                 flags=xf.GET_ENTITY,
@@ -98,7 +100,9 @@ def test_require_entities_added(
 @pytest.mark.sqlite
 def test_require_entities_not_added(
         get_oldest3_fi_filingset, tmp_path, monkeypatch):
-    """Test view which requires entities is not added when no entities."""
+    """
+    Test view which requires entities is not added when no entities.
+    """
     monkeypatch.setattr(xf.options, 'views', DEFAULT_VIEWS)
     fs: xf.FilingSet = get_oldest3_fi_filingset()
     db_path = tmp_path / 'test_require_entities_not_added.db'

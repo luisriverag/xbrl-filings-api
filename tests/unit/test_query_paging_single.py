@@ -54,7 +54,9 @@ def test_removing_extra_filings(estonian_2_pages_3_each_response, monkeypatch):
 @pytest.mark.paging
 def test_removing_extra_entities(
         estonian_2_pages_3_each_response, monkeypatch):
-    """Test 2 pages, size 3, of 4 filings for entity reference coherence."""
+    """
+    Test 2 pages, size 3, of 4 filings for entity reference coherence.
+    """
     monkeypatch.setattr(xf.options, 'max_page_size', 3)
     piter = xf.filing_page_iter(
         filters={
@@ -65,22 +67,36 @@ def test_removing_extra_entities(
         flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
         )
     page1 = next(piter)
-    p1_ent_ids_included = [ent.api_id for ent in page1.entity_list]
-    assert len(p1_ent_ids_included) == len(set(p1_ent_ids_included)), 'Are unique'
-    p1_ent_ids_referenced = [filing.entity.api_id for filing in page1.filing_list]
-    assert set(p1_ent_ids_included) == set(p1_ent_ids_referenced), 'All in both'
+    # `Entity.api_id` values from FilingsPage.entity_list
+    p1_ent_ids_incl = [ent.api_id for ent in page1.entity_list]
+    msg1 = 'FilingsPage.entity_list items have unique api_id values on page {}'
+    assert len(p1_ent_ids_incl) == len(set(p1_ent_ids_incl)), msg1.format(1)
+    # `Entity.api_id` values from backreferences in Filing.entity
+    p1_ent_ids_ref = [
+        filing.entity.api_id for filing in page1.filing_list]
+    msg2 = (
+        'Filing.entity backreference api_id values match '
+        'FilingsPage.entity_list on page {}'
+        )
+    assert set(p1_ent_ids_incl) == set(p1_ent_ids_ref), msg2.format(1)
 
     page2 = next(piter)
-    p2_ent_ids_included = [ent.api_id for ent in page2.entity_list]
-    assert len(p2_ent_ids_included) == len(set(p2_ent_ids_included)), 'Are unique'
-    p2_ent_ids_referenced = [filing.entity.api_id for filing in page2.filing_list]
-    assert set(p2_ent_ids_included) == set(p2_ent_ids_referenced), 'All in both'
+    # `Entity.api_id` values from FilingsPage.entity_list
+    p2_ent_ids_incl = [ent.api_id for ent in page2.entity_list]
+    assert len(p2_ent_ids_incl) == len(set(p2_ent_ids_incl)), msg1.format(2)
+    # `Entity.api_id` values from backreferences in Filing.entity
+    p2_ent_ids_ref = [
+        filing.entity.api_id for filing in page2.filing_list]
+    assert set(p2_ent_ids_incl) == set(p2_ent_ids_ref), msg2.format(2)
 
 
 @pytest.mark.paging
 def test_removing_extra_validation_messages(
         estonian_2_pages_3_each_response, monkeypatch):
-    """Test 2 pages, size 3, of 4 filings for validation message reference coherence."""
+    """
+    Test 2 pages, size 3, of 4 filings for validation message reference
+    coherence.
+    """
     monkeypatch.setattr(xf.options, 'max_page_size', 3)
     piter = xf.filing_page_iter(
         filters={
@@ -91,19 +107,39 @@ def test_removing_extra_validation_messages(
         flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
         )
     page1 = next(piter)
-    p1_vm_ids_included = [vm.api_id for vm in page1.validation_message_list]
-    assert len(p1_vm_ids_included) == len(set(p1_vm_ids_included)), 'Are unique'
-    p1_vm_ids_referenced = []
+    # `ValidationMessage.api_id` values from
+    # FilingsPage.validation_message_list
+    p1_vm_ids_incl = [vm.api_id for vm in page1.validation_message_list]
+    msg1 = (
+        'FilingsPage.validation_message_list items have unique api_id '
+        'values on page {}'
+        )
+    assert len(p1_vm_ids_incl) == len(set(p1_vm_ids_incl)), msg1.format(1)
+    # `ValidationMessage.api_id` values from backreferences in
+    # Filing.validation_messages
+    p1_vm_ids_ref = []
     for filing in page1.filing_list:
-        p1_vm_ids_referenced.extend([vm.api_id for vm in filing.validation_messages])
-    assert len(p1_vm_ids_referenced) == len(set(p1_vm_ids_referenced)), 'Are unique'
-    assert set(p1_vm_ids_included) == set(p1_vm_ids_referenced), 'All in both'
+        p1_vm_ids_ref.extend([vm.api_id for vm in filing.validation_messages])
+    msg2 = (
+        'Filing.validation_messages backreference have unique api_id '
+        'values on page {}'
+        )
+    assert len(p1_vm_ids_ref) == len(set(p1_vm_ids_ref)), msg2.format(1)
+    msg3 = (
+        'Filing.validation_messages backreference api_id values match '
+        'FilingsPage.validation_message_list on page {}'
+        )
+    assert set(p1_vm_ids_incl) == set(p1_vm_ids_ref), msg3.format(1)
 
     page2 = next(piter)
-    p2_vm_ids_included = [vm.api_id for vm in page2.validation_message_list]
-    assert len(p2_vm_ids_included) == len(set(p2_vm_ids_included)), 'Are unique'
-    p2_vm_ids_referenced = []
+    # `ValidationMessage.api_id` values from
+    # FilingsPage.validation_message_list
+    p2_vm_ids_incl = [vm.api_id for vm in page2.validation_message_list]
+    assert len(p2_vm_ids_incl) == len(set(p2_vm_ids_incl)), msg1.format(2)
+    # `ValidationMessage.api_id` values from backreferences in
+    # Filing.validation_messages
+    p2_vm_ids_ref = []
     for filing in page2.filing_list:
-        p2_vm_ids_referenced.extend([vm.api_id for vm in filing.validation_messages])
-    assert len(p2_vm_ids_referenced) == len(set(p2_vm_ids_referenced)), 'Are unique'
-    assert set(p2_vm_ids_included) == set(p2_vm_ids_referenced), 'All in both'
+        p2_vm_ids_ref.extend([vm.api_id for vm in filing.validation_messages])
+    assert len(p2_vm_ids_ref) == len(set(p2_vm_ids_ref)), msg2.format(2)
+    assert set(p2_vm_ids_incl) == set(p2_vm_ids_ref), msg3.format(2)

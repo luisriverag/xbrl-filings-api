@@ -17,6 +17,8 @@ The fetched URLs will be saved to YAML files in directory
 # SPDX-License-Identifier: MIT
 
 import argparse
+import re
+import textwrap
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -112,7 +114,9 @@ _addmock('creditsuisse21en_by_id')
 
 @_recorder.record(file_path=urlmock.path('creditsuisse21en_by_id_entity'))
 def _fetch_creditsuisse21en_by_id_entity():
-    """Credit Suisse 2021 English AFR filing by `api_id` and with Entity."""
+    """
+    Credit Suisse 2021 English AFR filing by `api_id` and with Entity.
+    """
     _ = requests.get(
         url=ENTRY_POINT_URL,
         params={
@@ -179,7 +183,10 @@ _addmock('asml22en_vmessages')
 
 @_recorder.record(file_path=urlmock.path('assicurazioni21it_vmessages'))
 def _fetch_assicurazioni21it_vmessages():
-    """Assicurazioni Generali 2021 Italian AFR filing with validation messages."""
+    """
+    Assicurazioni Generali 2021 Italian AFR filing with validation
+    messages.
+    """
     _ = requests.get(
         url=ENTRY_POINT_URL,
         params={
@@ -213,7 +220,9 @@ _addmock('tecnotree21fi_vmessages')
 
 @_recorder.record(file_path=urlmock.path('asml22en_ent_vmsg'))
 def _fetch_asml22en_ent_vmsg():
-    """ASML Holding 2022 English AFR filing with entities and v-messages."""
+    """
+    ASML Holding 2022 English AFR filing with entities and v-messages.
+    """
     _ = requests.get(
         url=ENTRY_POINT_URL,
         params={
@@ -493,7 +502,9 @@ _addmock('oldest3_fi_entities')
 
 @_recorder.record(file_path=urlmock.path('oldest3_fi_vmessages'))
 def _fetch_oldest3_fi_vmessages():
-    """Oldest 3 AFR filings reported in Finland with validation messages."""
+    """
+    Oldest 3 AFR filings reported in Finland with validation messages.
+    """
     _ = requests.get(
         url=ENTRY_POINT_URL,
         params={
@@ -510,7 +521,10 @@ _addmock('oldest3_fi_vmessages')
 
 @_recorder.record(file_path=urlmock.path('oldest3_fi_ent_vmessages'))
 def _fetch_oldest3_fi_ent_vmessages():
-    """Oldest 3 AFR filings reported in Finland with entities and validation messages."""
+    """
+    Oldest 3 AFR filings reported in Finland with entities and
+    validation messages.
+    """
     _ = requests.get(
         url=ENTRY_POINT_URL,
         params={
@@ -528,12 +542,9 @@ _addmock('oldest3_fi_ent_vmessages')
 @_recorder.record(file_path=urlmock.path('sort_two_fields'))
 def _fetch_sort_two_fields():
     """
-    Sort Finnish filings by `last_end_date` and `added_time`.
-
-    .. warning::
-
-        Volatile with ``mock_upgrade.py`` run. See test
-        ``test_query_sort::test_sort_two_fields``.
+    Sort Finnish filings by `last_end_date` and `added_time`. WARNING,
+    volatile with ``mock_upgrade.py`` run. See test
+    ``test_query_sort::test_sort_two_fields``.
     """
     _ = requests.get(
         url=ENTRY_POINT_URL,
@@ -550,7 +561,9 @@ _addmock('sort_two_fields')
 
 @_recorder.record(file_path=urlmock.path('paging_swedish_size2_pg3'))
 def _fetch_paging_swedish_size2_pg3():
-    """Get 3 pages, actually 4, (pg size 2) of oldest Swedish filings."""
+    """
+    Get 3 pages, actually 4, (pg size 2) of oldest Swedish filings.
+    """
     page_count = 4 # API bug due to not fulfilling on 3rd page
     params={
         'page[size]': 2,
@@ -756,7 +769,10 @@ _addmock('paging_czechia20dec')
 
 @_recorder.record(file_path=urlmock.path('multifilter_belgium20_short_date_year'))
 def _fetch_multifilter_belgium20_short_date_year():
-    """Belgian 2020 AFRs querying with short date filter year, max_size=100."""
+    """
+    Belgian 2020 AFRs querying with short date filter year,
+    max_size=100.
+    """
     date_list = (
         '2020-08-31',
         '2020-09-30',
@@ -792,7 +808,10 @@ _addmock('multifilter_belgium20_short_date_year')
 
 @_recorder.record(file_path=urlmock.path('multifilter_belgium20_short_date_year_no_limit'))
 def _fetch_multifilter_belgium20_short_date_year_no_limit():
-    """Belgian 2020 AFRs querying with short date filter year, max_size=NO_LIMIT, options.max_page_size=200."""
+    """
+    Belgian 2020 AFRs querying with short date filter year,
+    max_size=NO_LIMIT, options.max_page_size=200.
+    """
     date_list = (
         '2020-08-31',
         '2020-09-30',
@@ -874,7 +893,9 @@ _addmock('kone22_all_languages')
 
 @_recorder.record(file_path=urlmock.path('estonian_2_pages_3_each'))
 def _fetch_estonian_2_pages_3_each():
-    """Estonian filings 2 pages of size 3, incl. entities, v-messages."""
+    """
+    Estonian filings 2 pages of size 3, incl. entities, v-messages.
+    """
     page_count = 2
     params={
         'page[size]': 3,
@@ -894,7 +915,10 @@ _addmock('estonian_2_pages_3_each')
 
 @_recorder.record(file_path=urlmock.path('ageas21_22'))
 def _fetch_ageas21_22():
-    """Ageas 2021 and 2022 filings in 3 languages (nl, fr, en) with entities, 6 filings."""
+    """
+    Ageas 2021 and 2022 filings in 3 languages (nl, fr, en) with
+    entities, 6 filings.
+    """
     ageas21_22_ids = '3314', '3316', '3315', '5139', '5140', '5141'
     for req_i, api_id in enumerate(ageas21_22_ids):
         _ = requests.get(
@@ -912,7 +936,10 @@ _addmock('ageas21_22')
 
 @_recorder.record(file_path=urlmock.path('applus20_21'))
 def _fetch_applus20_21():
-    """Applus Services 2020, 2021 filings with entities, 2 filings, same last_end_date."""
+    """
+    Applus Services 2020, 2021 filings with entities, 2 filings, same
+    last_end_date.
+    """
     applus20_21_ids = '1733', '1734'
     for req_i, api_id in enumerate(applus20_21_ids):
         _ = requests.get(
@@ -930,7 +957,9 @@ _addmock('applus20_21')
 
 @_recorder.record(file_path=urlmock.path('upm21to22'))
 def _fetch_upm21to22():
-    """UPM-Kymmene 2021 to 2022 filings (en, fi) with entities, 4 filings."""
+    """
+    UPM-Kymmene 2021 to 2022 filings (en, fi) with entities, 4 filings.
+    """
     # Order: 21en, 21fi, 22en, 22fi
     upm21to22_ids = ['138', '137', '4455', '4456']
     for req_i, api_id in enumerate(upm21to22_ids):
@@ -949,7 +978,9 @@ _addmock('upm21to22')
 
 @_recorder.record(file_path=urlmock.path('upm22to23'))
 def _fetch_upm22to23():
-    """UPM-Kymmene 2022 to 2023 filings (en, fi) with entities, 4 filings."""
+    """
+    UPM-Kymmene 2022 to 2023 filings (en, fi) with entities, 4 filings.
+    """
     # Order: 22en, 22fi, 23en, 23fi
     upm22to23_ids = ['4455', '4456', '12499', '12500']
     for req_i, api_id in enumerate(upm22to23_ids):
@@ -1069,11 +1100,27 @@ def _mock_url_to_py_code(mock):
         if islax:
             fixt_name = f'{fixt_name}_lax'
             param_str = URL_MOCK_PARAM_LAX
+
+        fmt_doc = mock.fetch.__doc__.strip()
+        fmt_doc = re.sub(r'(?!<\n)\n +(?!\n)', ' ', fmt_doc)
+        if len(fmt_doc) > 62: # 72 - 6 - 4 (docstring quotes and tab)
+            fmt_doc = textwrap.fill(
+                text=fmt_doc,
+                width=72,
+                initial_indent=' '*4,
+                subsequent_indent=' '*4,
+                expand_tabs=False,
+                replace_whitespace=True,
+                break_long_words=True,
+                break_on_hyphens=True,
+                drop_whitespace=True,
+                )
+            fmt_doc = f'\n{fmt_doc}\n' + ' '*4
         gen_py_list.append(
             URL_MOCK_FIXTURE_TEMPLATE.format(
                 name=mock.name,
                 fixt_name=fixt_name,
-                docstring=mock.fetch.__doc__,
+                docstring=fmt_doc,
                 param_str=param_str
                 ))
     return '\n'.join(gen_py_list)
@@ -1098,7 +1145,19 @@ def _list_mock_urls(bare_list):
                 print(' (' + ', '.join(par_parts) + ')')
             else:
                 print()
-            print(f'    {mock.fetch.__doc__.strip()}')
+            fmt_doc = re.sub(r'\s{2,}', ' ', mock.fetch.__doc__.strip())
+            fmt_doc = textwrap.fill(
+                text=fmt_doc,
+                width=72,
+                initial_indent=' '*4,
+                subsequent_indent=' '*4,
+                expand_tabs=False,
+                replace_whitespace=True,
+                break_long_words=True,
+                break_on_hyphens=True,
+                drop_whitespace=True,
+                )
+            print(fmt_doc)
 
 
 def _delete_files_of_removed_mocks():

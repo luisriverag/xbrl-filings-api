@@ -26,12 +26,7 @@ from xbrl_filings_api.constants import DataAttributeType, FileStringType
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import (
-    GET_ENTITY,
-    GET_ONLY_FILINGS,
-    GET_VALIDATION_MESSAGES,
-    ScopeFlag,
-)
+from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.exceptions import CorruptDownloadError
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.resource_collection import ResourceCollection
@@ -263,14 +258,15 @@ class FilingSet(set[Filing]):
             timeout=options.timeout_sec
             )
         async for result in dliter:
-            if result.path:
-                res_info: DownloadInfo = result.info
+            yresult = result
+            if yresult.path:
+                res_info: DownloadInfo = yresult.info
                 setattr(
                     res_info.obj,
                     f'{res_info.file}_download_path',
-                    result.path
+                    yresult.path
                     )
-            if isinstance(result.err, downloader.CorruptDownloadError):
+            if isinstance(yresult.err, downloader.CorruptDownloadError):
                 # Wrap again with FilingsAPIError subclassed exception
                 err = CorruptDownloadError(
                     path=result.err.path,
@@ -278,16 +274,18 @@ class FilingSet(set[Filing]):
                     calculated_hash=result.err.calculated_hash,
                     expected_hash=result.err.expected_hash
                     )
-                result = downloader.DownloadResult(
-                    result.url, result.path, err, result.info)
-            yield result
+                yresult = downloader.DownloadResult(
+                    yresult.url, yresult.path, err, yresult.info)
+            yield yresult
 
     def to_sqlite(
             self,
             path: Union[str, Path],
             *,
             update: bool = False,
-            flags: ScopeFlag = GET_ENTITY | GET_VALIDATION_MESSAGES
+            flags: ScopeFlag = (
+                ScopeFlag.GET_ENTITY
+                | ScopeFlag.GET_VALIDATION_MESSAGES)
             ) -> None:
         """
         Save set to an SQLite3 database.
@@ -534,9 +532,15 @@ class FilingSet(set[Filing]):
         """Get sets of data objects and disable flags for empty sets."""
         data_objs: dict[str, Collection[APIResource]] = {'Filing': self}
         subresources = [
-            (Entity, self.entities, GET_ENTITY),
-            (ValidationMessage, self.validation_messages, GET_VALIDATION_MESSAGES)
-            ]
+            (
+                Entity,
+                self.entities,
+                ScopeFlag.GET_ENTITY
+            ), (
+                ValidationMessage,
+                self.validation_messages,
+                ScopeFlag.GET_VALIDATION_MESSAGES
+            )]
         type_obj: type[APIResource]
         obj_set: ResourceCollection
         for type_obj, obj_set, type_flag in subresources:
@@ -545,7 +549,7 @@ class FilingSet(set[Filing]):
             elif type_flag in flags:
                 data_objs[type_obj.__name__] = obj_set
         if flags == ScopeFlag(0):
-            flags = GET_ONLY_FILINGS
+            flags = ScopeFlag.GET_ONLY_FILINGS
         return data_objs, flags
 
     @property
@@ -615,7 +619,7 @@ class FilingSet(set[Filing]):
 
     def union( # type: ignore[override]
             self, *others: Iterable[Filing]) -> 'FilingSet':
-        """Return union and update cross-references."""
+        """Return union FilingSet and update cross-references."""
         self._check_arg_iters(others)
         fs = FilingSet(self)
         self._union(fs, others, isedit=False)
@@ -624,20 +628,20 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __or__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return union and update cross-references."""
+        """Return union FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.union(other)
 
     def update(self, *others: Iterable[Filing]) -> None:
-        """Add others to FilingSet and update cross-references."""
+        """Apply union in self and update cross-references."""
         self._check_arg_iters(others)
         self._union(self, others, isedit=True)
 
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __ior__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Add others to FilingSet and update cross-references."""
+        """Apply union in self and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.update(other)
@@ -659,7 +663,7 @@ class FilingSet(set[Filing]):
 
     def intersection( # type: ignore[override]
             self, *others: Iterable[Filing]) -> 'FilingSet':
-        """Return intersection and update cross-references."""
+        """Return intersection FilingSet and update cross-references."""
         self._check_arg_iters(others)
         fs = FilingSet(self)
         self._intersection(fs, others, isedit=False)
@@ -668,20 +672,20 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __and__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return intersection and update cross-references."""
+        """Return intersection FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.intersection(other)
 
     def intersection_update(self, *others: Iterable[Filing]) -> None:
-        """Leave common in others to FilingSet and update cross-references."""
+        """Apply intersection in self and update cross-references."""
         self._check_arg_iters(others)
         self._intersection(self, others, isedit=True)
 
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __iand__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Leave common in others to FilingSet and update cross-references."""
+        """Apply intersection in self and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.intersection_update(other)
@@ -698,7 +702,7 @@ class FilingSet(set[Filing]):
 
     def difference( # type: ignore[override]
             self, *others: Iterable[Filing]) -> 'FilingSet':
-        """Return difference and update cross-references."""
+        """Return difference FilingSet and update cross-references."""
         self._check_arg_iters(others)
         fs = FilingSet(self)
         self._difference(fs, others, isedit=False)
@@ -707,27 +711,28 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __sub__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return difference and update cross-references."""
+        """Return difference FilingSet and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.difference(other)
 
     def difference_update(self, *others: Iterable[Filing]) -> None:
-        """Remove others from FilingSet and update cross-references."""
+        """Apply difference to self and update cross-references."""
         self._check_arg_iters(others)
         self._difference(self, others, isedit=True)
 
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __isub__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Remove others from FilingSet and update cross-references."""
+        """Apply difference to self and update cross-references."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.difference_update(other)
         return self
 
-    def _symmetric_difference(self, fs: 'FilingSet', other: Iterable[Filing], *,
-            isedit: bool) -> None:
+    def _symmetric_difference(
+            self, fs: 'FilingSet', other: Iterable[Filing], *, isedit: bool
+            ) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
         id_other_differs = {filing: True for filing in other}
@@ -756,14 +761,14 @@ class FilingSet(set[Filing]):
         return self.symmetric_difference(other)
 
     def symmetric_difference_update(self, other: Iterable[Filing]) -> None:
-        """Leave items only in one set to FilingSet and update cross-references."""
+        """Apply symmetric difference in self and update cross-refs."""
         self._check_arg_iters([other])
         self._symmetric_difference(self, other, isedit=True)
 
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __ixor__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Leave items only in one set to FilingSet and update cross-references."""
+        """Apply symmetric difference in self and update cross-refs."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.symmetric_difference_update(other)
@@ -780,7 +785,8 @@ class FilingSet(set[Filing]):
         if elem.entity_api_id:
             id_ent = elem.entity_api_id
             ent_existing: Union[Entity, None] = next(
-                (e for e in self.entities if e.api_id == id_ent), # type: ignore[misc]
+                (e for e in self.entities
+                 if e.api_id == id_ent), # type: ignore[misc]
                 None
                 )
             if ent_existing:

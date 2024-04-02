@@ -5,17 +5,17 @@
 # SPDX-License-Identifier: MIT
 
 import inspect
-from datetime import datetime
 from types import FunctionType
 
 import pytest
 
 import xbrl_filings_api as xf
-from xbrl_filings_api.api_request import _APIRequest
 
 
 def test_all_public_classes_have_repr():
-    """Test that all concrete root module classes have custom __repr__."""
+    """
+    Test that all concrete root module classes have custom __repr__.
+    """
     pclasses = [
         getattr(xf, name)
         for name in dir(xf)
@@ -34,9 +34,9 @@ def test_all_public_classes_have_repr():
         assert isinstance(crepr, FunctionType), msg
 
 
-def test_nonconcrete_classes_init_fails():
+def test_nonconcrete_classes_init_fails(dummy_api_request):
     """Test non-concrete classes cannot be initialized."""
     with pytest.raises(NotImplementedError):
-        xf.APIObject(json_frag={}, api_request=_APIRequest('', datetime.now()))
+        xf.APIObject(json_frag={}, api_request=dummy_api_request)
     with pytest.raises(NotImplementedError):
         xf.APIResource(json_frag={})

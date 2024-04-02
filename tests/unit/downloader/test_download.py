@@ -17,7 +17,8 @@ def test_download_connection_error(tmp_path):
     """Test raising of `requests.ConnectionError`."""
     e_filename = 'test_download_connection_error.zip'
     url = f'https://filings.xbrl.org/download/{e_filename}'
-    with responses.RequestsMock() as rsps:
+    # `responses` used solely to block internet connection
+    with responses.RequestsMock():
         with pytest.raises(requests.exceptions.ConnectionError):
             downloader.download(
                 url=url,

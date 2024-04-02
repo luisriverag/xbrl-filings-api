@@ -20,39 +20,61 @@ ASML22EN_JSON_BASE = {
         'attributes': {
             'date_added': '2023-02-16 14:33:58.236220',
             'country': 'NL',
-            'sha256': '3f44981c656dc2bcd0ed3a88e6d062e6b8c041a656f420257bccd63535c2b6ac',
-            'report_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/asml-2022-12-31-en.xhtml',
+            'sha256': (
+                '3f44981c656dc2bcd0ed3a88e6d062e6'
+                'b8c041a656f420257bccd63535c2b6ac'
+                ),
+            'report_url': (
+                '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en'
+                '/reports/asml-2022-12-31-en.xhtml'
+                ),
             'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
             'error_count': 0,
             'inconsistency_count': 4,
-            'viewer_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports/ixbrlviewer.html',
-            'json_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.json',
+            'viewer_url': (
+                '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en'
+                '/reports/ixbrlviewer.html'
+                ),
+            'json_url': (
+                '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+                '/asml-2022-12-31-en.json'
+                ),
             'processed': '2023-04-19 10:20:23.668110',
             'warning_count': 7,
             'period_end': '2022-12-31',
-            'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+            'package_url': (
+                '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+                '/asml-2022-12-31-en.zip'
+                )
             },
         'relationships': {
             'validation_messages': {
-                'links': { 'related': '/api/filings/4261/validation_messages' }
+                'links': {'related': '/api/filings/4261/validation_messages'}
                 },
             'entity': {
-                'links': { 'related': '/api/entities/724500Y6DUVHQD6OXN27' }
+                'links': {'related': '/api/entities/724500Y6DUVHQD6OXN27'}
             }
         },
         'id': '4261',
-        'links': { 'self': '/api/filings/4261' }
+        'links': {'self': '/api/filings/4261'}
         }],
     'links': {
-        'self': 'https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&filter%5Bfxo_id%5D=724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+        'self': (
+            'https://filings.xbrl.org/api/filings?'
+            'page%5Bsize%5D=1&'
+            'filter%5Bfxo_id%5D=724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+            )
         },
-    'meta': { 'count': 1 },
-    'jsonapi': { 'version': '1.0' }
+    'meta': {'count': 1},
+    'jsonapi': {'version': '1.0'}
     }
 
 
 def test_get_unaccessed_key_paths(monkeypatch):
-    """Test reading newly added data paths in JSON by `debug.get_unaccessed_key_paths`."""
+    """
+    Test reading newly added data paths in JSON by `debug.get_unaccessed
+    key_paths`.
+    """
     monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
     monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
     monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
@@ -87,7 +109,10 @@ def test_get_unaccessed_key_paths(monkeypatch):
 
 
 def test_get_key_path_availability_counts(monkeypatch):
-    """Test getting read counts for JSON properties by `debug.get_key_path_availability_counts`."""
+    """
+    Test getting read counts for JSON properties by
+    `debug.get_key_path_availability_counts`.
+    """
     monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
     monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
     monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
@@ -110,14 +135,20 @@ def test_get_key_path_availability_counts(monkeypatch):
     assert included_retrieve.success_count == 0
     assert included_retrieve.total_count == 1
     country_retrieve = next(filter(
-        lambda r: r.class_name == 'Filing' and r.key_path == 'attributes.country',
+        lambda r: (
+            r.class_name == 'Filing'
+            and r.key_path == 'attributes.country'
+            ),
         retrieve_counts))
     assert country_retrieve.success_count == 1
     assert country_retrieve.total_count == 1
 
 
 def test_get_unexpected_resource_types_data(monkeypatch):
-    """Test detecting unexpected resource type by `debug.get_unexpected_resource_types` from ``data``."""
+    """
+    Test detecting unexpected resource type by
+    `debug.get_unexpected_resource_types` from ``data``.
+    """
     monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
     monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
     monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
@@ -127,7 +158,7 @@ def test_get_unexpected_resource_types_data(monkeypatch):
         'id': '123456789',
         'attributes': {},
         'relationships': {},
-        'links': { 'self': '/api/alien_types/123456789' }
+        'links': {'self': '/api/alien_types/123456789'}
         })
     with responses.RequestsMock() as rsps:
         rsps.add(
@@ -146,15 +177,19 @@ def test_get_unexpected_resource_types_data(monkeypatch):
 
 
 def test_get_unexpected_resource_types_included(monkeypatch):
-    """Test detecting unexpected resource type by `debug.get_unexpected_resource_types` from ``included``."""
+    """
+    Test detecting unexpected resource type by
+    `debug.get_unexpected_resource_types` from ``included``.
+    """
     monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
     monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
     monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
     json_with_new_resource_types = copy.deepcopy(ASML22EN_JSON_BASE)
-    json_with_new_resource_types['data'][0]['relationships']['entity']['data'] = {
-        'type': 'entity',
-        'id': '1969'
-        }
+    json_with_new_resource_types[
+        'data'][0]['relationships']['entity']['data'] = {
+            'type': 'entity',
+            'id': '1969'
+            }
     json_with_new_resource_types['included'] = [
         {
             'type': 'entity',
@@ -165,17 +200,19 @@ def test_get_unexpected_resource_types_included(monkeypatch):
                 },
             'relationships': {
                 'filings': {
-                    'links': { 'related': '/api/entities/724500Y6DUVHQD6OXN27/filings' }
+                    'links': {
+                        'related': '/api/entities/724500Y6DUVHQD6OXN27/filings'
+                        }
                 }
             },
-            'links': { 'self': '/api/entities/724500Y6DUVHQD6OXN27' }
+            'links': {'self': '/api/entities/724500Y6DUVHQD6OXN27'}
         },
         {
             'type': 'alien_type',
             'id': '123456789',
             'attributes': {},
             'relationships': {},
-            'links': { 'self': '/api/alien_types/123456789' }
+            'links': {'self': '/api/alien_types/123456789'}
         }
         ]
     with responses.RequestsMock() as rsps:

@@ -28,11 +28,11 @@ Exclude attributes whose value is a functional object or some sort of
 list from the data output.
 """
 
-class Prototype:
-    pass
+class _Prototype:
+    """Type of special value `_PROTOTYPE`."""
 
-PROTOTYPE = Prototype()
-"""A sentinel value for APIResource to construct a dummy instance."""
+_PROTOTYPE = _Prototype()
+"""A special value for APIResource to construct a dummy instance."""
 
 DataAttributeType = Union[str, int, datetime, date, None]
 """Type of `APIResource` data attribute."""

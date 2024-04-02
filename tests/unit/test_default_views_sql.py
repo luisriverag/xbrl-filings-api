@@ -4,11 +4,13 @@
 #
 # SPDX-License-Identifier: MIT
 
+# Allow 'SQL injections'
+# ruff: noqa: S608
+
 import sqlite3
 
 import pytest
 
-import xbrl_filings_api as xf
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
 
 pytestmark = pytest.mark.sqlite
@@ -19,7 +21,8 @@ def _db_with_view(view, schema):
     cur = con.cursor()
     for table_name, cols in schema.items():
         colsql = ', '.join(cols)
-        cur.executescript(f'CREATE TABLE {table_name} ({colsql}) WITHOUT ROWID')
+        cur.executescript(
+            f'CREATE TABLE {table_name} ({colsql}) WITHOUT ROWID')
     con.commit()
     cur.executescript(f'CREATE VIEW {view.name} AS\n{view.sql}')
     con.commit()
@@ -60,7 +63,8 @@ def _insert_example_group_fi_ViewNumericErrors(con, cur):
         }])
 
 
-def _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id, filing_api_id):
+def _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id, filing_api_id):
     _insert_many(con, cur, 'ValidationMessage', [{
         'api_id': api_id,
         'duplicate_lesser': None,
@@ -75,7 +79,8 @@ def _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id, filing_api
         }])
 
 
-def _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id, filing_api_id):
+def _insert_example_duplicate_vmessage_ViewNumericErrors(
+        con, cur, api_id, filing_api_id):
     _insert_many(con, cur, 'ValidationMessage', [{
         'api_id': api_id,
         'duplicate_lesser': 31_821_000.0,
@@ -92,6 +97,9 @@ def _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id, filin
 
 @pytest.fixture
 def db_ViewNumericErrors(tmp_path):
+    """
+    Connection and Cursor for mock database with view ViewNumericErrors.
+    """
     view = next(v for v in DEFAULT_VIEWS if v.name == 'ViewNumericErrors')
     schema = {
         'Filing': [
@@ -113,6 +121,9 @@ def db_ViewNumericErrors(tmp_path):
 
 @pytest.fixture
 def db_ViewEnclosure(tmp_path):
+    """
+    Connection and Cursor for mock database with view ViewEnclosure.
+    """
     view = next(v for v in DEFAULT_VIEWS if v.name == 'ViewEnclosure')
     schema = {
         'Filing': [
@@ -130,6 +141,9 @@ def db_ViewEnclosure(tmp_path):
 
 @pytest.fixture
 def db_ViewFilingAge(tmp_path):
+    """
+    Connection and Cursor for mock database with view ViewFilingAge.
+    """
     view = next(v for v in DEFAULT_VIEWS if v.name == 'ViewFilingAge')
     schema = {
         'Filing': [
@@ -179,8 +193,10 @@ def test_ViewNumericErrors_calc(db_ViewNumericErrors):
     assert res[3] == e_reported / 1000 # reportedK
     assert res[4] == e_computed / 1000 # computedOrDuplicateK
     assert res[5] == abs(e_reported - e_computed) / 1000 # reportedErrorK
-    assert res[6] == round(100 * (abs(e_reported-e_computed) / e_reported), 2) # errorPercent
-    assert res[7] == 'ifrs-full:EquityAttributableToOwnersOfParent' # calc_line_item
+    # errorPercent
+    assert res[6] == round(100 * (abs(e_reported-e_computed) / e_reported), 2)
+    # calc_line_item
+    assert res[7] == 'ifrs-full:EquityAttributableToOwnersOfParent'
     assert res[8] == 'StmtOfFinancialPosition' # calc_short_role
     assert res[9] == 'E2021' # calc_context_id
     assert res[10] == 'fi' # language
@@ -224,17 +240,20 @@ def test_ViewNumericErrors_duplicate(db_ViewNumericErrors):
     assert res[3] == e_lesser / 1000 # reportedK
     assert res[4] == e_greater / 1000 # computedOrDuplicateK
     assert res[5] == abs(e_lesser-e_greater) / 1000 # reportedErrorK
-    assert res[6] == round(100 * (abs(e_lesser-e_greater) / e_lesser), 2) # errorPercent
-    assert res[7] == None # calc_line_item
-    assert res[8] == None # calc_short_role
-    assert res[9] == None # calc_context_id
+    # errorPercent
+    assert res[6] == round(100 * (abs(e_lesser-e_greater) / e_lesser), 2)
+    assert res[7] is None # calc_line_item
+    assert res[8] is None # calc_short_role
+    assert res[9] is None # calc_context_id
     assert res[10] == 'fi' # language
     assert res[11] == '1' # filing_api_id
     assert res[12] == '10' # entity_api_id
 
 
 def test_ViewNumericErrors_select_language_fi_not_gi(db_ViewNumericErrors):
-    """Test ViewNumericErrors selects language version 'fi', not 'gi'."""
+    """
+    Test ViewNumericErrors selects language version 'fi', not 'gi'.
+    """
     cur: sqlite3.Cursor
     con, cur = db_ViewNumericErrors
     _insert_example_group_fi_ViewNumericErrors(con, cur)
@@ -244,8 +263,10 @@ def test_ViewNumericErrors_select_language_fi_not_gi(db_ViewNumericErrors):
         'language': 'gi',
         'entity_api_id': '10'
         }])
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='103', filing_api_id='2')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='102', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='103', filing_api_id='2')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
     cur.execute(
@@ -260,7 +281,9 @@ def test_ViewNumericErrors_select_language_fi_not_gi(db_ViewNumericErrors):
 
 
 def test_ViewNumericErrors_select_language_ei_not_fi(db_ViewNumericErrors):
-    """Test ViewNumericErrors selects language version 'ei', not 'fi'."""
+    """
+    Test ViewNumericErrors selects language version 'ei', not 'fi'.
+    """
     cur: sqlite3.Cursor
     con, cur = db_ViewNumericErrors
     _insert_example_group_fi_ViewNumericErrors(con, cur)
@@ -270,8 +293,10 @@ def test_ViewNumericErrors_select_language_ei_not_fi(db_ViewNumericErrors):
         'language': 'ei',
         'entity_api_id': '10'
         }])
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='103', filing_api_id='2')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='102', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='103', filing_api_id='2')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
     cur.execute(
@@ -286,7 +311,9 @@ def test_ViewNumericErrors_select_language_ei_not_fi(db_ViewNumericErrors):
 
 
 def test_ViewNumericErrors_select_language_null_not_fi(db_ViewNumericErrors):
-    """Test ViewNumericErrors selects language version NULL, not 'fi'."""
+    """
+    Test ViewNumericErrors selects language version NULL, not 'fi'.
+    """
     cur: sqlite3.Cursor
     con, cur = db_ViewNumericErrors
     _insert_example_group_fi_ViewNumericErrors(con, cur)
@@ -296,8 +323,10 @@ def test_ViewNumericErrors_select_language_null_not_fi(db_ViewNumericErrors):
         'language': None,
         'entity_api_id': '10'
         }])
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='103', filing_api_id='2')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='102', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='103', filing_api_id='2')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
     cur.execute(
@@ -306,24 +335,31 @@ def test_ViewNumericErrors_select_language_null_not_fi(db_ViewNumericErrors):
         )
     res = cur.fetchone()
     con.close()
-    assert res[0] == None # language
+    assert res[0] is None # language
     assert res[1] == '2' # filing_api_id
     assert res[2] == '103' # validation_message_api_id
 
 
 def test_ViewNumericErrors_duplicate_reduce_multiples(db_ViewNumericErrors):
-    """Test ViewNumericErrors problem=duplicate when same duplicate recorded multiple times."""
+    """
+    Test ViewNumericErrors problem=duplicate when same duplicate
+    recorded multiple times.
+    """
     cur: sqlite3.Cursor
     con, cur = db_ViewNumericErrors
     _insert_example_group_fi_ViewNumericErrors(con, cur)
     # All have same ``duplicate_lesser`` and ``duplicate_greater``
-    _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id='100', filing_api_id='1')
-    _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id='101', filing_api_id='1')
-    _insert_example_duplicate_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
+    _insert_example_duplicate_vmessage_ViewNumericErrors(
+        con, cur, api_id='100', filing_api_id='1')
+    _insert_example_duplicate_vmessage_ViewNumericErrors(
+        con, cur, api_id='101', filing_api_id='1')
+    _insert_example_duplicate_vmessage_ViewNumericErrors(
+        con, cur, api_id='102', filing_api_id='1')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 1
     cur.execute(
-        'SELECT problem, filing_api_id, entity_api_id, validation_message_api_id '
+        'SELECT problem, filing_api_id, entity_api_id, '
+            'validation_message_api_id '
         'FROM ViewNumericErrors'
         )
     res = cur.fetchone()
@@ -335,18 +371,25 @@ def test_ViewNumericErrors_duplicate_reduce_multiples(db_ViewNumericErrors):
 
 
 def test_ViewNumericErrors_calc_dont_reduce_multiples(db_ViewNumericErrors):
-    """Test ViewNumericErrors problem=calc when similar errors recorded multiple times."""
+    """
+    Test ViewNumericErrors problem=calc when similar errors recorded
+    multiple times.
+    """
     cur: sqlite3.Cursor
     con, cur = db_ViewNumericErrors
     _insert_example_group_fi_ViewNumericErrors(con, cur)
     # All have same ``calc_reported_sum`` and ``calc_computed_sum``
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='100', filing_api_id='1')
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='101', filing_api_id='1')
-    _insert_example_calc_vmessage_ViewNumericErrors(con, cur, api_id='102', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='100', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='101', filing_api_id='1')
+    _insert_example_calc_vmessage_ViewNumericErrors(
+        con, cur, api_id='102', filing_api_id='1')
 
     assert _view_row_count(cur, 'ViewNumericErrors') == 3
     cur.execute(
-        'SELECT problem, filing_api_id, entity_api_id, validation_message_api_id '
+        'SELECT problem, filing_api_id, entity_api_id, '
+            'validation_message_api_id '
         'FROM ViewNumericErrors'
         )
     for _ in range(3):

@@ -1,4 +1,10 @@
-"""Define class `UrlMock` for test fixture `urlmock`."""
+"""
+Define class `UrlMock` for test fixture `urlmock`.
+
+.. note::
+    Method `apply` uses beta feature `responses._add_from_file` (as of
+    `responses` version 0.23.3).
+"""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -18,7 +24,7 @@ class UrlMock:
 
     def path(self, urlmock_name: str):
         """
-        Get absolute file path of the mock URL collection file.
+        Get absolute file path of the mock URL response file.
 
         Parameters
         ----------
@@ -32,7 +38,10 @@ class UrlMock:
             self, rsps: Union[responses.RequestsMock, ModuleType],
             urlmock_name: str):
         """
-        Get absolute file path of the mock URL collection file.
+        Apply the mock URL response on the test for requests library.
+
+        This method uses beta feature `responses._add_from_file` (as of
+        `responses` version 0.23.3).
 
         Parameters
         ----------

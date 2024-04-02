@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-import xbrl_filings_api.downloader.stats as downloader_stats
 from xbrl_filings_api.json_tree import KeyPathRetrieveCounts, _JSONTree
 
 

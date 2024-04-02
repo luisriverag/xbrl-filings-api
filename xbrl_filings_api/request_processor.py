@@ -18,13 +18,8 @@ import requests
 from xbrl_filings_api import options, stats
 from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_request import _APIRequest
-from xbrl_filings_api.constants import NO_LIMIT, PROTOTYPE
-from xbrl_filings_api.enums import (
-    GET_ENTITY,
-    GET_ONLY_FILINGS,
-    GET_VALIDATION_MESSAGES,
-    ScopeFlag,
-)
+from xbrl_filings_api.constants import _PROTOTYPE, NO_LIMIT
+from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.exceptions import (
     FilterNotSupportedWarning,
     HTTPStatusError,
@@ -93,10 +88,10 @@ def generate_pages(
     params['page[size]'] = page_size
 
     include_flags = []
-    if GET_ONLY_FILINGS not in flags:
-        if GET_ENTITY in flags:
+    if ScopeFlag.GET_ONLY_FILINGS not in flags:
+        if ScopeFlag.GET_ENTITY in flags:
             include_flags.append('entity')
-        if GET_VALIDATION_MESSAGES in flags:
+        if ScopeFlag.GET_VALIDATION_MESSAGES in flags:
             include_flags.append('validation_messages')
     if len(include_flags) > 0:
         params['include'] = ','.join(include_flags)
@@ -202,7 +197,8 @@ def _get_params_list_on_filters(
     # fgroup[group_name][field_name] = [str_value1, str_value2, ...]
     fgroup: dict[str, dict[str, list[str]]] = {}
 
-    # Function calls change `fgroup`, classify to 'other', 'date', 'time'
+    # Function calls change `fgroup`, classify to
+    # 'other', 'date' or 'time'
     for field_name, filter_value in filters.items():
         _classify_normalize_filter(fgroup, field_name, filter_value)
 
@@ -382,7 +378,8 @@ def _expand_short_date_filters(
         raise ValueError(msg)
 
     for rname, r_i in [('start', 0), ('stop', 1)]:
-        if not (1 <= options.year_filter_months[r_i][1] <= 12):
+        # 12 months is no magic (PLR2004)
+        if not (1 <= options.year_filter_months[r_i][1] <= 12): # noqa: PLR2004
             msg = (
                 f'options.year_filter_months {rname} month definition must be '
                 'in 1..12'
@@ -549,7 +546,7 @@ def _retrieve_page_json(
 
 def _get_api_attribute_map() -> dict[str, str]:
     attrmap: dict[str, str] = {}
-    fproto = Filing(PROTOTYPE)
+    fproto = Filing(_PROTOTYPE)
     clsmap = {'api_id': 'id'}
     for prop in dir(fproto):
         # Exclude class attributes from instance attributes

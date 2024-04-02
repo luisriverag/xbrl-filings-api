@@ -20,12 +20,7 @@ from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import DataAttributeType
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import (
-    GET_ENTITY,
-    GET_ONLY_FILINGS,
-    GET_VALIDATION_MESSAGES,
-    ScopeFlag,
-)
+from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.exceptions import DatabaseSchemaUnmatchError
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.time_formats import TIME_FORMATS
@@ -86,7 +81,8 @@ def _validate_views():
     if options.views:
         for view in options.views:
             if view.name in used:
-                msg = f'Multiple views in options.views with name "{view.name}"'
+                msg = (
+                    f'Multiple views in options.views with name "{view.name}"')
                 raise ValueError(msg)
             used.add(view.name)
 
@@ -117,11 +113,11 @@ def _create_database_or_extend_schema(
     """
     resource_types: list[type[APIResource]] = [Filing]
     data_attrs = {'Filing': filing_data_attrs}
-    if GET_ONLY_FILINGS not in flags:
-        if GET_ENTITY in flags:
+    if ScopeFlag.GET_ONLY_FILINGS not in flags:
+        if ScopeFlag.GET_ENTITY in flags:
             resource_types.append(Entity)
             data_attrs['Entity'] = Entity.get_data_attributes()
-        if GET_VALIDATION_MESSAGES in flags:
+        if ScopeFlag.GET_VALIDATION_MESSAGES in flags:
             resource_types.append(ValidationMessage)
             data_attrs['ValidationMessage'] = (
                 ValidationMessage.get_data_attributes())
@@ -223,7 +219,7 @@ def _get_existing_column_names(
         table_name: str, cur: sqlite3.Cursor) -> set[str]:
     _exec(
         cur,
-        f"SELECT name FROM pragma_table_info(?)",
+        "SELECT name FROM pragma_table_info(?)",
         (table_name,))
     return set(*zip(*cur.fetchall()))
 

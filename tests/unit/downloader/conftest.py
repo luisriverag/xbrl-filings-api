@@ -13,13 +13,13 @@ from xbrl_filings_api.downloader import DownloadSpecs
 
 @pytest.fixture(scope='module')
 def mock_response_data():
-    """Arbitrary data to mock download."""
+    """Arbitrary data for mock download, 1000 chars."""
     return '0123456789' * 100
 
 
 @pytest.fixture(scope='module')
 def mock_response_sha256(mock_response_data):
-    """SHA-256 hash for `mock_response_data`."""
+    """SHA-256 hash for fixture mock_response_data."""
     fhash = hashlib.sha256(
         string=mock_response_data.encode(encoding='utf-8'),
         usedforsecurity=False
@@ -29,13 +29,13 @@ def mock_response_sha256(mock_response_data):
 
 @pytest.fixture(scope='module')
 def mock_response_data_charcount(mock_response_data):
-    """Arbitrary data to mock download."""
+    """Character count for fixture mock_response_data."""
     return len(mock_response_data)
 
 
 @pytest.fixture(scope='module')
 def mock_url_response(mock_response_data):
-    """Function to add a `responses` mock URL with `mock_response_data` body."""
+    """Add a `responses` mock URL with fixt mock_response_data body."""
     def _mock_url_response(
             url: str, rsps: Union[responses.RequestsMock, None] = None):
         nonlocal mock_response_data
@@ -52,7 +52,7 @@ def mock_url_response(mock_response_data):
 
 @pytest.fixture
 def plain_specs():
-    """Function for a plain `DownloadSpecs` object."""
+    """Return a plain `DownloadSpecs` object."""
     def _plain_specs(url, path, *, info=None):
         return DownloadSpecs(
             url=url,
@@ -67,7 +67,7 @@ def plain_specs():
 
 @pytest.fixture
 def hashfail_specs():
-    """Function for a failing `sha256` hash check `DownloadSpecs` object."""
+    """Return a failing `sha256` hash check `DownloadSpecs` object."""
     def _hashfail_specs(url, path, *, info=None):
         e_file_sha256 = '0' * 64
         return DownloadSpecs(
@@ -83,7 +83,7 @@ def hashfail_specs():
 
 @pytest.fixture
 def stem_renamed_specs():
-    """Function for a ``_renamed`` suffixed file stem `DownloadSpecs` object."""
+    """Return a '_renamed' suffixed file stem `DownloadSpecs` object."""
     def _stem_renamed_specs(url, path, *, info=None):
         return DownloadSpecs(
             url=url,
@@ -98,7 +98,7 @@ def stem_renamed_specs():
 
 @pytest.fixture
 def filename_renamed_specs():
-    """Function for a ``renamed.abc`` filename `DownloadSpecs` object."""
+    """Return a ``renamed.abc`` filename `DownloadSpecs` object."""
     def _filename_renamed_specs(url, path, *, info=None):
         return DownloadSpecs(
             url=url,
@@ -113,7 +113,7 @@ def filename_renamed_specs():
 
 @pytest.fixture(scope='module')
 def url_filename():
-    """Function for getting the filename from URL."""
+    """Get the filename from URL."""
     def _url_filename(url):
         url_path = urllib.parse.urlparse(url).path
         return PurePosixPath(url_path).name

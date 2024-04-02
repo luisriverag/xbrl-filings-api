@@ -13,7 +13,6 @@ import responses
 
 import xbrl_filings_api as xf
 from xbrl_filings_api.api_page import _APIPage, _IncludedResource
-from xbrl_filings_api.api_request import _APIRequest
 
 
 @pytest.fixture
@@ -35,7 +34,9 @@ def paging_swedish_size2_pg3_2nd_filingspage(
 
 @pytest.fixture
 def oldest3_fi_entities_filingspage(oldest3_fi_entities_response):
-    """FilingPage from mock response ``oldest3_fi_entities`` with entities."""
+    """
+    FilingPage from mock response ``oldest3_fi_entities`` with entities.
+    """
     piter = xf.filing_page_iter(
         filters={'country': 'FI'},
         sort='date_added',
@@ -51,7 +52,7 @@ def test_attributes(paging_swedish_size2_pg3_2nd_filingspage):
     """Test _APIPage attributes."""
     fpage: xf.FilingsPage = paging_swedish_size2_pg3_2nd_filingspage
     assert isinstance(fpage, _APIPage)
-    def pmatch(s, isbigpage=False):
+    def pmatch(s, *, isbigpage=False):
         return (
             r'https://filings\.xbrl\.org/api/filings\?.*'
             + urllib.parse.quote(s, '=')
@@ -61,7 +62,8 @@ def test_attributes(paging_swedish_size2_pg3_2nd_filingspage):
     assert re.search(f"{pmatch('')}", fpage.api_prev_page_url)
     assert re.search(f"{pmatch('page[number]=3')}", fpage.api_next_page_url)
     assert re.search(f"{pmatch('')}", fpage.api_first_page_url)
-    assert re.search(f"{pmatch('page[number]=', True)}", fpage.api_last_page_url)
+    assert re.search(
+        f"{pmatch('page[number]=', isbigpage=True)}", fpage.api_last_page_url)
     assert fpage.jsonapi_version == '1.0'
     assert type(fpage.query_time) is datetime
     assert re.search(f"{pmatch('')}", fpage.request_url)
@@ -89,11 +91,15 @@ def test_included_resources_unexpected():
             'type': 'filing',
             'attributes': {
                 'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
-                'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+                'package_url': (
+                    '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+                    '/asml-2022-12-31-en.zip'
+                    )
                 },
             'relationships': {
                 'alien_type': {
-                    'links': {'related': '/api/alien_types/724500Y6DUVHQD6OXN27'},
+                    'links': {
+                        'related': '/api/alien_types/724500Y6DUVHQD6OXN27'},
                     'data': {'type': 'alien_type', 'id': '123456789'}
                     }
                 },
@@ -129,7 +135,7 @@ def test_included_resources_unexpected():
     assert isinstance(alien_res.frag, dict)
 
 
-def test_raises_initiate_directly():
+def test_raises_initiate_directly(dummy_api_request):
     """Test _APIPage raises if initiated directly from parent class."""
     rsps_dummy = {
         'data': [],
@@ -139,16 +145,12 @@ def test_raises_initiate_directly():
         'meta': { 'count': 0 },
         'jsonapi': { 'version': '1.0' }
         }
-    areq = _APIRequest(
-        url='https://filings.xbrl.org/api/filings',
-        query_time=datetime.now()
-        )
     with pytest.raises(
             NotImplementedError,
             match=r'_APIPage can only be initialized via subclassing'):
         _ = _APIPage(
             json_frag=rsps_dummy,
-            api_request=areq
+            api_request=dummy_api_request
             )
 
 
@@ -159,7 +161,9 @@ def test_main_resource_api_id_as_int():
             'type': 'filing',
             'attributes': {
                 'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
-                'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+                'package_url': (
+                    '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+                    '/asml-2022-12-31-en.zip')
                 },
             'relationships': {
                 'entity': {
@@ -187,7 +191,8 @@ def test_main_resource_api_id_as_int():
     assert len(fpage._data) == 1
     filing_frag = fpage._data[0]
     assert filing_frag['id'] == '123'
-    assert filing_frag['attributes']['fxo_id'] == '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
+    assert filing_frag['attributes']['fxo_id'] == (
+        '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')
 
 
 def test_included_resource_api_id_as_int():
@@ -197,7 +202,9 @@ def test_included_resource_api_id_as_int():
             'type': 'filing',
             'attributes': {
                 'fxo_id': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0',
-                'package_url': '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en.zip'
+                'package_url': (
+                    '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
+                    '/asml-2022-12-31-en.zip')
                 },
             'relationships': {
                 'entity': {

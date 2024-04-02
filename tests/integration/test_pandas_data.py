@@ -35,7 +35,8 @@ class TestFilingSet_get_pandas_data:
         enento20en = df[df['api_id'] == '710']
         i = enento20en.index.array[0]
         assert enento20en.at[i, 'country'] == 'FI'
-        assert enento20en.at[i, 'filing_index'] == '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0'
+        assert enento20en.at[i, 'filing_index'] == (
+            '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0')
         assert enento20en.at[i, 'language'] == 'en'
         assert enento20en.at[i, 'error_count'] == 0
         assert enento20en.at[i, 'inconsistency_count'] == 19
@@ -51,7 +52,8 @@ class TestFilingSet_get_pandas_data:
         assert 'json_download_path' not in enento20en.columns.array
         assert 'package_download_path' not in enento20en.columns.array
         assert 'xhtml_download_path' not in enento20en.columns.array
-        assert enento20en.at[i, 'package_sha256'] == 'ab0c60224c225ba3921188514ecd6c37af6a947f68a5c3a0c6eb34abfaae822b'
+        assert enento20en.at[i, 'package_sha256'] == (
+            'ab0c60224c225ba3921188514ecd6c37af6a947f68a5c3a0c6eb34abfaae822b')
         assert 'entity' not in enento20en.columns.array
         assert 'validation_messages' not in enento20en.columns.array
         assert '507' in df['api_id'].array
@@ -71,7 +73,8 @@ class TestFilingSet_get_pandas_data:
         df = pd.DataFrame(data=pd_data)
         enento20en = df[df['api_id'] == '710']
         i = enento20en.index.array[0]
-        assert enento20en.at[i, 'filing_index'] == '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0'
+        assert enento20en.at[i, 'filing_index'] == (
+            '743700EPLUWXE25HGM03-2020-12-31-ESEF-FI-0')
         assert 'entity_api_id' not in enento20en.columns.array
         assert enento20en.at[i, 'entity.api_id'] == '548'
         assert enento20en.at[i, 'entity.identifier'] == '743700EPLUWXE25HGM03'
@@ -118,8 +121,10 @@ class TestFilingSet_get_pandas_data:
         df = pd.DataFrame(data=pd_data)
         enento20en = df[df['api_id'] == '710']
         i = enento20en.index.array[0]
-        assert enento20en.at[i, 'added_time'] == pd.Timestamp('2021-05-18 00:00:00')
-        assert enento20en.at[i, 'processed_time'] == pd.Timestamp('2023-01-18 11:02:18.936351')
+        assert enento20en.at[i, 'added_time'] == (
+            pd.Timestamp('2021-05-18 00:00:00'))
+        assert enento20en.at[i, 'processed_time'] == (
+            pd.Timestamp('2023-01-18 11:02:18.936351'))
         assert isinstance(enento20en.at[i, 'query_time'], pd.Timestamp)
 
     def test_with_entity_true_no_entity(self, get_oldest3_fi_filingset):
@@ -150,7 +155,10 @@ class TestFilingSet_get_pandas_data:
 
 
 class TestResourceCollection_entities_get_pandas_data:
-    """Test method ResourceCollection.get_pandas_data for FilingSet.entities."""
+    """
+    Test method ResourceCollection.get_pandas_data for
+    FilingSet.entities.
+    """
 
     def test_e_defaults(self, get_oldest3_fi_entities_filingset):
         """Test default parameter values."""
@@ -175,17 +183,20 @@ class TestResourceCollection_entities_get_pandas_data:
 
 
 class TestResourceCollection_validation_messages_get_pandas_data:
-    """Test method ResourceCollection.get_pandas_data for FilingSet.validation_messages."""
+    """
+    Test method ResourceCollection.get_pandas_data for
+    FilingSet.validation_messages.
+    """
 
     def test_vm_defaults(self, get_oldest3_fi_vmessages_filingset):
         """Test default parameter values."""
         e_api_ids = {
-            '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471', '5472',
-            '5473', '5474', '5475', '5476', '5477', '5478', '8662', '8663', '8664',
-            '8665', '8666', '8667', '8668', '8669', '8670', '8671', '8672', '8673',
-            '8674', '8675', '8676', '8677', '8678', '8679', '8680', '16748',
-            '16749', '16750', '16751', '16752', '16753', '16754', '16755', '16756',
-            '16757', '16758'
+            '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471',
+            '5472', '5473', '5474', '5475', '5476', '5477', '5478', '8662',
+            '8663', '8664', '8665', '8666', '8667', '8668', '8669', '8670',
+            '8671', '8672', '8673', '8674', '8675', '8676', '8677', '8678',
+            '8679', '8680', '16748', '16749', '16750', '16751', '16752',
+            '16753', '16754', '16755', '16756', '16757', '16758'
             }
         e_5464_text = (
             'Calculation inconsistent from ifrs-full:NoncurrentAssets in link '
@@ -215,7 +226,8 @@ class TestResourceCollection_validation_messages_get_pandas_data:
         assert enento.at[i, 'calc_context_id'] == vmsg_5464.calc_context_id
         assert enento.at[i, 'calc_line_item'] == vmsg_5464.calc_line_item
         assert enento.at[i, 'calc_short_role'] == vmsg_5464.calc_short_role
-        assert enento.at[i, 'calc_unreported_items'] == vmsg_5464.calc_unreported_items
+        assert enento.at[i, 'calc_unreported_items'] == (
+            vmsg_5464.calc_unreported_items)
         assert enento.at[i, 'duplicate_greater'] is None
         assert enento.at[i, 'duplicate_lesser'] is None
         assert isinstance(enento.at[i, 'query_time'], pd.Timestamp)

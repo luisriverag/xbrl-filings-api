@@ -273,7 +273,9 @@ def test_to_sqlite_processed_time_str(
 @pytest.mark.datetime
 def test_get_filings_processed_time_datetime_utc(
         multifilter_processed_time_response):
-    """Filtering by `processed_time` as datetime (UTC) returns 2 filings."""
+    """
+    Filtering by `processed_time` as datetime (UTC) returns 2 filings.
+    """
     cloetta_sv_objs = (
         datetime(2023, 1, 18, 11, 2, 6, 724768, tzinfo=UTC),
         datetime(2023, 5, 16, 21, 7, 17, 825836, tzinfo=UTC)
@@ -296,17 +298,19 @@ def test_get_filings_processed_time_datetime_utc(
         assert utc_dt in received_dts
     received_strs = {filing.processed_time_str for filing in fs}
     assert len(received_strs) == 2
-    for str_dt in received_strs:
+    for str_dt in cloetta_sv_strs:
         assert str_dt in received_strs
 
 
 @pytest.mark.datetime
 def test_get_filings_processed_time_datetime_naive(
         multifilter_processed_time_response):
-    """Filtering by `processed_time` as datetime (naive) returns 2 filings."""
+    """
+    Filtering by `processed_time` as datetime (naive) returns 2 filings.
+    """
     cloetta_sv_objs = (
-        datetime(2023, 1, 18, 11, 2, 6, 724768),
-        datetime(2023, 5, 16, 21, 7, 17, 825836)
+        datetime(2023, 1, 18, 11, 2, 6, 724768, tzinfo=None),
+        datetime(2023, 5, 16, 21, 7, 17, 825836, tzinfo=None)
         )
     cloetta_sv_strs = (
         '2023-01-18 11:02:06.724768',
