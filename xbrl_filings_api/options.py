@@ -23,6 +23,12 @@ year_filter_months : YearFilterMonthsType, default ((0, 8), (1, 8))
 views : iterable of SQLiteView, default DEFAULT_VIEWS
     List of `SQLiteView` objects. The `name` attributes of objects may
     not be overlapping.
+timeout_sec : float = 30.0
+    Maximum number of seconds to wait for response from the server.
+browser : webbrowser.BaseBrowser or None
+    The web browser controller object used for `Filing.open()` method.
+open_viewer : bool = True
+    Open viewer instead of plain xHTML file on `Filing.open()` call.
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
