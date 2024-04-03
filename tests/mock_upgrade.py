@@ -1007,11 +1007,19 @@ def main():
             f'folder "{MOCK_URL_DIR_NAME}".'
             ),
         epilog=(
-            'If no flags are given, default behavior is to upgrade all '
-            'mock URL collections.'
+            'Mocks removed from the listing in this script will be '
+            'removed from the mock folder as well.'
             )
         )
 
+    parser.add_argument(
+        '-a', '--all', action='store_true',
+        help='upgrade all mock URL collections'
+        )
+    parser.add_argument(
+        '-n', '--new', action='store_true',
+        help='upgrade only new, unfetched mock URL collections'
+        )
     parser.add_argument(
         '-l', '--list', action='store_true',
         help='list all mocks defined in this module'
@@ -1020,19 +1028,17 @@ def main():
         '-b', '--bare-list', action='store_true',
         help='use simple bare list format with --list'
         )
-    parser.add_argument(
-        '-n', '--new', action='store_true',
-        help='upgrade only new, unfetched mock URL collections'
-        )
 
     clargs = parser.parse_args()
 
-    if clargs.list:
-        _list_mock_urls(clargs.bare_list)
+    if clargs.all:
+        _upgrade_mock_urls(only_new=False)
     elif clargs.new:
         _upgrade_mock_urls(only_new=True)
+    if clargs.list:
+        _list_mock_urls(clargs.bare_list)
     else:
-        _upgrade_mock_urls(only_new=False)
+        parser.print_help()
 
 
 def _upgrade_mock_urls(only_new):
@@ -1185,6 +1191,3 @@ def _flag_new_for_fetching():
 
 if __name__ == '__main__':
     main()
-else:
-    msg = 'This module must be run as a script.'
-    raise NotImplementedError(msg)
