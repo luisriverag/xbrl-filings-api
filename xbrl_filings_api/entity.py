@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from typing import Union
+from typing import Union, overload
 
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
@@ -34,6 +34,10 @@ class Entity(APIResource):
 
     _FILING_FLAG = GET_ENTITY
 
+    @overload
+    def __init__(self, json_frag: dict, api_request: _APIRequest) -> None: ...
+    @overload
+    def __init__(self, json_frag: _Prototype) -> None: ...
     def __init__(
             self,
             json_frag: Union[dict, _Prototype],

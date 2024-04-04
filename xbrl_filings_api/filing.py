@@ -10,7 +10,7 @@ import urllib.parse
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath
-from typing import ClassVar, Union
+from typing import ClassVar, Union, overload
 
 import xbrl_filings_api.options as options
 from xbrl_filings_api import download_specs_construct, downloader
@@ -98,6 +98,16 @@ class Filing(APIResource):
         flags=re.VERBOSE | re.ASCII
         )
 
+    @overload
+    def __init__(
+        self,
+        json_frag: dict,
+        api_request: _APIRequest,
+        entity_iter: Union[Iterable[Entity], None] = None,
+        message_iter: Union[Iterable[ValidationMessage], None] = None
+        ) -> None: ...
+    @overload
+    def __init__(self, json_frag: _Prototype) -> None: ...
     def __init__(
             self,
             json_frag: Union[dict, _Prototype],

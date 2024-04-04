@@ -6,7 +6,7 @@
 
 from collections.abc import Iterable
 from datetime import datetime, timezone
-from typing import Any, Optional, Union, overload
+from typing import Any, Optional, Union
 
 from xbrl_filings_api import order_columns
 from xbrl_filings_api.api_object import APIObject
@@ -38,10 +38,6 @@ class APIResource(APIObject):
     TYPE: Union[str, None] = None
     _FILING_FLAG: ScopeFlag
 
-    @overload
-    def __init__(self, json_frag: _Prototype) -> None: ...
-    @overload
-    def __init__(self, json_frag: dict, api_request: _APIRequest) -> None: ...
     def __init__(
             self,
             json_frag: Union[dict, _Prototype],

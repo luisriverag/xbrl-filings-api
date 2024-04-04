@@ -266,13 +266,14 @@ class FilingSet(set[Filing]):
                     f'{res_info.file}_download_path',
                     yresult.path
                     )
-            if isinstance(yresult.err, downloader.CorruptDownloadError):
+            orig_err = yresult.err
+            if isinstance(orig_err, downloader.CorruptDownloadError):
                 # Wrap again with FilingsAPIError subclassed exception
                 err = CorruptDownloadError(
-                    path=result.err.path,
-                    url=result.err.url,
-                    calculated_hash=result.err.calculated_hash,
-                    expected_hash=result.err.expected_hash
+                    path=orig_err.path,
+                    url=orig_err.url,
+                    calculated_hash=orig_err.calculated_hash,
+                    expected_hash=orig_err.expected_hash
                     )
                 yresult = downloader.DownloadResult(
                     yresult.url, yresult.path, err, yresult.info)
@@ -785,8 +786,8 @@ class FilingSet(set[Filing]):
         if elem.entity_api_id:
             id_ent = elem.entity_api_id
             ent_existing: Union[Entity, None] = next(
-                (e for e in self.entities
-                 if e.api_id == id_ent), # type: ignore[misc]
+                (e for e in self.entities # type: ignore[misc]
+                 if e.api_id == id_ent),
                 None
                 )
             if ent_existing:

@@ -8,7 +8,7 @@ import logging
 import re
 import urllib.parse
 from pathlib import PurePosixPath
-from typing import Union
+from typing import Union, overload
 
 from xbrl_filings_api.api_request import _APIRequest
 from xbrl_filings_api.api_resource import APIResource
@@ -73,6 +73,10 @@ class ValidationMessage(APIResource):
     _DUPLICATE_1_RE = re.compile(r'\bvalue:\s*(\S+)')
     _DUPLICATE_2_RE = re.compile(r'!=\s+(\S+)')
 
+    @overload
+    def __init__(self, json_frag: dict, api_request: _APIRequest) -> None: ...
+    @overload
+    def __init__(self, json_frag: _Prototype) -> None: ...
     def __init__(
             self,
             json_frag: Union[dict, _Prototype],
