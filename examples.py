@@ -71,7 +71,7 @@ def open_ixbrl_viewer_in_browser():
         filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'}
         )
     filing = next(iter(filings))
-    webbrowser.open_new_tab(filing.viewer_url)
+    filing.open()
 
 
 # Runner script

@@ -10,6 +10,7 @@ Tests for downloading methods are in separate test module
 # SPDX-License-Identifier: MIT
 
 import logging
+import webbrowser
 from datetime import date, datetime, timezone
 from typing import Any
 
@@ -132,6 +133,13 @@ class BaseBrowserMock:
         """Assign keyword arguments to attribute `call_kwargs`."""
         self.call_kwargs = kwargs
         return self.return_value
+
+
+class BadBaseBrowserMock:
+    """Mock object without open()."""
+
+    def close():
+        pass
 
 
 class TestFilingAsml22enNoEntity:
@@ -583,9 +591,9 @@ def test_open_arguments_open_viewer_true(get_asml22en_filing, monkeypatch):
     options.open_viewer=True.
     """
     monkeypatch.setattr(options, 'open_viewer', True)
-    filing: xf.Filing = get_asml22en_filing()
     bbmock = BaseBrowserMock(return_value=True)
     monkeypatch.setattr(options, 'browser', bbmock)
+    filing: xf.Filing = get_asml22en_filing()
     call_return = filing.open(
         new=0,
         autoraise=True
@@ -602,9 +610,9 @@ def test_open_arguments_open_viewer_false(get_asml22en_filing, monkeypatch):
     options.open_viewer=False.
     """
     monkeypatch.setattr(options, 'open_viewer', False)
-    filing: xf.Filing = get_asml22en_filing()
     bbmock = BaseBrowserMock(return_value=False)
     monkeypatch.setattr(options, 'browser', bbmock)
+    filing: xf.Filing = get_asml22en_filing()
     call_return = filing.open(
         new=2,
         autoraise=False
@@ -623,10 +631,10 @@ def test_open_none_url(
         open_viewer, attr_name, get_asml22en_filing, monkeypatch):
     """Test `Filing.open` when open URL attribute is None."""
     monkeypatch.setattr(options, 'open_viewer', open_viewer)
-    filing: xf.Filing = get_asml22en_filing()
-    setattr(filing, attr_name, None)
     bbmock = BaseBrowserMock(return_value=True)
     monkeypatch.setattr(options, 'browser', bbmock)
+    filing: xf.Filing = get_asml22en_filing()
+    setattr(filing, attr_name, None)
     with pytest.raises(
             ValueError, match=rf'The attribute "{attr_name}" value is None.'):
         _ = filing.open(
@@ -635,11 +643,14 @@ def test_open_none_url(
             )
 
 
-def test_open_options_browser_none(get_asml22en_filing, monkeypatch):
-    """Test `Filing.open` when options.browser is None."""
+def test_open_options_browser_none_bad_browser(get_asml22en_filing, monkeypatch):
+    """
+    Test `Filing.open` when options.browser is not BaseBrowser-like.
+    """
     monkeypatch.setattr(options, 'open_viewer', True)
+    bad_bbmock = BadBaseBrowserMock()
+    monkeypatch.setattr(options, 'browser', bad_bbmock)
     filing: xf.Filing = get_asml22en_filing()
-    monkeypatch.setattr(options, 'browser', None)
     with pytest.raises(
             TypeError,
             match=r'Value options.browser is not webbrowser.BaseBrowser.'):
@@ -647,3 +658,20 @@ def test_open_options_browser_none(get_asml22en_filing, monkeypatch):
             new=0,
             autoraise=True
             )
+
+
+def test_open_options_browser_none_webbrowser_get(get_asml22en_filing, monkeypatch):
+    """
+    Test `Filing.open` calls `webbrowser.get` when options.browser is
+    None.
+    """
+    monkeypatch.setattr(options, 'open_viewer', True)
+    monkeypatch.setattr(options, 'browser', None)
+    monkeypatch.setattr(
+        webbrowser, 'get', lambda: BaseBrowserMock(return_value=True))
+    filing: xf.Filing = get_asml22en_filing()
+    ret_value = filing.open(
+        new=0,
+        autoraise=True
+        )
+    assert ret_value is True

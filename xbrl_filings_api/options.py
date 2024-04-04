@@ -84,14 +84,9 @@ browser: Union[webbrowser.BaseBrowser, None] = None
 """
 The web browser controller object used for `Filing.open()` method.
 
-Can be created with `webbrowser.get()` function.
+If value is `None`, it will be set when `Filing.open()` is called. Valid
+value can be created with `webbrowser.get()` function.
 """
 
 open_viewer: bool = True
 """Open viewer instead of plain xHTML file on `Filing.open()` call."""
-
-
-try:
-    browser = webbrowser.get()
-except: # noqa: E722 # Not sure about type but default browser n/a still
-    logger.warning('No default webbrowser resolved for options.browser.')

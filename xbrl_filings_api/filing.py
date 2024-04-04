@@ -7,6 +7,7 @@
 import logging
 import re
 import urllib.parse
+import webbrowser
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath
@@ -679,6 +680,9 @@ class Filing(APIResource):
         document except the viewer has a JavaScript Inline XBRL viewer
         to drill into the tagged facts on the document.
 
+        Browser can be customized by setting `options.browser` as value
+        returned by `webbrowser.get()`.
+
         Parameters
         ----------
         new : int, default 0
@@ -696,21 +700,24 @@ class Filing(APIResource):
         Raises
         ------
         ValueError
-            If attribute `viewer_url` (or `xhtml_url`) is None or
-            `options.browser` is not set.
+            If attribute `viewer_url` (or `xhtml_url`) is None.
+        webbrowser.Error
+            When `options.browser` is None and no runnable browser is
+            present.
         """
+        if options.browser is None:
+            options.browser = webbrowser.get()
+
         file_url = self.viewer_url if options.open_viewer else self.xhtml_url
         if file_url is None:
             attr_name = 'viewer_url' if options.open_viewer else 'xhtml_url'
             msg = f'The attribute "{attr_name}" value is None.'
             raise ValueError(msg)
+
+        # Complicated `if` due to test mocking purposes
         if not (isinstance(options.browser, object)
                 and callable(getattr(options.browser, 'open', None))):
-            msg = (
-                'Value options.browser is not webbrowser.BaseBrowser. It is '
-                'likely that webbrowser.get() failed and there is no runnable '
-                'browser.'
-                )
+            msg = 'Value options.browser is not webbrowser.BaseBrowser.'
             raise TypeError(msg)
         # Existence of open method is certain
         return options.browser.open( # type: ignore[union-attr]
