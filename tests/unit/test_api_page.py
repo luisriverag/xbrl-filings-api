@@ -155,7 +155,7 @@ def test_raises_initiate_directly(dummy_api_request):
 
 
 def test_main_resource_api_id_as_int():
-    """Test filing api_id from API as int."""
+    """Test main resource filing api_id from API as int."""
     rsps_with_int_data_id = {
         'data': [{
             'type': 'filing',
@@ -196,7 +196,7 @@ def test_main_resource_api_id_as_int():
 
 
 def test_included_resource_api_id_as_int():
-    """Test filing api_id from API as int."""
+    """Test included resource api_id from API as int."""
     rsps_with_int_included_id = {
         'data': [{
             'type': 'filing',

@@ -115,7 +115,7 @@ def test_to_sqlite_filing_index(
 def test_get_filings_language(filter_language_response):
     """Filter `language` raises an `APIError`."""
     with pytest.raises(xf.APIError, match=r'Bad filter value'):
-        with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
+        with pytest.warns(xf.FilterNotSupportedWarning):
             _ = xf.get_filings(
                 filters={
                     'language': 'fi'
@@ -129,11 +129,11 @@ def test_get_filings_language(filter_language_response):
 @pytest.mark.sqlite
 def test_to_sqlite_language(
     filter_language_response, tmp_path, monkeypatch):
-    """Filter `language` raises an `APIError`."""
+    """Filter `language` raises an `APIError` for to_sqlite."""
     monkeypatch.setattr(xf.options, 'views', None)
     db_path = tmp_path / 'test_to_sqlite_language.db'
     with pytest.raises(xf.APIError, match=r'Bad filter value'):
-        with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
+        with pytest.warns(xf.FilterNotSupportedWarning):
             xf.to_sqlite(
                 path=db_path,
                 update=False,
@@ -149,7 +149,7 @@ def test_to_sqlite_language(
 
 @pytest.mark.date
 def test_get_filings_last_end_date_str(filter_last_end_date_response):
-    """Querying `last_end_date` as str returns filing(s)."""
+    """String filtered `last_end_date` returns filing(s)."""
     date_str = '2021-02-28'
     fs = xf.get_filings(
         filters={
@@ -169,7 +169,7 @@ def test_get_filings_last_end_date_str(filter_last_end_date_response):
 @pytest.mark.date
 def test_to_sqlite_last_end_date_str(
         filter_last_end_date_response, db_record_count, tmp_path, monkeypatch):
-    """Requested `last_end_date` is inserted into a database."""
+    """String filtered `last_end_date` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     date_str = '2021-02-28'
     db_path = tmp_path / 'test_to_sqlite_last_end_date.db'
@@ -198,7 +198,7 @@ def test_to_sqlite_last_end_date_str(
 
 @pytest.mark.date
 def test_get_filings_last_end_date_obj(filter_last_end_date_response):
-    """Querying `last_end_date` as date returns filing(s)."""
+    """Date object filtered `last_end_date` returns filing(s)."""
     date_obj = date(2021, 2, 28)
     fs = xf.get_filings(
         filters={
@@ -217,7 +217,9 @@ def test_get_filings_last_end_date_obj(filter_last_end_date_response):
 @pytest.mark.date
 def test_to_sqlite_last_end_date_obj(
         filter_last_end_date_response, db_record_count, tmp_path, monkeypatch):
-    """Requested `last_end_date` is inserted into a database."""
+    """
+    Date object filtered `last_end_date` is inserted into a database.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     date_obj = date(2021, 2, 28)
     db_path = tmp_path / 'test_to_sqlite_last_end_date.db'
@@ -247,7 +249,7 @@ def test_to_sqlite_last_end_date_obj(
 @pytest.mark.date
 def test_get_filings_last_end_date_datetime(
         filter_last_end_date_lax_response):
-    """Querying `last_end_date` as datetime raises ValueError."""
+    """Datetime filtered `last_end_date` raises ValueError."""
     dt_obj = datetime(2021, 2, 28, tzinfo=UTC)
     with pytest.raises(
         expected_exception=ValueError,
@@ -268,7 +270,7 @@ def test_get_filings_last_end_date_datetime(
 def test_to_sqlite_last_end_date_datetime(
         filter_last_end_date_lax_response, tmp_path, monkeypatch
         ):
-    """Requested `last_end_date` is inserted into a database."""
+    """Datetime filtered `last_end_date` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     dt_obj = datetime(2021, 2, 28, tzinfo=UTC)
     db_path = tmp_path / 'test_to_sqlite_last_end_date.db'
@@ -289,9 +291,9 @@ def test_to_sqlite_last_end_date_datetime(
 
 
 @pytest.mark.datetime
-def test_get_filings_added_time_str(
+def test_get_filings_added_time_str_datelike(
         filter_added_time_response, monkeypatch):
-    """Querying `added_time` as str returns filing(s)."""
+    """String filtered date-like `added_time` returns filing(s)."""
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     time_str = '2021-09-23 00:00:00'
     time_utc = datetime(2021, 9, 23, tzinfo=UTC)
@@ -310,9 +312,9 @@ def test_get_filings_added_time_str(
 
 
 @pytest.mark.datetime
-def test_get_filings_added_time_2_str(
+def test_get_filings_added_time_str_exact(
         filter_added_time_2_response, monkeypatch):
-    """Querying `added_time` as str returns filing(s)."""
+    """String filtered exact `added_time` returns filing(s)."""
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     time_str = '2023-05-09 13:27:02.676029'
     time_utc = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
@@ -334,7 +336,7 @@ def test_get_filings_added_time_2_str(
 @pytest.mark.datetime
 def test_to_sqlite_added_time_2_str(
         filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
-    """Requested `added_time` as str is inserted into a database."""
+    """String filtered `added_time` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     time_str = '2023-05-09 13:27:02.676029'
@@ -365,7 +367,7 @@ def test_to_sqlite_added_time_2_str(
 @pytest.mark.datetime
 def test_get_filings_added_time_datetime_utc(
         filter_added_time_2_response, monkeypatch):
-    """Querying `added_time` as datetime (UTC) returns filing(s)."""
+    """Datetime (UTC) filtered `added_time` returns filing(s)."""
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
     time_str = '2023-05-09 13:27:02.676029'
@@ -388,8 +390,7 @@ def test_get_filings_added_time_datetime_utc(
 def test_to_sqlite_added_time_datetime_utc(
         filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
     """
-    Requested `added_time` as datetime (UTC) is inserted into a
-    database.
+    Datetime (UTC) filtered `added_time` is inserted into a database.
     """
     monkeypatch.setattr(xf.options, 'views', None)
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
@@ -422,7 +423,7 @@ def test_to_sqlite_added_time_datetime_utc(
 @pytest.mark.datetime
 def test_get_filings_added_time_datetime_naive(
         filter_added_time_2_response, monkeypatch):
-    """Querying `added_time` as datetime (naive) returns filing(s)."""
+    """Datetime (naive) filtered `added_time` returns filing(s)."""
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=None)
     time_str = '2023-05-09 13:27:02.676029'
@@ -442,7 +443,7 @@ def test_get_filings_added_time_datetime_naive(
 
 @pytest.mark.datetime
 def test_get_filings_added_time_date(filter_added_time_lax_response):
-    """Querying `added_time` as date raises ValueError."""
+    """Date object filtered `added_time` raises ValueError."""
     date_obj = date(2021, 9, 23)
     with pytest.raises(
         expected_exception=ValueError,
@@ -462,7 +463,9 @@ def test_get_filings_added_time_date(filter_added_time_lax_response):
 @pytest.mark.datetime
 def test_to_sqlite_added_time_date(
         filter_added_time_lax_response, tmp_path, monkeypatch):
-    """Querying `added_time` as date for database raises ValueError."""
+    """
+    Date object filtered `added_time` for database raises ValueError.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     date_obj = date(2021, 9, 23)
     db_path = tmp_path / 'test_to_sqlite_added_time_date.db'
@@ -485,7 +488,7 @@ def test_to_sqlite_added_time_date(
 
 @pytest.mark.datetime
 def test_get_filings_added_time_bad_datetime(monkeypatch):
-    """Test raising for `added_time` as bad datetime str."""
+    """Test raising for bad string filtered `added_time`."""
     monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     time_str = '2021-99-99 99:99:99'
     with pytest.raises(
@@ -506,7 +509,7 @@ def test_get_filings_entity_api_id(filter_entity_api_id_lax_response):
     """Querying `entity_api_id` raises APIError."""
     kone_id = '2499'
     with pytest.raises(xf.APIError, match=r'FilingSchema has no attribute'):
-        with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
+        with pytest.warns(xf.FilterNotSupportedWarning):
             _ = xf.get_filings(
                 filters={
                     'entity_api_id': kone_id
@@ -673,7 +676,7 @@ def test_to_sqlite_2filters_country_last_end_date_date(
 
 
 def test_raises_get_filings_none_filter():
-    """Test raising for None value in multifilter."""
+    """Test raising for filter value None."""
     with pytest.raises(
             ValueError,
             match=r'Value None is not allowed for filters, field "api_id"'):

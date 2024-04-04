@@ -15,7 +15,7 @@ import xbrl_filings_api as xf
 @pytest.mark.date
 @pytest.mark.paging
 def test_no_limit(paging_czechia20dec_response, monkeypatch):
-    """Requested filings are available on 3 pages."""
+    """Test max_size=NO_LIMIT."""
     monkeypatch.setattr(xf.options, 'max_page_size', 10)
     # The database has 29 records for this query
     fs = xf.get_filings(

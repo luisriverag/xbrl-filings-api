@@ -14,7 +14,7 @@ import xbrl_filings_api.downloader as downloader
 
 
 def test_download_connection_error(tmp_path):
-    """Test raising of `requests.ConnectionError`."""
+    """Test raising of `requests.ConnectionError`, download."""
     e_filename = 'test_download_connection_error.zip'
     url = f'https://filings.xbrl.org/download/{e_filename}'
     # `responses` used solely to block internet connection
@@ -33,7 +33,7 @@ def test_download_connection_error(tmp_path):
 
 
 def test_download_not_found_error(tmp_path):
-    """Test raising of status 404 `requests.HTTPError`."""
+    """Test raising of status 404 `requests.HTTPError`, download."""
     e_filename = 'test_download_not_found_error.zip'
     url = f'https://filings.xbrl.org/download/{e_filename}'
     with responses.RequestsMock() as rsps:
@@ -58,7 +58,7 @@ def test_download_not_found_error(tmp_path):
 
 
 def test_download_original_filename(mock_url_response, tmp_path):
-    """Test filename from URL will be used for saved file."""
+    """Test filename from URL will be used for saved file, download."""
     e_filename = 'test_download_original_filename.zip'
     path_str = None
     url = f'https://filings.xbrl.org/download/{e_filename}'
@@ -80,7 +80,10 @@ def test_download_original_filename(mock_url_response, tmp_path):
 
 def test_download_sha256_fail(
         mock_url_response, mock_response_sha256, tmp_path):
-    """Test filename in attr `filename` will be used for saved file."""
+    """
+    Test filename in attr `filename` will be used for saved file,
+    download.
+    """
     filename = 'test_download_sha256_fail.zip'
     e_filename = f'{filename}.corrupt'
     url = f'https://filings.xbrl.org/download/{filename}'

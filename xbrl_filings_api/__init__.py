@@ -94,6 +94,8 @@ from xbrl_filings_api.exceptions import (
     CorruptDownloadError,
     DatabaseSchemaUnmatchError,
     FilingsAPIError,
+    FilingsAPIWarning,
+    FilterNotSupportedWarning,
     HTTPStatusError,
     JSONAPIFormatError,
 )

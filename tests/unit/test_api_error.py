@@ -7,13 +7,12 @@
 import pytest
 
 import xbrl_filings_api as xf
-import xbrl_filings_api.exceptions as xf_exceptions
 
 
 @pytest.fixture
 def unknown_filter_error_obj(unknown_filter_error_response):
     """Get APIError from mock unknown_filter_error."""
-    with pytest.warns(xf_exceptions.FilterNotSupportedWarning):
+    with pytest.warns(xf.FilterNotSupportedWarning):
         with pytest.raises(xf.APIError) as exc_info:
             _ = xf.get_filings(
                 filters={'abcdef': '0'},

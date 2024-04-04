@@ -62,7 +62,10 @@ def test_repr(oldest3_fi_ent_vmessages_filingspage):
 
 
 def test_included_resource_api_id_as_int():
-    """Test filing api_id from API as int."""
+    """
+    Test included resource api_id from API as int resolved to final
+    objects.
+    """
     rsps_with_int_included_id = {
         'data': [{
             'type': 'filing',

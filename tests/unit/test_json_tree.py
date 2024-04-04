@@ -238,7 +238,7 @@ def test_get_datetime_value_bad_datetime(caplog):
 @pytest.mark.datetime
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_get_datetime_timezone0200_value():
-    """Test reading a datetime value from the tree."""
+    """Test reading a timezoned (0200) datetime value from the tree."""
     e_datetime = datetime(2023, 4, 19, 8, 20, 23, 668110, tzinfo=UTC)
     filing_frag = copy.deepcopy(ASML22EN_ENT_VMSG_FILING_FRAG)
     filing_frag['attributes']['processed'] = '2023-04-19 10:20:23.668110+0200'

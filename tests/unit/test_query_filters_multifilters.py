@@ -169,10 +169,10 @@ def test_to_sqlite_filing_index(
 
 
 def test_get_filings_reporting_date(multifilter_reporting_date_response):
-    """APIError raised for filtering with `reporting_date`."""
+    """Test raising APIError for `reporting_date` filtering."""
     dates = '2020-12-31', '2021-12-31', '2022-12-31'
     with pytest.raises(xf.APIError, match=r'FilingSchema has no attribute'):
-        with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
+        with pytest.warns(xf.FilterNotSupportedWarning):
             _ = xf.get_filings(
                 filters={
                     'reporting_date': dates
@@ -186,12 +186,14 @@ def test_get_filings_reporting_date(multifilter_reporting_date_response):
 @pytest.mark.sqlite
 def test_to_sqlite_reporting_date(
         multifilter_reporting_date_response, tmp_path, monkeypatch):
-    """Filtering by `reporting_date` raises exception."""
+    """
+    Test raising APIError for `reporting_date` filtering, to_sqlite.
+    """
     monkeypatch.setattr(xf.options, 'views', None)
     dates = '2020-12-31', '2021-12-31', '2022-12-31'
     db_path = tmp_path / 'test_to_sqlite_reporting_date.db'
     with pytest.raises(xf.APIError, match=r'FilingSchema has no attribute'):
-        with pytest.warns(xf.exceptions.FilterNotSupportedWarning):
+        with pytest.warns(xf.FilterNotSupportedWarning):
             xf.to_sqlite(
                 path=db_path,
                 update=False,
@@ -208,7 +210,7 @@ def test_to_sqlite_reporting_date(
 @pytest.mark.datetime
 def test_get_filings_processed_time_str(
         multifilter_processed_time_response):
-    """Filtering by `processed_time` as str returns 2 filings."""
+    """Test string filtered `processed_time` returns 2 filings."""
     cloetta_sv_strs = (
         '2023-01-18 11:02:06.724768',
         '2023-05-16 21:07:17.825836'
@@ -239,7 +241,7 @@ def test_get_filings_processed_time_str(
 def test_to_sqlite_processed_time_str(
         multifilter_processed_time_response, db_record_count, tmp_path,
         monkeypatch):
-    """Filtering by `processed_time` filings inserted to db."""
+    """Test string filtered `processed_time` filings inserted to db."""
     monkeypatch.setattr(xf.options, 'views', None)
     cloetta_sv_strs = (
         '2023-01-18 11:02:06.724768',
@@ -274,7 +276,7 @@ def test_to_sqlite_processed_time_str(
 def test_get_filings_processed_time_datetime_utc(
         multifilter_processed_time_response):
     """
-    Filtering by `processed_time` as datetime (UTC) returns 2 filings.
+    Test datetime (UTC) filtered `processed_time` returns 2 filings.
     """
     cloetta_sv_objs = (
         datetime(2023, 1, 18, 11, 2, 6, 724768, tzinfo=UTC),
@@ -306,7 +308,7 @@ def test_get_filings_processed_time_datetime_utc(
 def test_get_filings_processed_time_datetime_naive(
         multifilter_processed_time_response):
     """
-    Filtering by `processed_time` as datetime (naive) returns 2 filings.
+    Test datetime (naive) filtered `processed_time` returns 2 filings.
     """
     cloetta_sv_objs = (
         datetime(2023, 1, 18, 11, 2, 6, 724768, tzinfo=None),
@@ -334,7 +336,7 @@ def test_get_filings_processed_time_datetime_naive(
 
 
 def test_raises_get_filings_none_filter():
-    """Test raising for None value in multifilter."""
+    """Test raising for filter value None in multifilter."""
     api_ids = '1134', '1135', None, '4529'
     with pytest.raises(
             ValueError,

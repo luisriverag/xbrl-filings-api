@@ -9,6 +9,9 @@ class CorruptDownloadError(Exception):
     """
     SHA-256 hash of the downloaded file does not match value from API.
 
+    This is a different exception than the one in
+    `xbrl_filings_api.exceptions`.
+
     Attributes
     ----------
     path : str
@@ -20,7 +23,7 @@ class CorruptDownloadError(Exception):
     def __init__(
             self, path: str, url: str, calculated_hash: str,
             expected_hash: str) -> None:
-        """Initialize `CorruptDownloadError`."""
+        """Initialize `downloader.CorruptDownloadError`."""
         self.path = path
         """Path where the file was saved."""
         self.url = url

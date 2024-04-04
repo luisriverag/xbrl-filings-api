@@ -628,7 +628,7 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __or__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return union FilingSet and update cross-references."""
+        """Return method `union` result for iterables."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.union(other)
@@ -641,7 +641,7 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __ior__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Apply union in self and update cross-references."""
+        """Apply method `update` for iterables."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.update(other)
@@ -672,7 +672,7 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __and__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return intersection FilingSet and update cross-references."""
+        """Return method `intersection` result for iterables."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.intersection(other)
@@ -685,7 +685,7 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __iand__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Apply intersection in self and update cross-references."""
+        """Apply method `intersection_update` for iterables."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.intersection_update(other)
@@ -711,7 +711,7 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __sub__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return difference FilingSet and update cross-references."""
+        """Return method `difference` result for iterables."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.difference(other)
@@ -724,7 +724,7 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __isub__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Apply difference to self and update cross-references."""
+        """Apply method `difference_update` for iterables."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.difference_update(other)
@@ -755,7 +755,7 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __xor__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Return symmetric difference and update cross-references."""
+        """Return method `symmetric_difference` result for iterables."""
         if not isinstance(other, Iterable):
             return NotImplemented
         return self.symmetric_difference(other)
@@ -768,7 +768,7 @@ class FilingSet(set[Filing]):
     # Any = types.NotImplementedType (n/a in Py3.9)
     def __ixor__( # type: ignore[override]
             self, other: Iterable[Filing]) -> Union['FilingSet', Any]:
-        """Apply symmetric difference in self and update cross-refs."""
+        """Apply method `symmetric_difference_update` for iterables."""
         if not isinstance(other, Iterable):
             return NotImplemented
         self.symmetric_difference_update(other)

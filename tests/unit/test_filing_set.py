@@ -71,8 +71,8 @@ def applus20_21_filingset(urlmock):
     return fs
 
 
-def test_init_not_filing(get_oldest3_fi_filingset):
-    """Test FilingSet attributes."""
+def test_init_not_filing_raises(get_oldest3_fi_filingset):
+    """Test FilingSet.__init__ raises with str item in iterable."""
     fs: set[xf.Filing] = set(get_oldest3_fi_filingset())
     fs.add('test')
     with pytest.raises(
@@ -80,11 +80,16 @@ def test_init_not_filing(get_oldest3_fi_filingset):
         _ = xf.FilingSet(fs)
 
 
-def test_attributes(get_oldest3_fi_filingset):
-    """Test FilingSet attributes."""
+def test_resource_collection_attributes(get_oldest3_fi_filingset):
+    """Test FilingSet ResourceCollection attributes."""
     fs: xf.FilingSet = get_oldest3_fi_filingset()
     assert isinstance(fs.entities, xf.ResourceCollection)
     assert isinstance(fs.validation_messages, xf.ResourceCollection)
+
+
+def test_columns_attribute(get_oldest3_fi_filingset):
+    """Test FilingSet.columns attributes."""
+    fs: xf.FilingSet = get_oldest3_fi_filingset()
     assert isinstance(fs.columns, list)
     for col in fs.columns:
         assert isinstance(col, str)
@@ -558,14 +563,14 @@ def test_columns_property(get_oldest3_fi_filingset):
 
 
 def test_repr(get_oldest3_fi_filingset):
-    """Test `__repr__` of FilingSet."""
+    """Test FilingSet.__repr__ without subresources."""
     e_repr = 'FilingSet(len(self)=3)'
     fs: xf.FilingSet = get_oldest3_fi_filingset()
     assert repr(fs) == e_repr
 
 
 def test_repr_ent_vmessages(get_oldest3_fi_ent_vmessages_filingset):
-    """Test `__repr__` of FilingSet."""
+    """Test FilingSet.__repr__ with subresources."""
     e_repr = (
         'FilingSet(len(self)=3, len(entities)=3, len(validation_messages)=45)')
     fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()
@@ -574,8 +579,8 @@ def test_repr_ent_vmessages(get_oldest3_fi_ent_vmessages_filingset):
 
 def test_contains_is_true_diff_identities(get_oldest3_fi_filingset):
     """
-    Test `in` operator evaluates to True if filing is same but identity
-    different.
+    Test FilingSet `in` operator evaluates to True if filing is same but
+    identity different.
     """
     fs_a: xf.FilingSet = get_oldest3_fi_filingset()
     fs_b: xf.FilingSet = get_oldest3_fi_filingset()
@@ -585,7 +590,9 @@ def test_contains_is_true_diff_identities(get_oldest3_fi_filingset):
 
 
 def test_contains_is_false_wrong_type(get_oldest3_fi_entities_filingset):
-    """Test `in` operator evaluates to False when wrong type."""
+    """
+    Test FilingSet `in` operator evaluates to False when wrong type.
+    """
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     filing = next(iter(fs))
     assert filing.entity not in fs
@@ -593,7 +600,8 @@ def test_contains_is_false_wrong_type(get_oldest3_fi_entities_filingset):
 
 def test_contains_is_true_hash_tuple_api_id(get_oldest3_fi_entities_filingset):
     """
-    Test `in` operator evaluates to True when compared with hash tuple.
+    Test FilingSet `in` operator evaluates to True when compared with
+    hash tuple.
     """
     fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
     filing = next(iter(fs))

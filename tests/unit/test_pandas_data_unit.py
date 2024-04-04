@@ -21,10 +21,13 @@ import xbrl_filings_api as xf
 
 
 class TestFilingSet_get_pandas_data:
-    """Test method FilingSet.get_pandas_data."""
+    """Test method FilingSet.get_pandas_data, unit testing."""
 
     def test_defaults(self, get_oldest3_fi_filingset):
-        """Test default parameter values."""
+        """
+        Test default parameter values for FilingSet.get_pandas_data,
+        unit testing.
+        """
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -62,7 +65,7 @@ class TestFilingSet_get_pandas_data:
 
     @pytest.mark.date
     def test_attr_names_3cols(self, get_oldest3_fi_filingset):
-        """Test attr_names defining 3 columns."""
+        """Test attr_names defining 3 columns, unit testing."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=['api_id', 'filing_index', 'last_end_date'],
@@ -86,7 +89,8 @@ class TestFilingSet_get_pandas_data:
     def test_attr_names_entity_attr_with_entity_false(
             self, get_oldest3_fi_entities_filingset):
         """
-        Test attr_names with entity attribute, still with_entity=False.
+        Test attr_names with entity attribute, still with_entity=False,
+        unit testing.
         """
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.get_pandas_data(
@@ -110,7 +114,7 @@ class TestFilingSet_get_pandas_data:
         assert '1495' in pd_data['api_id']
 
     def test_with_entity_true(self, get_oldest3_fi_entities_filingset):
-        """Test with_entity=True."""
+        """Test with_entity=True, unit testing, unit testing."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -137,7 +141,7 @@ class TestFilingSet_get_pandas_data:
 
     @pytest.mark.datetime
     def test_strip_timezone_false(self, get_oldest3_fi_filingset):
-        """Test strip_timezone=False."""
+        """Test strip_timezone=False, unit testing."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -156,7 +160,7 @@ class TestFilingSet_get_pandas_data:
 
     @pytest.mark.date
     def test_date_as_datetime_false(self, get_oldest3_fi_filingset):
-        """Test date_as_datetime=False."""
+        """Test date_as_datetime=False, unit testing."""
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -173,7 +177,7 @@ class TestFilingSet_get_pandas_data:
         assert '1495' in pd_data['api_id']
 
     def test_include_urls_true(self, get_oldest3_fi_filingset, monkeypatch):
-        """Test include_urls=True."""
+        """Test include_urls=True, unit testing."""
         monkeypatch.setattr(
             xf.options, 'entry_point_url',
             'https://filings.xbrl.org/api/filings'
@@ -211,7 +215,7 @@ class TestFilingSet_get_pandas_data:
 
     def test_with_entity_include_urls_both_true(
             self, get_oldest3_fi_entities_filingset, monkeypatch):
-        """Test with_entity=True and include_urls=True."""
+        """Test with_entity=True and include_urls=True, unit testing."""
         monkeypatch.setattr(
             xf.options, 'entry_point_url',
             'https://filings.xbrl.org/api/filings'
@@ -243,7 +247,10 @@ class TestFilingSet_get_pandas_data:
         assert '1495' in pd_data['api_id']
 
     def test_include_paths_true_has_downloaded(self, get_oldest3_fi_filingset):
-        """Test include_paths=True and filings were downloaded."""
+        """
+        Test include_paths=True and filings were downloaded, unit
+        testing.
+        """
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         enento20en_filing = next(filter(lambda f: f.api_id == '710', fs))
         enento20en_filing.json_download_path = 'test_json'
@@ -265,7 +272,10 @@ class TestFilingSet_get_pandas_data:
         assert '1495' in pd_data['api_id']
 
     def test_include_paths_true_not_downloaded(self, get_oldest3_fi_filingset):
-        """Test include_paths=True but no filings were downloaded."""
+        """
+        Test include_paths=True but no filings were downloaded, unit
+        testing.
+        """
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -283,7 +293,10 @@ class TestFilingSet_get_pandas_data:
 
     def test_include_paths_false_has_downloaded(
             self, get_oldest3_fi_filingset):
-        """Test include_paths=False and filings were downloaded."""
+        """
+        Test include_paths=False and filings were downloaded, unit
+        testing.
+        """
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         enento20en_filing = next(filter(lambda f: f.api_id == '710', fs))
         enento20en_filing.json_download_path = 'test_json'
@@ -307,11 +320,14 @@ class TestFilingSet_get_pandas_data:
 class TestResourceCollection_entities_get_pandas_data:
     """
     Test method ResourceCollection.get_pandas_data for
-    FilingSet.entities.
+    FilingSet.entities, unit testing.
     """
 
     def test_e_defaults(self, get_oldest3_fi_entities_filingset):
-        """Test default parameter values."""
+        """
+        Test default parameter values for
+        ResourceCollection[entities].get_pandas_data, unit testing.
+        """
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
             attr_names=None,
@@ -330,7 +346,9 @@ class TestResourceCollection_entities_get_pandas_data:
         assert '1120' in pd_data['api_id']
 
     def test_e_attr_names_2cols(self, get_oldest3_fi_entities_filingset):
-        """Test attr_names defining 2 columns."""
+        """
+        Test attr_names defining 2 columns, unit testing, entities.
+        """
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
             attr_names=['api_id', 'name'],
@@ -347,7 +365,7 @@ class TestResourceCollection_entities_get_pandas_data:
     @pytest.mark.datetime
     def test_e_strip_timezone_true(
             self, get_oldest3_fi_entities_filingset):
-        """Test strip_timezone=True."""
+        """Test strip_timezone=True, unit testing, entities."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
             attr_names=None,
@@ -361,7 +379,7 @@ class TestResourceCollection_entities_get_pandas_data:
 
     @pytest.mark.datetime
     def test_e_strip_timezone_false(self, get_oldest3_fi_entities_filingset):
-        """Test strip_timezone=False."""
+        """Test strip_timezone=False, unit testing, entities."""
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
             attr_names=None,
@@ -375,7 +393,7 @@ class TestResourceCollection_entities_get_pandas_data:
 
     def test_e_include_urls_true(
             self, get_oldest3_fi_entities_filingset, monkeypatch):
-        """Test include_urls=True."""
+        """Test include_urls=True, unit testing, entities."""
         monkeypatch.setattr(
             xf.options, 'entry_point_url',
             'https://filings.xbrl.org/api/filings'
@@ -401,11 +419,15 @@ class TestResourceCollection_entities_get_pandas_data:
 class TestResourceCollection_validation_messages_get_pandas_data:
     """
     Test method ResourceCollection.get_pandas_data for
-    FilingSet.validation_messages.
+    FilingSet.validation_messages, unit testing.
     """
 
     def test_vm_defaults(self, get_oldest3_fi_vmessages_filingset):
-        """Test default parameter values."""
+        """
+        Test default parameter values for
+        ResourceCollection[validation_messages].get_pandas_data, unit
+        testing.
+        """
         e_api_ids = {
             '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471',
             '5472', '5473', '5474', '5475', '5476', '5477', '5478', '8662',
@@ -451,7 +473,10 @@ class TestResourceCollection_validation_messages_get_pandas_data:
             assert e_api_id in pd_data['api_id']
 
     def test_vm_attr_names_2cols(self, get_oldest3_fi_vmessages_filingset):
-        """Test attr_names defining 2 columns."""
+        """
+        Test attr_names defining 2 columns, unit testing,
+        validation_messages.
+        """
         e_api_ids = {
             '5464', '5465', '5466', '5467', '5468', '5469', '5470', '5471',
             '5472', '5473', '5474', '5475', '5476', '5477', '5478', '8662',

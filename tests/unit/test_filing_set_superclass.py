@@ -309,7 +309,7 @@ class TestUnion:
 
     def test_filing_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test FilingSet item count."""
+        """Test FilingSet item count for union."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -322,7 +322,7 @@ class TestUnion:
 
     def test_filing_api_id(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Filing.api_id values match expected."""
+        """Test Filing.api_id values match expected for union."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -335,7 +335,7 @@ class TestUnion:
 
     def test_entity_filings_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Entity.filings count."""
+        """Test Entity.filings count for union."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -345,7 +345,9 @@ class TestUnion:
 
     def test_entity_filings_api_id(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Entity.filings api_id are the same as for FilingSet."""
+        """
+        Test Entity.filings api_id are the same as for FilingSet, union.
+        """
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -365,7 +367,7 @@ class TestIntersection:
 
     def test_filing_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test FilingSet item count."""
+        """Test FilingSet item count for intersection."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -378,7 +380,7 @@ class TestIntersection:
 
     def test_filing_api_id(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Filing.api_id values match expected."""
+        """Test Filing.api_id values match expected for intersection."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -388,7 +390,7 @@ class TestIntersection:
 
     def test_entity_filings_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Entity.filings count."""
+        """Test Entity.filings count for intersection."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -398,7 +400,10 @@ class TestIntersection:
 
     def test_entity_filings_api_id(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Entity.filings api_id are the same as for FilingSet."""
+        """
+        Test Entity.filings api_id are the same as for FilingSet,
+        intersection.
+        """
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -415,7 +420,7 @@ class TestDifference:
 
     def test_filing_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test FilingSet item count."""
+        """Test FilingSet item count for difference."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -428,7 +433,7 @@ class TestDifference:
 
     def test_filing_api_id(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Filing.api_id values match expected."""
+        """Test Filing.api_id values match expected for difference."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -438,7 +443,7 @@ class TestDifference:
 
     def test_entity_filings_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Entity.filings count."""
+        """Test Entity.filings count for difference."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -448,7 +453,10 @@ class TestDifference:
 
     def test_entity_filings_api_id(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Entity.filings api_id are the same as for FilingSet."""
+        """
+        Test Entity.filings api_id are the same as for FilingSet,
+        difference.
+        """
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -465,7 +473,7 @@ class TestSymmetricDifference:
 
     def test_filing_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test FilingSet item count."""
+        """Test FilingSet item count for symmetric difference."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -478,7 +486,10 @@ class TestSymmetricDifference:
 
     def test_filing_api_id(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Filing.api_id values match expected."""
+        """
+        Test Filing.api_id values match expected for symmetric
+        difference.
+        """
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -488,7 +499,7 @@ class TestSymmetricDifference:
 
     def test_entity_filings_count(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Entity.filings count."""
+        """Test Entity.filings count for symmetric difference."""
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -498,7 +509,10 @@ class TestSymmetricDifference:
 
     def test_entity_filings_api_id(
             self, method, upm21to22_filingset, upm22to23_filingset):
-        """Test Entity.filings api_id are the same as for FilingSet."""
+        """
+        Test Entity.filings api_id are the same as for FilingSet,
+        symmetric difference.
+        """
         fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
         fs_22_23: xf.FilingSet = upm22to23_filingset # Right operand
         fs_result = _execute_operation(method, fs_21_22, fs_22_23)
@@ -525,7 +539,7 @@ def test_raise_bad_iterable(
 @pytest.mark.parametrize('method', BASIC_SET_OPERATION_NORMAL_METHODS)
 def test_raise_not_iterable_normal_method(
         method, upm21to22_filingset, upm23en_filing):
-    """Test raising when argument is not iterable."""
+    """Test raising when argument is not iterable, normal method."""
     fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
     filing_22en: xf.Filing = upm23en_filing # Right operand
     with pytest.raises(TypeError, match=r"'Filing' object is not iterable"):
@@ -535,7 +549,7 @@ def test_raise_not_iterable_normal_method(
 @pytest.mark.parametrize('method', BASIC_SET_OPERATION_OPERATOR_METHODS)
 def test_raise_not_iterable_operator(
         method, upm21to22_filingset, upm23en_filing):
-    """Test raising when argument is not iterable."""
+    """Test raising when argument is not iterable, operator."""
     fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
     filing_22en: xf.Filing = upm23en_filing # Right operand
     method_callable = getattr(fs_21_22, method)
@@ -731,11 +745,9 @@ class TestRemoveDiscard:
         assert ids_result == e_ids, 'Filing api_id values match expected'
 
     @pytest.mark.parametrize('method', ['remove', 'discard'])
-    def test_success_filing_deepcopy_or_retain(
+    def test_success_filing_retain(
             self, method, upm21to22_filingset, upm22en_filing):
-        """
-        Test Filing deepcopied (new item) or retained when adding new.
-        """
+        """Test all original Filing objects retained when removing."""
         fs_21_22: xf.FilingSet = upm21to22_filingset
         filing_22en: xf.Filing = upm22en_filing
         fs_result = xf.FilingSet(fs_21_22)

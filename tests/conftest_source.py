@@ -190,6 +190,7 @@ def dummy_api_request():
 
 @pytest.fixture(scope='session', autouse=True)
 def all_test_functions(request):
+    """All test functions in a dict with access paths as keys."""
     test_funcs = {}
     session = request.node
     for item in session.items:

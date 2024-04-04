@@ -49,7 +49,8 @@ def _get_package_callables_recursively(
             attr_val = getattr(o_name, attr_name)
             if not callable(attr_val):
                 continue
-            _append_callables_recursively(pkg_callables, attr_val, import_name, import_name)
+            _append_callables_recursively(
+                pkg_callables, attr_val, import_name, import_name)
     return pkg_callables
 
 
@@ -139,7 +140,6 @@ def test_nonconcrete_classes_init_fails(dummy_api_request):
         xf.APIResource(json_frag={})
 
 
-pytest.mark.skip(reason='Not yet checked out')
 def test_all_callables_have_unique_docstrings():
     """
     Test that all callables have unique docstrings in package and
@@ -151,7 +151,6 @@ def test_all_callables_have_unique_docstrings():
         pytest.fail(reason=msg)
 
 
-pytest.mark.skip(reason='Not yet checked out')
 def test_all_tests_have_unique_docstrings(all_test_functions):
     """
     Test that all tests have unique docstrings.

@@ -61,7 +61,10 @@ def test_parallel_not_found_error(plain_specs, tmp_path):
 
 
 def test_parallel_original_filename(plain_specs, mock_url_response, tmp_path):
-    """Test filename from URL will be used for saved file."""
+    """
+    Test filename from URL will be used for saved file,
+    download_parallel.
+    """
     e_filename = 'test_parallel_original_filename.zip'
     url = f'https://filings.xbrl.org/download_parallel/{e_filename}'
     items = [plain_specs(url, tmp_path)]
@@ -121,7 +124,10 @@ def test_sync_4_items_at_once(
         plain_specs, hashfail_specs, stem_renamed_specs,
         filename_renamed_specs, mock_url_response, url_filename,
         mock_response_sha256, tmp_path):
-    """Test downloading 4 items with `max_concurrent` as None."""
+    """
+    Test downloading 4 items with `max_concurrent` as None,
+    download_parallel.
+    """
     e_filestem = 'test_sync_4_items_at_once'
     url_prefix = 'https://filings.xbrl.org/download_parallel/'
     url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 5)]
@@ -186,7 +192,10 @@ def test_sync_4_items_max_concurrent_2(
         plain_specs, hashfail_specs, stem_renamed_specs,
         filename_renamed_specs, mock_url_response, url_filename,
         mock_response_sha256, tmp_path):
-    """Test downloading 4 items with `max_concurrent` as 2."""
+    """
+    Test downloading 4 items with `max_concurrent` as 2,
+    download_parallel.
+    """
     e_filestem = 'test_sync_4_items_max_concurrent_2'
     url_prefix = 'https://filings.xbrl.org/download_parallel/'
     url_list = [f'{url_prefix}{e_filestem}_{n}.zip' for n in range(0, 5)]
@@ -251,7 +260,7 @@ def test_sync_items_request_start_order(
         plain_specs, mock_url_response, tmp_path):
     """
     Test that downloads are started according to order of `items`, n=50,
-    max_concurrent=17.
+    max_concurrent=17, download_parallel.
     """
     e_filestem = 'test_sync_items_request_start_order'
     url_prefix = 'https://filings.xbrl.org/download_parallel/'

@@ -18,7 +18,7 @@ UTC = timezone.utc
 
 @pytest.mark.datetime
 def test_sort_oldest_finnish_str(oldest3_fi_response, monkeypatch):
-    """Sort by `added_time` for filings from Finland."""
+    """Sort by string `added_time` for filings from Finland."""
     fs = xf.get_filings(
         filters={
             'country': 'FI'
@@ -34,7 +34,7 @@ def test_sort_oldest_finnish_str(oldest3_fi_response, monkeypatch):
 
 @pytest.mark.datetime
 def test_sort_oldest_finnish_list(oldest3_fi_response, monkeypatch):
-    """Sort by `added_time` for filings from Finland."""
+    """Sort by list of string `added_time` for filings from Finland."""
     fs = xf.get_filings(
         filters={
             'country': 'FI'
