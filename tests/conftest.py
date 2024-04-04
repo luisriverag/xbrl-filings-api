@@ -481,6 +481,14 @@ def paging_swedish_size2_pg3_lax_response(urlmock):
 
 
 @pytest.fixture
+def paging_oldest_ukrainian_2pg_4ea_response(urlmock):
+    """Get oldest Ukrainian filings 2 pages, 4 filings each."""
+    with responses.RequestsMock() as rsps:
+        urlmock.apply(rsps, 'paging_oldest_ukrainian_2pg_4ea')
+        yield rsps
+
+
+@pytest.fixture
 def multifilter_api_id_response(urlmock):
     """Get 4 Shell filings for 2021 and 2022."""
     with responses.RequestsMock() as rsps:

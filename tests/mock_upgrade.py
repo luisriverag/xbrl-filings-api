@@ -581,6 +581,26 @@ def _fetch_paging_swedish_size2_pg3():
 _addmock('paging_swedish_size2_pg3', lax_fixture=True)
 
 
+@_recorder.record(file_path=urlmock.path('paging_oldest_ukrainian_2pg_4ea'))
+def _fetch_paging_oldest_ukrainian_2pg_4ea():
+    """Get oldest Ukrainian filings 2 pages, 4 filings each."""
+    page_count = 2
+    params={
+        'page[size]': 4,
+        'filter[country]': 'UA',
+        'sort': 'period_end,processed' # last_end_date, processed_time
+        }
+    for page_num in range(1, page_count+1):
+        _ = requests.get(
+            url=ENTRY_POINT_URL,
+            params=params,
+            headers=JSON_API_HEADERS,
+            timeout=REQUEST_TIMEOUT
+            )
+        params['page[number]'] = page_num + 1
+_addmock('paging_oldest_ukrainian_2pg_4ea')
+
+
 @_recorder.record(file_path=urlmock.path('multifilter_api_id'))
 def _fetch_multifilter_api_id():
     """Get 4 Shell filings for 2021 and 2022."""

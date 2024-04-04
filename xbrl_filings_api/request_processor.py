@@ -86,6 +86,12 @@ def generate_pages(
             page_size = max_size
     params['page[size]'] = page_size
 
+    stats.query_call_counter += 1
+    logger.info(
+        f'Query call #{stats.query_call_counter} started | {filters=}, '
+        f'{sort=}, {max_size=}, {flags=}, {add_api_params=}'
+        )
+
     include_flags = []
     if ScopeFlag.GET_ONLY_FILINGS not in flags:
         if ScopeFlag.GET_ENTITY in flags:
@@ -100,8 +106,8 @@ def generate_pages(
     if add_api_params:
         params.update(add_api_params)
 
-    req_1st_num = stats.page_counter + 1
-    params_list = _get_params_list_on_filters(params, filters, req_1st_num)
+    aq_1st_num = stats.api_query_counter + 1
+    params_list = _get_params_list_on_filters(params, filters, aq_1st_num)
     params_list_len = len(params_list)
 
     query_time = datetime.now(UTC)
@@ -112,12 +118,14 @@ def generate_pages(
     for qparam_i, query_params in enumerate(params_list):
         next_url: Union[str, None] = options.entry_point_url
         req_params: Union[_ParamsType, None] = query_params
+        aq_num = aq_1st_num + qparam_i
+        stats.api_query_counter = aq_num
 
         # For each page in the query
         while next_url:
-            request_num = req_1st_num + qparam_i
             page_json, api_request = _retrieve_page_json(
-                next_url, req_params, query_time, request_num)
+                next_url, req_params, query_time, aq_num)
+            stats.page_counter += 1
 
             page = FilingsPage(
                 page_json, api_request, flags, received_api_ids, res_colls)
@@ -185,7 +193,7 @@ def _raise_for_none_filters(
 def _get_params_list_on_filters(
         params: _ParamsType,
         filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None],
-        req_1st_num: int
+        aq_1st_num: int
         ) -> list[_ParamsType]:
     """Append filter keys to `params` dict."""
     if not filters:
@@ -228,8 +236,8 @@ def _get_params_list_on_filters(
     if fgroup:
         params_lists = _expand_params_on_multifilters(params, fgroup)
         for pset_i, pset in enumerate(params_lists):
-            pset_num = req_1st_num + pset_i
-            logger.info(f'Request #{pset_num} parameter set: {pset}')
+            pset_num = aq_1st_num + pset_i
+            logger.info(f'API query #{pset_num} parameter set: {pset}')
         return params_lists
     else:
         logger.info(f'Parameter set: {params}')
@@ -482,7 +490,7 @@ def _get_sort_query_param(sort: Sequence[str]) -> str:
 
 def _retrieve_page_json(
         url: str, params: Union[_ParamsType, None],
-        query_time: datetime, request_num: int
+        query_time: datetime, aq_num: int
         ) -> tuple[dict, _APIRequest]:
     """
     Execute an API request and return the deserialized JSON object.
@@ -497,22 +505,22 @@ def _retrieve_page_json(
     if params and len(params) > 0:
         furl += '?' + '&'.join([f'{key}={val}' for key, val in params.items()])
     furl = urllib.parse.unquote(furl)
-    logger.info(f'GET request #{request_num} {furl}')
+    logger.info(f'GET request #{aq_num} {furl}')
 
     res = requests.get(
         url, params, headers={'Content-Type': 'application/vnd.api+json'},
         timeout=options.timeout_sec
         )
-    stats.page_counter = request_num
     api_request = _APIRequest(res.url, query_time)
 
     if res.status_code == 200:  # noqa: PLR2004
-        logger.info(f'Success for request #{request_num}')
+        logger.info(f'Success for page of API query #{aq_num}')
     else:
         logger.error(
-            f'Error with request #{request_num}, status {res.status_code} '
-            f'{res.reason}'
+            f'Error with page request for API query #{aq_num}, '
+            f'status {res.status_code} {res.reason}'
             )
+        # HTTPStatusError is raised later
 
     json_frag = decode_error = None
     try:
