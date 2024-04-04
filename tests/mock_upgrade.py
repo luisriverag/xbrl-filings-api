@@ -1035,7 +1035,7 @@ def main():
         _upgrade_mock_urls(only_new=False)
     elif clargs.new:
         _upgrade_mock_urls(only_new=True)
-    if clargs.list:
+    elif clargs.list:
         _list_mock_urls(clargs.bare_list)
     else:
         parser.print_help()

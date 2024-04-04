@@ -18,6 +18,7 @@ the aforementioned script.
 # ruff: noqa: Q000
 
 import hashlib
+import re
 from datetime import datetime, timezone
 from typing import Union
 
@@ -185,6 +186,21 @@ def dummy_api_request():
         'https://filings.xbrl.org/api/filings?Dummy=Url',
         query_time=datetime(2000, 1, 1, 12, 0, 0, tzinfo=UTC)
         )
+
+
+@pytest.fixture(scope='session', autouse=True)
+def all_test_functions(request):
+    test_funcs = {}
+    session = request.node
+    for item in session.items:
+        func_obj = item.getparent(pytest.Function)
+        func = func_obj.function
+        fname = (
+            f'{func.__module__}.'
+            + re.sub(r'\[.*\]', '', func_obj.name)
+            )
+        test_funcs[fname] = func
+    return test_funcs
 
 
 @pytest.fixture
