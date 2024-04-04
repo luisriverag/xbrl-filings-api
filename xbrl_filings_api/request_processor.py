@@ -340,14 +340,20 @@ def _process_time_filter(
             proc_dt = val.astimezone(UTC)
     else:
         val_str = str(val)
-        for dtparse in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'):
-            try_dt: Union[datetime, None] = None
+        for try_i in range(2):
+            parsed_dt: Union[datetime, None] = None
             try:
-                try_dt = datetime.strptime(val_str, dtparse)  # noqa: DTZ007
+                if try_i == 0:
+                    parsed_dt = datetime.fromisoformat(val_str)
+                else:
+                    # For Python 3.10 and earlier in case timezones
+                    # are taken to use in API datetime strings
+                    parsed_dt = datetime.strptime(
+                        val_str, '%Y-%m-%d %H:%M:%S.%f%z')
             except ValueError:
                 pass
-            if isinstance(try_dt, datetime):
-                proc_dt = try_dt
+            if isinstance(parsed_dt, datetime):
+                proc_dt = parsed_dt
                 break
         else:
             msg = (
