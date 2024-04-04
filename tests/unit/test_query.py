@@ -181,19 +181,18 @@ def test_get_filings_bad_json(monkeypatch):
                 )
 
 
-@pytest.mark.sqlite
-def test_bad_options_time_accuracy(
-        get_oldest3_fi_filingset, monkeypatch, tmp_path):
-    """Test bad `options.time_accuracy`."""
-    monkeypatch.setattr(xf.options, 'time_accuracy', 'bad_value')
-    fs: xf.FilingSet = get_oldest3_fi_filingset()
-    path = tmp_path / 'test_bad_options_time_accuracy.db'
-    with pytest.raises(
-            ValueError,
-            match=(r"options\.time_accuracy not in \{'day', 'min', 'sec', "
-                   r"'max'\}")):
-        fs.to_sqlite(
-            path=path,
-            update=False,
-            flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
+def test_different_options_entry_point_url(monkeypatch):
+    """Test different options.entry_point_url."""
+    monkeypatch.setattr(
+        xf.options, 'entry_point_url', 'https://www.example.com/api/filings')
+    with responses.RequestsMock() as rsps:
+        rsps.get(
+            url='https://www.example.com/api/filings',
+            body='{"data": []}'
+            )
+        _ = xf.get_filings(
+            filters=None,
+            sort=None,
+            max_size=100,
+            flags=xf.GET_ONLY_FILINGS
             )

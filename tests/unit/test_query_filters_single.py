@@ -294,7 +294,6 @@ def test_to_sqlite_last_end_date_datetime(
 def test_get_filings_added_time_str_datelike(
         filter_added_time_response, monkeypatch):
     """String filtered date-like `added_time` returns filing(s)."""
-    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     time_str = '2021-09-23 00:00:00'
     time_utc = datetime(2021, 9, 23, tzinfo=UTC)
     fs = xf.get_filings(
@@ -315,7 +314,6 @@ def test_get_filings_added_time_str_datelike(
 def test_get_filings_added_time_str_exact(
         filter_added_time_2_response, monkeypatch):
     """String filtered exact `added_time` returns filing(s)."""
-    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     time_str = '2023-05-09 13:27:02.676029'
     time_utc = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
     fs = xf.get_filings(
@@ -334,13 +332,12 @@ def test_get_filings_added_time_str_exact(
 
 @pytest.mark.sqlite
 @pytest.mark.datetime
-def test_to_sqlite_added_time_2_str(
+def test_to_sqlite_added_time_str_exact(
         filter_added_time_2_response, db_record_count, tmp_path, monkeypatch):
     """String filtered `added_time` is inserted into a database."""
     monkeypatch.setattr(xf.options, 'views', None)
-    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     time_str = '2023-05-09 13:27:02.676029'
-    db_path = tmp_path / 'test_to_sqlite_added_time_str.db'
+    db_path = tmp_path / 'test_to_sqlite_added_time_str_exact.db'
     xf.to_sqlite(
         path=db_path,
         update=False,
@@ -355,11 +352,11 @@ def test_to_sqlite_added_time_2_str(
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
-        "SELECT COUNT(*) FROM Filing WHERE added_time = ?",
+        "SELECT count(*) FROM Filing WHERE added_time = ?",
         (time_str,)
         )
-    count_num = cur.fetchone()[0]
-    assert count_num == 1, 'Inserted requested filing(s)'
+    correct_count = cur.fetchone()[0]
+    assert correct_count == 1, 'Inserted filing'
     assert db_record_count(cur) == 1
     con.close()
 
@@ -368,7 +365,6 @@ def test_to_sqlite_added_time_2_str(
 def test_get_filings_added_time_datetime_utc(
         filter_added_time_2_response, monkeypatch):
     """Datetime (UTC) filtered `added_time` returns filing(s)."""
-    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
     time_str = '2023-05-09 13:27:02.676029'
     fs = xf.get_filings(
@@ -393,10 +389,9 @@ def test_to_sqlite_added_time_datetime_utc(
     Datetime (UTC) filtered `added_time` is inserted into a database.
     """
     monkeypatch.setattr(xf.options, 'views', None)
-    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=UTC)
-    time_str = '2023-05-09 13:27:02.676029'
-    db_path = tmp_path / 'test_to_sqlite_added_time.db'
+    e_time_str = '2023-05-09 13:27:02.676029'
+    db_path = tmp_path / 'test_to_sqlite_added_time_datetime_utc.db'
     xf.to_sqlite(
         path=db_path,
         update=False,
@@ -411,11 +406,11 @@ def test_to_sqlite_added_time_datetime_utc(
     con = sqlite3.connect(db_path)
     cur = con.cursor()
     cur.execute(
-        "SELECT COUNT(*) FROM Filing WHERE added_time = ?",
-        (time_str,)
+        "SELECT count(*) FROM Filing WHERE added_time = ?",
+        (e_time_str,)
         )
-    count_num = cur.fetchone()[0]
-    assert count_num == 1, 'Inserted requested filing(s)'
+    correct_count = cur.fetchone()[0]
+    assert correct_count == 1, 'Inserted filing'
     assert db_record_count(cur) == 1
     con.close()
 
@@ -424,7 +419,6 @@ def test_to_sqlite_added_time_datetime_utc(
 def test_get_filings_added_time_datetime_naive(
         filter_added_time_2_response, monkeypatch):
     """Datetime (naive) filtered `added_time` returns filing(s)."""
-    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     dt_obj = datetime(2023, 5, 9, 13, 27, 2, 676029, tzinfo=None)
     time_str = '2023-05-09 13:27:02.676029'
     fs = xf.get_filings(
@@ -489,7 +483,6 @@ def test_to_sqlite_added_time_date(
 @pytest.mark.datetime
 def test_get_filings_added_time_bad_datetime(monkeypatch):
     """Test raising for bad string filtered `added_time`."""
-    monkeypatch.setattr(xf.options, 'time_accuracy', 'min')
     time_str = '2021-99-99 99:99:99'
     with pytest.raises(
             ValueError,

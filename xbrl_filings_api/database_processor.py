@@ -23,7 +23,6 @@ from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.exceptions import DatabaseSchemaUnmatchError
 from xbrl_filings_api.filing import Filing
-from xbrl_filings_api.time_formats import TIME_FORMATS
 from xbrl_filings_api.validation_message import ValidationMessage
 
 logger = logging.getLogger(__name__)
@@ -284,12 +283,7 @@ def _exec(
 
 
 def _adapt_datetime(dt: datetime):
-    try:
-        fstr = TIME_FORMATS[options.time_accuracy]
-    except KeyError:
-        msg = "options.time_accuracy not in {'day', 'min', 'sec', 'max'}"
-        raise ValueError(msg) from None
-    return dt.strftime(fstr)
+    return dt.strftime('%Y-%m-%d %H:%M:%S.%f')
 
 
 def _adapt_list(list_in: list):

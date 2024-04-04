@@ -292,9 +292,9 @@ class FilingSet(set[Filing]):
         Save set to an SQLite3 database.
 
         The method has the same signature and follows the same rules as
-        `to_sqlite()` with the exception of missing parameters
-        `filters`, `sort`, `max_size` and `add_api_params`. See
-        documentation.
+        function `to_sqlite()` in library root with the exception of
+        missing parameters `filters`, `sort`, `max_size` and
+        `add_api_params`. See documentation.
 
         Flags also default to all tables turned on. If no additional
         information is present in the set, the tables will not be

@@ -29,7 +29,6 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
-from xbrl_filings_api.time_formats import TIME_FORMATS
 
 UTC = timezone.utc
 logger = logging.getLogger(__name__)
@@ -333,7 +332,7 @@ def _process_time_filter(
             proc_dt = val.astimezone(UTC)
     else:
         val_str = str(val)
-        for dtparse in reversed(TIME_FORMATS.values()):
+        for dtparse in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'):
             try_dt: Union[datetime, None] = None
             try:
                 try_dt = datetime.strptime(val_str, dtparse)  # noqa: DTZ007
@@ -534,7 +533,7 @@ def _retrieve_page_json(
     elif not isinstance(json_frag, dict):
         msg = 'JSON:API document is not a JSON object'
         raise JSONAPIFormatError(msg)
-    elif not (json_frag.get('data') or json_frag.get('meta')):
+    elif json_frag.get('data') is None and json_frag.get('meta') is None:
         msg = (
             'JSON:API document does not have any of the required keys "data", '
             '"errors", "meta".'

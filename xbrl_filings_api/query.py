@@ -182,6 +182,11 @@ def to_sqlite(
     expected columns, a `DatabaseSchemaUnmatchError` exception will be
     raised.
 
+    Datetime values will be exported to the database as the same string
+    that was received from the API. The format is, as of April 2024,
+    `datetime.strftime` format string ``%Y-%m-%d %H:%M:%S.%f`` or
+    ``%Y-%m-%d %H:%M:%S``.
+
     The parameter `add_api_params` can be used to override
     automatically generated JSON:API parameters ``page[size]``,
     ``include`` and ``filter[<field>]`` and to add more of them to
