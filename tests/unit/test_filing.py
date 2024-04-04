@@ -139,6 +139,7 @@ class BadBaseBrowserMock:
     """Mock object without open()."""
 
     def close():
+        """Empty method."""
         pass
 
 
@@ -643,7 +644,8 @@ def test_open_none_url(
             )
 
 
-def test_open_options_browser_none_bad_browser(get_asml22en_filing, monkeypatch):
+def test_open_options_browser_none_bad_browser(
+        get_asml22en_filing, monkeypatch):
     """
     Test `Filing.open` when options.browser is not BaseBrowser-like.
     """
@@ -660,7 +662,8 @@ def test_open_options_browser_none_bad_browser(get_asml22en_filing, monkeypatch)
             )
 
 
-def test_open_options_browser_none_webbrowser_get(get_asml22en_filing, monkeypatch):
+def test_open_options_browser_none_webbrowser_get(
+        get_asml22en_filing, monkeypatch):
     """
     Test `Filing.open` calls `webbrowser.get` when options.browser is
     None.

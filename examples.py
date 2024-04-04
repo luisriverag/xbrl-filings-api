@@ -14,7 +14,6 @@ import inspect
 import logging
 import re
 import tempfile
-import webbrowser
 from pathlib import Path
 from types import FunctionType
 
