@@ -88,6 +88,7 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 from xbrl_filings_api import request_processor
+from xbrl_filings_api.constants import NO_LIMIT
 from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.filing_set import FilingSet
 from xbrl_filings_api.filings_page import FilingsPage
@@ -98,7 +99,7 @@ def get_filings(
         filters: Optional[Mapping[str, Union[Any, Iterable[Any]]]] = None,
         *,
         sort: Optional[Union[str, Sequence[str]]] = None,
-        max_size: int = 100,
+        limit: int = NO_LIMIT,
         flags: ScopeFlag = ScopeFlag.GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> FilingSet:
@@ -112,14 +113,13 @@ def get_filings(
         multirequest queries. See `xbrl_filings_api.query` module
         documentation.
     sort : str or sequence of str, optional
-        Used together with `max_size` to return filings from either end
+        Used together with `limit` to return filings from either end
         of sorted attribute values. Order is lost in `FilingSet` object.
         Default order is ascending; prefix attribute name with minus (-)
         to get descending order.
-    max_size : int or NO_LIMIT, default 100
-        Maximum number of filings to retrieve. With `NO_LIMIT`,
-        you'll reach for the sky. Filings will be retrieved in
-        batches (pages) of option `max_page_size`.
+    limit : int or NO_LIMIT, default NO_LIMIT
+        Maximum number of filings to retrieve. Filings will be retrieved
+        on pages (HTTP requests) of size `options.max_page_size`.
     flags : ScopeFlag, default GET_ONLY_FILINGS
         Scope of retrieval. Flag `GET_ENTITY` will retrieve and
         create the object for `filing.entity` and
@@ -141,7 +141,7 @@ def get_filings(
         }
 
     page_gen = request_processor.generate_pages(
-        filters, max_size, flags, res_colls, sort, add_api_params)
+        filters, limit, flags, res_colls, sort, add_api_params)
     for page in page_gen:
         # Do not deep copy `filing_list` by using FilingSet.update
         set.update(filings, page.filing_list)
@@ -154,7 +154,7 @@ def to_sqlite(
         update: bool = False,
         filters: Optional[Mapping[str, Union[Any, Iterable[Any]]]] = None,
         sort: Optional[Union[str, Sequence[str]]] = None,
-        max_size: int = 100,
+        limit: int = NO_LIMIT,
         flags: ScopeFlag = ScopeFlag.GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> None:
@@ -204,14 +204,13 @@ def to_sqlite(
         multirequest queries. See `xbrl_filings_api.query` module
         documentation.
     sort : str or sequence of str, optional
-        Used together with `max_size` to return filings from either end
+        Used together with `limit` to return filings from either end
         of sorted attribute values. Order is lost in `FilingSet` object.
         Default order is ascending; prefix attribute name with minus (-)
         to get descending order.
-    max_size : int or NO_LIMIT, default 100
-        Maximum number of filings to retrieve. With `NO_LIMIT`,
-        you'll reach for the sky. Filings will be retrieved in
-        batches (pages) of option `max_page_size`.
+    limit : int or NO_LIMIT, default NO_LIMIT
+        Maximum number of filings to retrieve. Filings will be retrieved
+        on pages (HTTP requests) of size `options.max_page_size`.
     flags : ScopeFlag, default GET_ONLY_FILINGS
         Scope of retrieval. Flag `GET_ENTITY` will retrieve entity
         records of filings and `GET_VALIDATION_MESSAGES` the
@@ -246,7 +245,7 @@ def to_sqlite(
         }
 
     page_gen = request_processor.generate_pages(
-        filters, max_size, flags, res_colls, sort, add_api_params)
+        filters, limit, flags, res_colls, sort, add_api_params)
     for page in page_gen:
         page_filings = FilingSet(page.filing_list)
         page_filings.to_sqlite(
@@ -264,7 +263,7 @@ def to_sqlite(
 def filing_page_iter(
         filters: Optional[Mapping[str, Union[Any, Iterable[Any]]]] = None,
         sort: Optional[Union[str, Sequence[str]]] = None,
-        max_size: int = 100,
+        limit: int = NO_LIMIT,
         flags: ScopeFlag = ScopeFlag.GET_ONLY_FILINGS,
         add_api_params: Optional[Mapping[str, str]] = None
         ) -> Iterator[FilingsPage]:
@@ -282,14 +281,11 @@ def filing_page_iter(
         multirequest queries. See `xbrl_filings_api.query` module
         documentation.
     sort : str or sequence of str, optional
-        Used together with `max_size` to return filings from either end
-        of sorted attribute values. Order is lost in `FilingSet` object.
-        Default order is ascending; prefix attribute name with minus (-)
-        to get descending order.
-    max_size : int or NO_LIMIT, default 100
-        Maximum number of filings to retrieve. With `NO_LIMIT`,
-        you'll reach for the sky. Filings will be retrieved in
-        batches (pages) of option `max_page_size`.
+        Sort filings on pages. Default order is ascending; prefix
+        attribute name with minus (-) to get descending order.
+    limit : int or NO_LIMIT, default NO_LIMIT
+        Maximum number of filings to retrieve. Filings will be retrieved
+        on pages (HTTP requests) of size `options.max_page_size`.
     flags : ScopeFlag, default GET_ONLY_FILINGS
         Scope of retrieval. Flag `GET_ENTITY` will retrieve and
         create the object for `filing.entity` and
@@ -311,5 +307,5 @@ def filing_page_iter(
         }
 
     page_gen = request_processor.generate_pages(
-        filters, max_size, flags, res_colls, sort, add_api_params)
+        filters, limit, flags, res_colls, sort, add_api_params)
     yield from page_gen

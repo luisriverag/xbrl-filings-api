@@ -37,7 +37,7 @@ def get_asml22en_filing(urlmock):
                         '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')
                     },
                 sort=None,
-                max_size=1,
+                limit=1,
                 flags=xf.GET_ONLY_FILINGS,
                 add_api_params=None
                 )
@@ -51,7 +51,7 @@ def asml22en_entities_filing(asml22en_entities_response, res_colls):
     """ASML Holding 2022 English AFR filing."""
     page_gen = request_processor.generate_pages(
         filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
-        max_size=1,
+        limit=1,
         flags=xf.GET_ENTITY,
         res_colls=res_colls
         )
@@ -69,7 +69,7 @@ def get_creditsuisse21en_entity_filing(urlmock):
             fs = xf.get_filings(
                 filters={'api_id': '162'},
                 sort=None,
-                max_size=1,
+                limit=1,
                 flags=xf.GET_ENTITY,
                 add_api_params=None
                 )
@@ -488,7 +488,7 @@ def test_language_from_xhtml_url(
     fs = xf.get_filings(
         filters={'api_id': '12366'},
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS,
         add_api_params=None
     )

@@ -15,7 +15,7 @@ import xbrl_filings_api as xf
 @pytest.mark.date
 @pytest.mark.paging
 def test_no_limit(paging_czechia20dec_response, monkeypatch):
-    """Test max_size=NO_LIMIT."""
+    """Test limit=NO_LIMIT."""
     monkeypatch.setattr(xf.options, 'max_page_size', 10)
     # The database has 29 records for this query
     fs = xf.get_filings(
@@ -24,7 +24,7 @@ def test_no_limit(paging_czechia20dec_response, monkeypatch):
             'last_end_date': '2020-12-31',
             },
         sort=None,
-        max_size=xf.NO_LIMIT,
+        limit=xf.NO_LIMIT,
         flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) >= 29
@@ -39,7 +39,7 @@ def test_removing_extra_filings(estonian_2_pages_3_each_response, monkeypatch):
             'country': 'EE',
             },
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
         )
     page1_filings = next(piter).filing_list
@@ -63,7 +63,7 @@ def test_removing_extra_entities(
             'country': 'EE',
             },
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
         )
     page1 = next(piter)
@@ -103,7 +103,7 @@ def test_removing_extra_validation_messages(
             'country': 'EE',
             },
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
         )
     page1 = next(piter)

@@ -40,7 +40,7 @@ _ParamsType = dict[str, Union[str, int]]
 
 def generate_pages(
         filters: Union[Mapping[str, Union[Any, Iterable[Any]]], None],
-        max_size: int,
+        limit: int,
         flags: ScopeFlag,
         res_colls: dict[str, ResourceCollection],
         sort: Union[str, Sequence[str], None] = None,
@@ -52,7 +52,7 @@ def generate_pages(
     Parameters
     ----------
     filters : mapping of str: {any, iterable of any}, optional
-    max_size : int or NO_LIMIT
+    limit : int or NO_LIMIT
     flags : ScopeFlag
     res_colls : dict of str: ResourceCollection
     sort: sequence of str, optional
@@ -78,18 +78,18 @@ def generate_pages(
 
     page_size = options.max_page_size
     # NO_LIMIT is int(0)
-    if max_size < 0:
-        msg = 'Parameter "max_size" may not be negative'
+    if limit < 0:
+        msg = 'Parameter "limit" may not be negative'
         raise ValueError(msg)
-    elif max_size > 0:
-        if max_size < page_size:
-            page_size = max_size
+    elif limit > 0:
+        if limit < page_size:
+            page_size = limit
     params['page[size]'] = page_size
 
     stats.query_call_counter += 1
     logger.info(
         f'Query call #{stats.query_call_counter} started | {filters=}, '
-        f'{sort=}, {max_size=}, {flags=}, {add_api_params=}'
+        f'{sort=}, {limit=}, {flags=}, {add_api_params=}'
         )
 
     include_flags = []
@@ -135,25 +135,25 @@ def generate_pages(
             next_url = page.api_next_page_url
 
             # Last page on paged query typically has more results
-            # than the query `max_size`
+            # than the query `limit`
             received_size += filing_count
-            if max_size != NO_LIMIT and received_size > max_size:
-                del_count = received_size - max_size
+            if limit != NO_LIMIT and received_size > limit:
+                del_count = received_size - limit
                 _remove_excess_resources(page, del_count)
 
             yield page
 
-            if max_size != NO_LIMIT and received_size >= max_size:
-                # Query `max_size` reached
+            if limit != NO_LIMIT and received_size >= limit:
+                # Query `limit` reached
                 break
             req_params = None
 
-        if max_size != NO_LIMIT and received_size >= max_size:
-            # Limit of `max_size` is exhausted before full multiquery/
-            # short date query
+        if limit != NO_LIMIT and received_size >= limit:
+            # `limit` is exhausted before full multiquery/short date
+            # query
             break
 
-        if max_size != NO_LIMIT:
+        if limit != NO_LIMIT:
             # Lower requested count of filings for further requests
             for update_i in range(qparam_i + 1, params_list_len):
                 pdict = params_list[update_i]
@@ -162,7 +162,7 @@ def generate_pages(
 
 
 def _remove_excess_resources(page: FilingsPage, del_count: int):
-    """Delete api resources beyond `max_size` on last page."""
+    """Delete api resources beyond parameter `limit` on last page."""
     for filing in page.filing_list[-del_count:]:
         if filing.entity and page.entity_list:
             filing.entity.filings.remove(filing)

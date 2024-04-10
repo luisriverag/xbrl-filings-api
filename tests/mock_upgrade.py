@@ -791,7 +791,7 @@ _addmock('paging_czechia20dec')
 def _fetch_multifilter_belgium20_short_date_year():
     """
     Belgian 2020 AFRs querying with short date filter year,
-    max_size=100.
+    limit=100.
     """
     date_list = (
         '2020-08-31',
@@ -807,7 +807,7 @@ def _fetch_multifilter_belgium20_short_date_year():
         '2021-06-30',
         '2021-07-31',
         )
-    filings_left = 100 # min(options.max_page_size, max_size)
+    filings_left = 100 # min(options.max_page_size, limit)
     for date_str in date_list:
         _ = requests.get(
             url=ENTRY_POINT_URL,
@@ -830,7 +830,7 @@ _addmock('multifilter_belgium20_short_date_year')
 def _fetch_multifilter_belgium20_short_date_year_no_limit():
     """
     Belgian 2020 AFRs querying with short date filter year,
-    max_size=NO_LIMIT, options.max_page_size=200.
+    limit=NO_LIMIT, options.max_page_size=200.
     """
     date_list = (
         '2020-08-31',
@@ -846,7 +846,7 @@ def _fetch_multifilter_belgium20_short_date_year_no_limit():
         '2021-06-30',
         '2021-07-31',
         )
-    filings_left = 200 # min(options.max_page_size, max_size)
+    filings_left = 200 # min(options.max_page_size, limit)
     for date_str in date_list:
         _ = requests.get(
             url=ENTRY_POINT_URL,

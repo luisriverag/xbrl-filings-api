@@ -47,7 +47,7 @@ async def print_progress_async():
     filings = xf.get_filings(
         filters={'country': 'FI'},
         sort='-added_time',
-        max_size=3
+        limit=3
         )
 
     dl_iter = filings.download_aiter(

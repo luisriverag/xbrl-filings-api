@@ -27,7 +27,7 @@ def test_get_filings_api_id(multifilter_api_id_response):
             'api_id': shell_api_ids
             },
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ONLY_FILINGS
         )
     received_api_ids = {filing.api_id for filing in fs}
@@ -48,7 +48,7 @@ def test_to_sqlite_api_id(
             'api_id': shell_api_ids
             },
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -73,7 +73,7 @@ def test_get_filings_country_only_first(multifilter_country_response):
             'country': country_codes
             },
         sort=None,
-        max_size=3,
+        limit=3,
         flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) == 3, 'Requested number of filings returned'
@@ -97,7 +97,7 @@ def test_to_sqlite_country_only_first(
             'country': country_codes
             },
         sort=None,
-        max_size=3,
+        limit=3,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -126,7 +126,7 @@ def test_get_filings_filing_index(
             'filing_index': filing_index_codes
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     received_countries = {filing.filing_index for filing in fs}
@@ -151,7 +151,7 @@ def test_to_sqlite_filing_index(
             'filing_index': filing_index_codes
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -178,7 +178,7 @@ def test_get_filings_reporting_date(multifilter_reporting_date_response):
                     'reporting_date': dates
                     },
                 sort=None,
-                max_size=3,
+                limit=3,
                 flags=xf.GET_ONLY_FILINGS
                 )
 
@@ -201,7 +201,7 @@ def test_to_sqlite_reporting_date(
                     'reporting_date': dates
                     },
                 sort=None,
-                max_size=3,
+                limit=3,
                 flags=xf.GET_ONLY_FILINGS
                 )
     assert not db_path.is_file()
@@ -224,7 +224,7 @@ def test_get_filings_processed_time_str(
             'processed_time': cloetta_sv_strs
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     received_dts = {filing.processed_time for filing in fs}
@@ -255,7 +255,7 @@ def test_to_sqlite_processed_time_str(
             'processed_time': cloetta_sv_strs
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -291,7 +291,7 @@ def test_get_filings_processed_time_datetime_utc(
             'processed_time': cloetta_sv_objs
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     received_dts = {filing.processed_time for filing in fs}
@@ -323,7 +323,7 @@ def test_get_filings_processed_time_datetime_naive(
             'processed_time': cloetta_sv_objs
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     received_dts = {filing.processed_time for filing in fs}
@@ -347,6 +347,6 @@ def test_raises_get_filings_none_filter():
                 'api_id': api_ids
                 },
             sort=None,
-            max_size=4,
+            limit=4,
             flags=xf.GET_ONLY_FILINGS
             )

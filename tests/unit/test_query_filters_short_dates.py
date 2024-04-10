@@ -21,7 +21,7 @@ pytestmark = [pytest.mark.multifilter, pytest.mark.date]
 def test_last_end_date_only_year(
         multifilter_belgium20_short_date_year_response, monkeypatch):
     """
-    Test getting Belgian filings for financial year 2020, max_size=100.
+    Test getting Belgian filings for financial year 2020, limit=100.
     """
     e_dates_with_filings = {date(2020, 12, 31), date(2021, 3, 31)}
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (1, 8)))
@@ -32,7 +32,7 @@ def test_last_end_date_only_year(
             'country': 'BE'
             },
         sort=None,
-        max_size=100,
+        limit=100,
         flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) >= 31
@@ -44,7 +44,7 @@ def test_last_end_date_only_year_no_limit(
         multifilter_belgium20_short_date_year_no_limit_response, monkeypatch):
     """
     Test getting Belgian filings for financial year 2020,
-    max_size=NO_LIMIT.
+    limit=NO_LIMIT.
     """
     e_dates_with_filings = {date(2020, 12, 31), date(2021, 3, 31)}
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (1, 8)))
@@ -55,7 +55,7 @@ def test_last_end_date_only_year_no_limit(
             'country': 'BE'
             },
         sort=None,
-        max_size=xf.NO_LIMIT,
+        limit=xf.NO_LIMIT,
         flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) >= 31
@@ -67,7 +67,7 @@ def test_last_end_date_only_year_as_int(
         multifilter_belgium20_short_date_year_response, monkeypatch):
     """
     Test getting Belgian filings for financial year 2020, filter value
-    int, max_size=100.
+    int, limit=100.
     """
     e_dates_with_filings = {date(2020, 12, 31), date(2021, 3, 31)}
     monkeypatch.setattr(xf.options, 'year_filter_months', ((0, 8), (1, 8)))
@@ -78,7 +78,7 @@ def test_last_end_date_only_year_as_int(
             'country': 'BE'
             },
         sort=None,
-        max_size=100,
+        limit=100,
         flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) >= 31
@@ -112,7 +112,7 @@ def test_last_end_date_only_year_jan_to_dec(monkeypatch):
                 'last_end_date': str(e_year)
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )
         assert len(fs) == 0
@@ -154,7 +154,7 @@ def test_last_end_date_only_year_earlier_dec_to_next_jan(monkeypatch):
                 'last_end_date': str(e_year)
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )
         assert len(fs) == 0
@@ -196,7 +196,7 @@ def test_last_end_date_only_year_two_finyears(monkeypatch):
                 'last_end_date': str(e_year)
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )
         assert len(fs) == 0
@@ -214,7 +214,7 @@ def test_raises_only_year_options_year_filter_months_start_month0(monkeypatch):
                 'last_end_date': '2024'
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -231,7 +231,7 @@ def test_raises_only_year_options_year_filter_months_stop_month13(monkeypatch):
                 'last_end_date': '2024'
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -257,7 +257,7 @@ def test_last_end_date_year_and_month(monkeypatch):
                 'last_end_date': '2024-02'
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )
         assert len(fs) == 0
@@ -271,7 +271,7 @@ def test_raises_last_end_date_year_and_month_month0(monkeypatch):
                 'last_end_date': '2024-00'
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -288,7 +288,7 @@ def test_raises_bad_options_year_filter_months(monkeypatch):
                 'last_end_date': '2020'
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -305,6 +305,6 @@ def test_raises_too_many_date_parts(monkeypatch):
                 'last_end_date': '2021-01-01-12'
                 },
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )

@@ -117,7 +117,7 @@ def get_oldest3_fi_filingset(urlmock):
             fs = xf.get_filings(
                 filters={'country': 'FI'},
                 sort='date_added',
-                max_size=3,
+                limit=3,
                 flags=xf.GET_ONLY_FILINGS,
                 add_api_params=None
                 )
@@ -135,7 +135,7 @@ def get_oldest3_fi_entities_filingset(urlmock):
             fs = xf.get_filings(
                 filters={'country': 'FI'},
                 sort='date_added',
-                max_size=3,
+                limit=3,
                 flags=xf.GET_ENTITY,
                 add_api_params=None
                 )
@@ -153,7 +153,7 @@ def get_oldest3_fi_vmessages_filingset(urlmock):
             fs = xf.get_filings(
                 filters={'country': 'FI'},
                 sort='date_added',
-                max_size=3,
+                limit=3,
                 flags=xf.GET_VALIDATION_MESSAGES,
                 add_api_params=None
                 )
@@ -171,7 +171,7 @@ def get_oldest3_fi_ent_vmessages_filingset(urlmock):
             fs = xf.get_filings(
                 filters={'country': 'FI'},
                 sort='date_added',
-                max_size=3,
+                limit=3,
                 flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES),
                 add_api_params=None
                 )

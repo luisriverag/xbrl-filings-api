@@ -57,7 +57,7 @@ GET_VALIDATION_MESSAGES
     Request validation messages of filings. A member of enum
     `ScopeFlag`.
 NO_LIMIT
-    Drain the query completely when set to `max_size` parameter.
+    Drain the query completely when set to `limit` parameter.
 
 Functions
 ---------

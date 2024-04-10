@@ -17,7 +17,7 @@ def unknown_filter_error_obj(unknown_filter_error_response):
             _ = xf.get_filings(
                 filters={'abcdef': '0'},
                 sort=None,
-                max_size=1,
+                limit=1,
                 flags=xf.GET_ONLY_FILINGS,
                 add_api_params=None
                 )
@@ -31,7 +31,7 @@ def bad_page_error_obj(bad_page_error_response):
         _ = xf.get_filings(
             filters=None,
             sort=None,
-            max_size=30,
+            limit=30,
             flags=xf.GET_ONLY_FILINGS,
             add_api_params={'page[number]': -1}
             )

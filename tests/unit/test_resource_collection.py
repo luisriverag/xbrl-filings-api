@@ -20,7 +20,7 @@ def asml22en_entities_filingset(asml22en_entities_response, res_colls):
     return xf.get_filings(
         filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ENTITY,
         add_api_params=None
         )
@@ -157,7 +157,7 @@ def test_same_entity_only_once(kone22_all_languages_response):
     fs = xf.get_filings(
         filters={'api_id': ['4143', '4144']},
         sort=None,
-        max_size=100,
+        limit=100,
         flags=xf.GET_ENTITY
         )
     assert len(fs) == 2

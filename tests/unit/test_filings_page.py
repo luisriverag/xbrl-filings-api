@@ -21,7 +21,7 @@ def oldest3_fi_ent_vmessages_filingspage(oldest3_fi_ent_vmessages_response):
     piter = xf.filing_page_iter(
         filters={'country': 'FI'},
         sort='date_added',
-        max_size=3,
+        limit=3,
         flags=(xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES),
         add_api_params=None
         )

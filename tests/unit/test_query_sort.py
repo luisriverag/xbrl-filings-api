@@ -24,7 +24,7 @@ def test_sort_oldest_finnish_str(oldest3_fi_response, monkeypatch):
             'country': 'FI'
             },
         sort='added_time',
-        max_size=3,
+        limit=3,
         flags=xf.GET_ONLY_FILINGS
         )
     date_max = datetime(2021, 5, 18, 0, 0, 1, tzinfo=UTC)
@@ -40,7 +40,7 @@ def test_sort_oldest_finnish_list(oldest3_fi_response, monkeypatch):
             'country': 'FI'
             },
         sort=['added_time'],
-        max_size=3,
+        limit=3,
         flags=xf.GET_ONLY_FILINGS
         )
     date_max = datetime(2021, 5, 18, 0, 0, 1, tzinfo=UTC)
@@ -64,7 +64,7 @@ def test_sort_two_fields(sort_two_fields_response):
             'country': 'FI'
             },
         sort=['last_end_date', 'processed_time'],
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) == 2, 'Two filings were requested'
@@ -83,7 +83,7 @@ def test_sort_asc_package_sha256(sort_asc_package_sha256_latvia_response):
             'country': 'LV'
             },
         sort='package_sha256',
-        max_size=4,
+        limit=4,
         flags=xf.GET_ONLY_FILINGS
         )
     fpage: xf.FilingsPage = next(iter(pageiter))
@@ -100,7 +100,7 @@ def test_sort_desc_package_sha256(sort_desc_package_sha256_latvia_response):
             'country': 'LV'
             },
         sort='-package_sha256',
-        max_size=4,
+        limit=4,
         flags=xf.GET_ONLY_FILINGS
         )
     fpage: xf.FilingsPage = next(iter(pageiter))

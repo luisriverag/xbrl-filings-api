@@ -88,7 +88,7 @@ def upm21to22_filingset(urlmock):
         fs = xf.get_filings(
             filters={'api_id': upm21to22_ids},
             sort=None,
-            max_size=4,
+            limit=4,
             flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
             )
     return fs
@@ -106,7 +106,7 @@ def upm22to23_filingset(urlmock):
         fs = xf.get_filings(
             filters={'api_id': upm22to23_ids},
             sort=None,
-            max_size=4,
+            limit=4,
             flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
             )
     return fs

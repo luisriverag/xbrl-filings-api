@@ -11,7 +11,7 @@ NO_LIMIT = 0
 """
 Fetches all filings that match the query.
 
-Used as a value to the `max_size` parameter
+Used as a value to the `limit` parameter
 """
 
 ATTRS_ALWAYS_EXCLUDE_FROM_DATA = {

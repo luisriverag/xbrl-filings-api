@@ -30,7 +30,7 @@ def test_get_filings_error_count(filter_error_count_response):
             'error_count': 0
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     filing = next(iter(fs), None)
@@ -51,7 +51,7 @@ def test_get_filings_inconsistency_count(filter_inconsistency_count_response):
             'inconsistency_count': 0
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     filing = next(iter(fs), None)
@@ -72,7 +72,7 @@ def test_get_filings_warning_count(filter_warning_count_response):
             'warning_count': 0
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     filing = next(iter(fs), None)
@@ -97,7 +97,7 @@ def test_get_filings_json_url(filter_json_url_response):
             'json_url': json_url
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     kone22en = next(iter(fs), None)
@@ -122,7 +122,7 @@ def test_get_filings_package_url(filter_package_url_response):
             'package_url': package_url
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     kone22en = next(iter(fs), None)
@@ -147,7 +147,7 @@ def test_get_filings_viewer_url(filter_viewer_url_response):
             'viewer_url': viewer_url
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     kone22en = next(iter(fs), None)
@@ -172,7 +172,7 @@ def test_get_filings_xhtml_url(filter_xhtml_url_response):
             'xhtml_url': xhtml_url
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     kone22en = next(iter(fs), None)

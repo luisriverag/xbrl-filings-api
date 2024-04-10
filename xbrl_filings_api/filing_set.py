@@ -293,7 +293,7 @@ class FilingSet(set[Filing]):
 
         The method has the same signature and follows the same rules as
         function `to_sqlite()` in library root with the exception of
-        missing parameters `filters`, `sort`, `max_size` and
+        missing parameters `filters`, `sort`, `limit` and
         `add_api_params`. See documentation.
 
         Flags also default to all tables turned on. If no additional

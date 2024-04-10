@@ -9,8 +9,8 @@ max_page_size : int, default 200
     Defines the maximum number of main resources (typically
     filings) to be retrieved in a single request. If the functions
     are called by limiting the number of results with a
-    parameter `max_size` which is smaller than this value, page
-    size will be set as `max_size` instead.
+    parameter `limit` which is smaller than this value, page
+    size will be set as `limit` instead.
 year_filter_months : YearFilterMonthsType, default ((0, 8), (1, 8))
     Range of months to request when `filters` has a date
     field with only year defined. First int of inner tuples is a

@@ -18,7 +18,7 @@ def asml22en_entities_filing(asml22en_entities_response, res_colls):
     """ASML Holding 2022 English AFR filing."""
     page_gen = request_processor.generate_pages(
         filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
-        max_size=1,
+        limit=1,
         flags=xf.GET_ENTITY,
         res_colls=res_colls
         )

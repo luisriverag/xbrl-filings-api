@@ -34,7 +34,7 @@ def asml22en_filingset(asml22en_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
 
@@ -49,7 +49,7 @@ def ageas21_22_filingset(urlmock):
         fs = xf.get_filings(
             filters={'api_id': ageas21_22_ids},
             sort=None,
-            max_size=6,
+            limit=6,
             flags=xf.GET_ENTITY
             )
     return fs
@@ -65,7 +65,7 @@ def applus20_21_filingset(urlmock):
         fs = xf.get_filings(
             filters={'api_id': applus20_21_ids},
             sort=None,
-            max_size=2,
+            limit=2,
             flags=xf.GET_ENTITY
             )
     return fs
@@ -615,7 +615,7 @@ def test_pop_duplicates_raises_no_entities(multifilter_api_id_response):
     fs = xf.get_filings(
         filters={'api_id': shell21_22_gb_nl_ids},
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ONLY_FILINGS
         )
     fs_before = set(fs)
@@ -639,7 +639,7 @@ def test_pop_duplicates_two_markets_all_markets_false(
     fs = xf.get_filings(
         filters={'api_id': shell21_22_gb_nl_ids},
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ENTITY
         )
     popped = fs.pop_duplicates(
@@ -669,7 +669,7 @@ def test_pop_duplicates_two_markets_all_markets_true(
     fs = xf.get_filings(
         filters={'api_id': shell21_22_gb_nl_ids},
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ENTITY
         )
     popped = fs.pop_duplicates(

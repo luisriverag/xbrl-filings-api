@@ -25,7 +25,7 @@ def paging_swedish_size2_pg3_2nd_filingspage(
             'country': 'SE'
             },
         sort='added_time',
-        max_size=5,
+        limit=5,
         flags=xf.GET_ONLY_FILINGS
         )
     next(piter)
@@ -40,7 +40,7 @@ def oldest3_fi_entities_filingspage(oldest3_fi_entities_response):
     piter = xf.filing_page_iter(
         filters={'country': 'FI'},
         sort='date_added',
-        max_size=3,
+        limit=3,
         flags=xf.GET_ENTITY,
         add_api_params=None
         )

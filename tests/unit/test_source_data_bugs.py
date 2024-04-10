@@ -27,7 +27,7 @@ def test_paging_sort_added_time(
             'country': 'SE'
             },
         sort='added_time',
-        max_size=5,
+        limit=5,
         flags=xf.GET_ONLY_FILINGS
         )
     page1 = next(piter, None)

@@ -27,7 +27,7 @@ def test_get_filings(asml22en_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     asml22 = next(iter(fs), None)
@@ -47,7 +47,7 @@ def test_to_sqlite(asml22en_response, db_record_count, tmp_path, monkeypatch):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -71,7 +71,7 @@ def test_filing_page_iter(asml22en_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     page = next(piter, None)
@@ -92,7 +92,7 @@ def test_get_filings_http_status_error():
             _ = xf.get_filings(
                 filters=None,
                 sort=None,
-                max_size=100,
+                limit=100,
                 flags=xf.GET_ONLY_FILINGS
                 )
         err = exc_info.value
@@ -118,7 +118,7 @@ def test_get_filings_jsonapi_format_error_array():
             _ = xf.get_filings(
                 filters=None,
                 sort=None,
-                max_size=100,
+                limit=100,
                 flags=xf.GET_ONLY_FILINGS
                 )
         err = exc_info.value
@@ -138,7 +138,7 @@ def test_get_filings_jsonapi_format_error_missing_keys():
             _ = xf.get_filings(
                 filters=None,
                 sort=None,
-                max_size=100,
+                limit=100,
                 flags=xf.GET_ONLY_FILINGS
                 )
         err = exc_info.value
@@ -150,15 +150,15 @@ def test_get_filings_jsonapi_format_error_missing_keys():
         assert str(err) == e_msg
 
 
-def test_get_filings_max_size_minus():
-    """Test raising when max_size=-1."""
+def test_get_filings_limit_minus():
+    """Test raising when limit=-1."""
     with pytest.raises(
             ValueError,
-            match=r'Parameter "max_size" may not be negative'):
+            match=r'Parameter "limit" may not be negative'):
         _ = xf.get_filings(
             filters=None,
             sort=None,
-            max_size=-1,
+            limit=-1,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -176,7 +176,7 @@ def test_get_filings_bad_json(monkeypatch):
             _ = xf.get_filings(
                 filters=None,
                 sort=None,
-                max_size=100,
+                limit=100,
                 flags=xf.GET_ONLY_FILINGS
                 )
 
@@ -193,6 +193,6 @@ def test_different_options_entry_point_url(monkeypatch):
         _ = xf.get_filings(
             filters=None,
             sort=None,
-            max_size=100,
+            limit=100,
             flags=xf.GET_ONLY_FILINGS
             )

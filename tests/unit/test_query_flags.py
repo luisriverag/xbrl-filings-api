@@ -15,7 +15,7 @@ def test_get_filings_flag_only_filings(asml22en_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     asml22 = next(iter(fs), None)
@@ -31,7 +31,7 @@ def test_get_filings_flag_entities(asml22en_entities_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ENTITY
         )
     asml22 = next(iter(fs), None)
@@ -48,7 +48,7 @@ def test_get_filings_flag_vmessages(asml22en_vmessages_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_VALIDATION_MESSAGES
         )
     asml22 = next(iter(fs), None)
@@ -66,7 +66,7 @@ def test_get_filings_flag_only_filings_and_entities(asml22en_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS | xf.GET_ENTITY
         )
     asml22 = next(iter(fs), None)
@@ -82,7 +82,7 @@ def test_get_filings_flag_entities_vmessages(asml22en_ent_vmsg_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ENTITY | xf.GET_VALIDATION_MESSAGES
         )
     asml22 = next(iter(fs), None)

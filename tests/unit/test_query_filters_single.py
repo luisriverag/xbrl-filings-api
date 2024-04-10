@@ -30,7 +30,7 @@ def test_get_filings_api_id(creditsuisse21en_by_id_response):
             'api_id': creditsuisse21en_api_id
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     creditsuisse21 = next(iter(fs), None)
@@ -52,7 +52,7 @@ def test_to_sqlite_api_id(
             'api_id': creditsuisse21en_api_id
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -75,7 +75,7 @@ def test_get_filings_filing_index(asml22en_response):
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     asml22 = next(iter(fs), None)
@@ -97,7 +97,7 @@ def test_to_sqlite_filing_index(
             'filing_index': asml22_fxo
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -121,7 +121,7 @@ def test_get_filings_language(filter_language_response):
                     'language': 'fi'
                     },
                 sort=None,
-                max_size=1,
+                limit=1,
                 flags=xf.GET_ONLY_FILINGS
                 )
 
@@ -141,7 +141,7 @@ def test_to_sqlite_language(
                     'language': 'fi'
                     },
                 sort=None,
-                max_size=1,
+                limit=1,
                 flags=xf.GET_ONLY_FILINGS
                 )
     assert not db_path.is_file()
@@ -156,7 +156,7 @@ def test_get_filings_last_end_date_str(filter_last_end_date_response):
             'last_end_date': date_str
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     agrana20 = next(iter(fs), None)
@@ -180,7 +180,7 @@ def test_to_sqlite_last_end_date_str(
             'last_end_date': date_str
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -205,7 +205,7 @@ def test_get_filings_last_end_date_obj(filter_last_end_date_response):
             'last_end_date': date_obj
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     agrana20 = next(iter(fs), None)
@@ -230,7 +230,7 @@ def test_to_sqlite_last_end_date_obj(
             'last_end_date': date_obj
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -260,7 +260,7 @@ def test_get_filings_last_end_date_datetime(
                 'last_end_date': dt_obj
                 },
             sort=None,
-            max_size=1,
+            limit=1,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -285,7 +285,7 @@ def test_to_sqlite_last_end_date_datetime(
                 'last_end_date': dt_obj
                 },
             sort=None,
-            max_size=1,
+            limit=1,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -301,7 +301,7 @@ def test_get_filings_added_time_str_datelike(
             'added_time': time_str
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     vtbbank20 = next(iter(fs), None)
@@ -321,7 +321,7 @@ def test_get_filings_added_time_str_exact(
             'added_time': time_str
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     vtbbank20 = next(iter(fs), None)
@@ -345,7 +345,7 @@ def test_to_sqlite_added_time_str_exact(
             'added_time': time_str
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -372,7 +372,7 @@ def test_get_filings_added_time_datetime_utc(
             'added_time': dt_obj
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     vtbbank20 = next(iter(fs), None)
@@ -399,7 +399,7 @@ def test_to_sqlite_added_time_datetime_utc(
             'added_time': dt_obj
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -426,7 +426,7 @@ def test_get_filings_added_time_datetime_naive(
             'added_time': dt_obj
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     vtbbank20 = next(iter(fs), None)
@@ -448,7 +448,7 @@ def test_get_filings_added_time_date(filter_added_time_lax_response):
                 'added_time': date_obj
                 },
             sort=None,
-            max_size=1,
+            limit=1,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -474,7 +474,7 @@ def test_to_sqlite_added_time_date(
                 'added_time': date_obj
                 },
             sort=None,
-            max_size=1,
+            limit=1,
             flags=xf.GET_ONLY_FILINGS
             )
     assert not db_path.is_file()
@@ -493,7 +493,7 @@ def test_get_filings_added_time_bad_datetime(monkeypatch):
                 'added_time': time_str
                 },
             sort=None,
-            max_size=1,
+            limit=1,
             flags=xf.GET_ONLY_FILINGS
             )
 
@@ -508,7 +508,7 @@ def test_get_filings_entity_api_id(filter_entity_api_id_lax_response):
                     'entity_api_id': kone_id
                     },
                 sort=None,
-                max_size=1,
+                limit=1,
                 flags=xf.GET_ONLY_FILINGS
                 )
 
@@ -522,7 +522,7 @@ def test_get_filings_package_sha256(filter_package_sha256_response):
             'package_sha256': filter_sha
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     kone22en = next(iter(fs), None)
@@ -546,7 +546,7 @@ def test_to_sqlite_package_sha256(
             'package_sha256': filter_sha
             },
         sort=None,
-        max_size=1,
+        limit=1,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -572,7 +572,7 @@ def test_get_filings_2filters_country_last_end_date_str(
             'last_end_date': '2022-01-31'
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) == 2, 'Two reports issued in Finland for Jan 2022.'
@@ -596,7 +596,7 @@ def test_to_sqlite_2filters_country_last_end_date_str(
             'last_end_date': '2022-01-31'
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -625,7 +625,7 @@ def test_get_filings_2filters_country_last_end_date_date(
             'last_end_date': date(2022, 1, 31)
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     assert len(fs) == 2, 'Two reports issued in Finland for Jan 2022.'
@@ -649,7 +649,7 @@ def test_to_sqlite_2filters_country_last_end_date_date(
             'last_end_date': date(2022, 1, 31)
             },
         sort=None,
-        max_size=2,
+        limit=2,
         flags=xf.GET_ONLY_FILINGS
         )
     assert db_path.is_file()
@@ -678,6 +678,6 @@ def test_raises_get_filings_none_filter():
                 'api_id': None
                 },
             sort=None,
-            max_size=4,
+            limit=4,
             flags=xf.GET_ONLY_FILINGS
             )

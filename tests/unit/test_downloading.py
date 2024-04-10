@@ -32,7 +32,7 @@ def get_asml22en_or_oldest3_fi(urlmock):
                             '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')
                         },
                     sort=None,
-                    max_size=1,
+                    limit=1,
                     flags=xf.GET_ONLY_FILINGS,
                     add_api_params=None
                     )
@@ -45,7 +45,7 @@ def get_asml22en_or_oldest3_fi(urlmock):
                 fset = xf.get_filings(
                     filters={'country': 'FI'},
                     sort='date_added',
-                    max_size=3,
+                    limit=3,
                     flags=xf.GET_ONLY_FILINGS,
                     add_api_params=None
                     )

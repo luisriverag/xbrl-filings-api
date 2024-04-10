@@ -18,7 +18,7 @@ import xbrl_filings_api.stats as stats
 @pytest.mark.date
 @pytest.mark.paging
 def test_no_limit(paging_czechia20dec_response, monkeypatch):
-    """Test max_size=NO_LIMIT for stats counters."""
+    """Test limit=NO_LIMIT for stats counters."""
     monkeypatch.setattr(xf.options, 'max_page_size', 10)
     monkeypatch.setattr(stats, 'query_call_counter', 0)
     monkeypatch.setattr(stats, 'api_query_counter', 0)
@@ -30,7 +30,7 @@ def test_no_limit(paging_czechia20dec_response, monkeypatch):
             'last_end_date': '2020-12-31',
             },
         sort=None,
-        max_size=xf.NO_LIMIT,
+        limit=xf.NO_LIMIT,
         flags=xf.GET_ONLY_FILINGS
         )
     assert stats.query_call_counter == 1
@@ -39,7 +39,7 @@ def test_no_limit(paging_czechia20dec_response, monkeypatch):
 
 
 @pytest.mark.paging
-def test_max_size_limited(
+def test_limit_limited(
         paging_oldest_ukrainian_2pg_4ea_response, monkeypatch):
     """Test limited results for stats counters."""
     monkeypatch.setattr(xf.options, 'max_page_size', 4)
@@ -52,7 +52,7 @@ def test_max_size_limited(
             'country': 'UA'
             },
         sort=['last_end_date', 'processed_time'],
-        max_size=8,
+        limit=8,
         flags=xf.GET_ONLY_FILINGS
         )
     assert stats.query_call_counter == 1
@@ -73,7 +73,7 @@ def test_multifilter(multifilter_api_id_response, monkeypatch):
             'api_id': shell_api_ids
             },
         sort=None,
-        max_size=4,
+        limit=4,
         flags=xf.GET_ONLY_FILINGS
         )
     assert stats.query_call_counter == 1
@@ -97,7 +97,7 @@ def test_short_date(
             'country': 'BE'
             },
         sort=None,
-        max_size=100,
+        limit=100,
         flags=xf.GET_ONLY_FILINGS
         )
     assert stats.query_call_counter == 1
@@ -121,7 +121,7 @@ def test_two_query_calls(urlmock, monkeypatch):
                 'api_id': creditsuisse21en_api_id
                 },
             sort=None,
-            max_size=1,
+            limit=1,
             flags=xf.GET_ONLY_FILINGS
             )
         asml22_fxo = '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'
@@ -130,7 +130,7 @@ def test_two_query_calls(urlmock, monkeypatch):
                 'filing_index': asml22_fxo
                 },
             sort=None,
-            max_size=1,
+            limit=1,
             flags=xf.GET_ONLY_FILINGS
             )
     assert stats.query_call_counter == 2

@@ -37,7 +37,7 @@ def asml22en_vmessages_filing(asml22en_vmessages_response, res_colls):
     """ASML Holding 2022 English AFR filing."""
     page_gen = request_processor.generate_pages(
         filters={'filing_index': '724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0'},
-        max_size=1,
+        limit=1,
         flags=xf.GET_VALIDATION_MESSAGES,
         res_colls=res_colls
         )
@@ -73,7 +73,7 @@ def assicurazioni21it_vmessages_filing(
     """Assicurazioni Generali 2021 Italian AFR filing."""
     page_gen = request_processor.generate_pages(
         filters={'filing_index': '549300X5UKJVE386ZB61-2021-12-31-ESEF-IT-0'},
-        max_size=1,
+        limit=1,
         flags=xf.GET_VALIDATION_MESSAGES,
         res_colls=res_colls
         )
@@ -101,7 +101,7 @@ def tecnotree21fi_vmessages_filing(
     """Tecnotree 2021 Finnish AFR filing."""
     page_gen = request_processor.generate_pages(
         filters={'filing_index': '743700MRPVYI7ASHCX38-2021-12-31-ESEF-FI-0'},
-        max_size=1,
+        limit=1,
         flags=xf.GET_VALIDATION_MESSAGES,
         res_colls=res_colls
         )
