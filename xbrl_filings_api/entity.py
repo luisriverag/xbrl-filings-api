@@ -70,8 +70,15 @@ class Entity(APIResource):
         self._json.close()
 
     def __repr__(self) -> str:
-        """Return string repr of the entity."""
-        return f'{type(self).__name__}(name={self.name!r})'
+        """
+        Return string repr of the entity.
+
+        Displays `api_id` and `name` attributes.
+        """
+        return (
+            f'{type(self).__name__}('
+            f'api_id={self.api_id!r}, name={self.name!r})'
+            )
 
     def __str__(self) -> str:
         """Return string str of the entity."""

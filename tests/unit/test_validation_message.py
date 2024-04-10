@@ -127,7 +127,10 @@ class TestCalcMsg:
 
     def test_repr(self, asml22en_calc_msg):
         """Test ValidationMessage.__repr__ method for calc message."""
-        e_repr = "ValidationMessage(code='xbrl.5.2.5.2:calcInconsistency')"
+        e_repr = (
+            "ValidationMessage("
+            "api_id='66614', code='xbrl.5.2.5.2:calcInconsistency')"
+            )
         assert repr(asml22en_calc_msg) == e_repr
 
     def test_str(self, asml22en_calc_msg):
@@ -184,7 +187,7 @@ class TestPositiveMsg:
         """
         Test ValidationMessage.__repr__ method for positive message.
         """
-        e_repr = "ValidationMessage(code='message:positive')"
+        e_repr = "ValidationMessage(api_id='66615', code='message:positive')"
         assert repr(asml22en_positive_msg) == e_repr
 
     def test_str(self, asml22en_positive_msg):
@@ -238,7 +241,10 @@ class TestDuplicateStrMsg:
         Test ValidationMessage.__repr__ method for duplicate str
         message.
         """
-        e_repr = "ValidationMessage(code='message:tech_duplicated_facts1')"
+        e_repr = (
+            "ValidationMessage("
+            "api_id='104877', code='message:tech_duplicated_facts1')"
+            )
         assert repr(assicurazioni21it_duplicate_str_msg) == e_repr
 
     def test_str(self, assicurazioni21it_duplicate_str_msg):
@@ -295,7 +301,10 @@ class TestDuplicateNumMsg:
         Test ValidationMessage.__repr__ method for duplicate numeric
         message.
         """
-        e_repr = "ValidationMessage(code='message:tech_duplicated_facts1')"
+        e_repr = (
+            "ValidationMessage("
+            "api_id='41766', code='message:tech_duplicated_facts1')"
+            )
         assert repr(tecnotree21fi_duplicate_num_msg) == e_repr
 
     def test_str(self, tecnotree21fi_duplicate_num_msg):

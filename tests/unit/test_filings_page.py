@@ -138,7 +138,7 @@ def test_rogue_validation_messages_logging(caplog):
     """Test logging when ValidationMessage has no attribute filing."""
     e_log = (
         "No filing defined for ValidationMessage("
-        "code='xbrl.5.2.5.2:calcInconsistency'), api_id=987654"
+        "api_id='987654', code='xbrl.5.2.5.2:calcInconsistency')"
         )
     rsps_with_rogue_vmsg = {
         'data': [{
@@ -177,8 +177,72 @@ def test_rogue_validation_messages_logging(caplog):
     assert e_log in caplog.text
 
 
-# xf.FilingsPage._get_filings
-# xf.FilingsPage._parse_filing_fragment
-# xf.FilingsPage._get_inc_resource
-# xf.FilingsPage._determine_unexpected_inc_resources
-# xf.FilingsPage._check_validation_messages_references
+def test_same_filing_on_another_page_logging(caplog):
+    """
+    Test logging when Filing with the same `api_id` is returned again.
+    """
+    e_log = "Same filing returned again, api_id='2'"
+    rsps_1st_page = {
+        'data': [
+            {
+                'type': 'filing',
+                'attributes': {
+                    'country': 'SE',
+                    'period_end': '2021-12-31',
+                    'fxo_id': '549300CSLHPO6Y1AZN37-2021-12-31-ESEF-SE-1'
+                },
+                'id': '2'
+            },
+            {
+                'type': 'filing',
+                'attributes': {
+                    'country': 'SE',
+                    'period_end': '2021-12-31',
+                    'fxo_id': '549300CSLHPO6Y1AZN37-2021-12-31-ESEF-SE-0'
+                },
+                'id': '1'
+            }
+        ],
+        'links': {
+            'next': (
+                'https://filings.xbrl.org/api/filings?page%5Bsize%5D=2&'
+                'filter%5Bcountry%5D=SE&sort=date_added&page%5Bnumber%5D=2'
+                )
+        },
+        'meta': {'count': 3},
+        'jsonapi': {'version': '1.0'}
+        }
+    rsps_2nd_page = {
+        'data': [
+        {
+            'type': 'filing',
+            'attributes': {
+                'country': 'SE',
+                'period_end': '2021-12-31',
+                'fxo_id': '549300CSLHPO6Y1AZN37-2021-12-31-ESEF-SE-1'
+            },
+            'id': '2'
+        },
+        {
+            'type': 'filing',
+            'attributes': {
+                'country': 'SE',
+                'period_end': '2021-12-31',
+                'fxo_id': '5493001NNP6HM67OVU09-2021-12-31-ESEF-SE-0'
+            },
+            'id': '2240'
+            }
+        ],
+        'links': {
+            'next': None
+        },
+        'meta': {'count': 3},
+        'jsonapi': {'version': '1.0'}
+        }
+
+    with responses.RequestsMock() as rsps:
+        any_url_re = re.compile(r'.+')
+        rsps.get(url=any_url_re, json=rsps_1st_page)
+        rsps.get(url=any_url_re, json=rsps_2nd_page)
+        _ = xf.get_filings(flags=xf.GET_VALIDATION_MESSAGES)
+    assert e_log in caplog.text

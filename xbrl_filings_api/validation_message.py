@@ -289,9 +289,12 @@ class ValidationMessage(APIResource):
         """
         Return string repr of validation message.
 
-        Displays `code` attribute.
+        Displays `api_id` and `code` attributes.
         """
-        return f'{type(self).__name__}(code={self.code!r})'
+        return (
+            f'{type(self).__name__}('
+            f'api_id={self.api_id!r}, code={self.code!r})'
+            )
 
     def __str__(self) -> str:
         """Return `text` attribute value."""

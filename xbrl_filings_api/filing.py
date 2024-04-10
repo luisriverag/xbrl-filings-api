@@ -367,11 +367,13 @@ class Filing(APIResource):
         """
         Return string repr of filing.
 
+        Always displays `api_id` as the first attribute.
+
         If queried with flag `GET_ENTITY`, displays `entity.name`,
         `reporting_date` and `language`. Otherwise displays only
         `filing_index`.
         """
-        start = f'{type(self).__name__}('
+        start = f'{type(self).__name__}(api_id={self.api_id!r}, '
         if self.entity:
             rrepdate = 'None'
             if self.reporting_date:
@@ -735,7 +737,7 @@ class Filing(APIResource):
         if json_frag == _PROTOTYPE or entity_iter is None:
             return None
         if not self.entity_api_id:
-            msg = f'No entity defined for {self!r}, api_id={self.api_id}'
+            msg = f'No entity defined for {self!r}'
             logger.warning(msg, stacklevel=2)
             return None
 
@@ -747,8 +749,8 @@ class Filing(APIResource):
                 break
         if entity is None:
             msg = (
-                f'Entity with api_id={self.entity_api_id} not found, '
-                f'referenced by {self!r}, api_id={self.api_id}'
+                f'Entity with api_id={self.entity_api_id!r} not found, '
+                f'referenced by {self!r}'
                 )
             logger.warning(msg, stacklevel=2)
         return entity
@@ -778,8 +780,8 @@ class Filing(APIResource):
                         break
                 else:
                     msg = (
-                        f'Validation message with api_id={rel_api_id} not '
-                        f'found, referenced by {self!r}, api_id={self.api_id}'
+                        f'Validation message with api_id={rel_api_id!r} not '
+                        f'found, referenced by {self!r}'
                         )
                     logger.warning(msg, stacklevel=2)
         return found_msgs

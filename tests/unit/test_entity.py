@@ -38,7 +38,7 @@ class TestEntityAsml:
 
     def test_repr(self, asml22en_entity):
         """Test Entity.__repr__ method."""
-        e_repr = "Entity(name='ASML Holding N.V.')"
+        e_repr = "Entity(api_id='1969', name='ASML Holding N.V.')"
         assert repr(asml22en_entity) == e_repr
 
     def test_str(self, asml22en_entity):

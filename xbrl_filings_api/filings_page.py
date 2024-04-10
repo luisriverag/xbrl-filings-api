@@ -194,9 +194,7 @@ class FilingsPage(_APIPage):
         if self.validation_message_list is not None:
             for vmsg in self.validation_message_list:
                 if vmsg.filing is None:
-                    msg = (
-                        f'No filing defined for {vmsg!r}, api_id={vmsg.api_id}'
-                        )
+                    msg = f'No filing defined for {vmsg!r}'
                     logger.warning(msg, stacklevel=2)
 
     def __repr__(self) -> str:

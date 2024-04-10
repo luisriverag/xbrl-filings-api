@@ -149,7 +149,9 @@ class TestFilingAsml22enNoEntity:
     def test_repr(self, get_asml22en_filing):
         """Test Filing.__repr__ method for `asml22en`."""
         e_repr = (
-            "Filing(filing_index='724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')")
+            "Filing(api_id='4261', "
+            "filing_index='724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')"
+            )
         filing: xf.Filing = get_asml22en_filing()
         assert repr(filing) == e_repr
 
@@ -255,7 +257,7 @@ class TestFilingAsml22enWithEntity:
     def test_repr(self, asml22en_entities_filing):
         """Test Filing.__repr__ method for `asml22en_entities`."""
         e_repr = (
-            "Filing(entity.name='ASML Holding N.V.', "
+            "Filing(api_id='4261', entity.name='ASML Holding N.V.', "
             "reporting_date=date(2022, 12, 31), language='en')"
             )
         assert repr(asml22en_entities_filing) == e_repr
@@ -293,7 +295,7 @@ class TestFilingCreditsuisse21enWithEntity:
     def test_repr(self, get_creditsuisse21en_entity_filing):
         """Test Filing.__repr__ method for `creditsuisse21en_entity`."""
         e_repr = (
-            "Filing(entity.name='CREDIT SUISSE INTERNATIONAL', "
+            "Filing(api_id='162', entity.name='CREDIT SUISSE INTERNATIONAL', "
             "reporting_date=date(2021, 12, 31), language=None)"
             )
         filing: xf.Filing = get_creditsuisse21en_entity_filing()
@@ -396,6 +398,16 @@ def test_search_entity_fail(
     """
     Test method `test_search_entity_fail` used by `entity` for failures.
     """
+    e_filing_repr = (
+        "Filing(api_id='4261', "
+        "filing_index='724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')"
+        )
+    e_log_not_found = (
+        'No entity defined for ' + e_filing_repr
+        )
+    e_log_found = (
+        "Entity with api_id='{}' not found, referenced by " + e_filing_repr
+        )
     caplog.set_level(logging.WARNING)
     filing: xf.Filing = get_asml22en_filing()
     filing.entity_api_id = api_id
@@ -405,8 +417,7 @@ def test_search_entity_fail(
     if api_id is None:
         assert 'No entity defined for' in caplog.text
     else:
-        assert 'Entity with api_id=' in caplog.text
-        assert ' not found' in caplog.text
+        assert e_log_found.format(api_id) in caplog.text
     assert found_entity is None
 
 
@@ -439,6 +450,11 @@ def test_search_validation_messages_fail(
     Test method `_search_validation_messages` used by
     `validation_messages` for failures.
     """
+    e_log = (
+        "Validation message with api_id='{}' not found, referenced by "
+        "Filing(api_id='4261', "
+        "filing_index='724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0')"
+        )
     caplog.set_level(logging.WARNING)
     filing: xf.Filing = get_asml22en_filing()
 
@@ -452,7 +468,7 @@ def test_search_validation_messages_fail(
     found_vmessages = filing._search_validation_messages(vmessage_list, {})
 
     for aid in ('0', '4'):
-        assert f'Validation message with api_id={aid} not found' in caplog.text
+        assert e_log.format(aid) in caplog.text
     assert found_vmessages == set()
 
 
