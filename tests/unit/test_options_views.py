@@ -126,8 +126,8 @@ def test_add_with_same_name(
     """Test with two views named ``ViewTest``."""
     sql = 'SELECT * FROM Filing'
     overlapping_list = [
-        xf.SQLiteView(name='ViewTest', required_tables=(), doc='', sql=sql),
-        xf.SQLiteView(name='ViewTest', required_tables=(), doc='', sql=sql),
+        xf.SQLiteView(name='ViewTest', required_tables=(), sql=sql),
+        xf.SQLiteView(name='ViewTest', required_tables=(), sql=sql),
         ]
     monkeypatch.setattr(xf.options, 'views', overlapping_list)
     fs: xf.FilingSet = get_oldest3_fi_ent_vmessages_filingset()

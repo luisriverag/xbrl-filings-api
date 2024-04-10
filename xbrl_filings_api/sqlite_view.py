@@ -27,8 +27,5 @@ class SQLiteView:
     `Filing` (as it will always be included).
     """
 
-    doc: str = field(compare=False)
-    """Textual explanation of the view."""
-
     sql: str = field(compare=False)
     """SQL ``SELECT`` statement for the view."""
