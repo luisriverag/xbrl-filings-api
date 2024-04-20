@@ -4,17 +4,22 @@
 #
 # SPDX-License-Identifier: MIT
 
+__all__ = [
+    'byte_counter',
+    'item_counter',
+    ]
 
-item_counter = 0
-"""
-Count of finished file downloads.
-
-Counter starts when the package is imported for the first time.
-"""
 
 byte_counter = 0
 """
 Number of bytes downloaded.
+
+Counter starts when the package is imported for the first time.
+"""
+
+item_counter = 0
+"""
+Count of finished file downloads.
 
 Counter starts when the package is imported for the first time.
 """

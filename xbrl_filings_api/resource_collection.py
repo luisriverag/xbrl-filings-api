@@ -12,58 +12,55 @@ from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import DataAttributeType
 from xbrl_filings_api.filing import Filing
 
+__all__ = ['ResourceCollection']
+
 
 class ResourceCollection:
-    """
+    r"""
     Collection of subresources of a `FilingSet` object.
 
     The subresources are all other `APIResource` subclasses except
     `Filing` objects.
 
-    This object is a `collections.abc.Collection` which means it may be
-    iterated over, it defines `len()` as well as operator `in`. It may
-    not, however, be accessed with an indexer (e.g. `object[index]`) or
-    reversed.
+    This object is a :class:`~collections.abc.Collection` which means it
+    may be iterated over, it defines :func:`len` as well as operator
+    ``in``. It may not, however, be accessed with an indexer (e.g.
+    ``object[index]``) or :class:`reversed`.
 
-    This collection is a view to the resources of the `FilingSet`.
-    Adding or removing filings from the `filingset` attribute object
-    will change the set of resources in this collection.
+    This collection is a view to the non-\ ``Filing`` resources of the
+    parent ``FilingSet``, backreferenced in attribute `filingset`.
 
     `Entity` and `ValidationMessage` objects, as subclass of
-    `APIResource`, have a custom `__hash__` method and their hash is
-    based on a tuple of string 'APIResource', class `TYPE` and object
-    `api_id`. This means that equality checks (`==`) and related methods
-    are based on this tuple. For example, when the actual entity object
-    is not available, a fast way to check if an entity with `api_id`
-    '123' is included in the FilingSet is::
+    `APIResource`, have a custom ``__hash__()`` method and their hash is
+    based on a tuple of strings ``'APIResource'``, class attribute
+    ``TYPE``, and object ``api_id``. This means that equality checks
+    (``==``) and related methods are based on this tuple. For example,
+    when the actual entity object is not available, a fast way to check
+    if an entity with ``api_id`` ``'123'`` is included in the filing set
+    ``fs`` is::
 
-        ('APIResource', Entity.TYPE, '123') in filing_set.entities
-
-    Attributes
-    ----------
-    filingset : FilingSet
-    item_class : type
-    columns : list of str
-    exist : bool
+        ('APIResource', Entity.TYPE, '123') in fs.entities
     """
 
     def __init__(
-            self, filingset: Any, attr_name: str, item_class: type[APIResource]
+            self, filingset: object, attr_name: str,
+            item_class: type[APIResource]
             ) -> None:
-        self.filingset = filingset
-        """Reference to the FilingSet object."""
+        self.filingset: object = filingset
+        """Reference to the :class:`FilingSet` object."""
 
-        self.item_class = item_class
+        self.item_class: type[APIResource] = item_class
         """Type object of the items within."""
 
         self._attr_name = attr_name
         self._columns: Union[list[str], None] = None
 
     def __iter__(self) -> Iterator[APIResource]:
-        """Return iterator for subresources."""
+        """Iterate ResourceCollection."""
         filing: Filing
         yielded_ids = set()
-        for filing in self.filingset:
+        # Attr `filingset` is always iterable (attr-defined)
+        for filing in self.filingset: # type: ignore[attr-defined]
             attr_val = getattr(filing, self._attr_name)
             if attr_val:
                 if isinstance(attr_val, set):
@@ -79,14 +76,14 @@ class ResourceCollection:
                     yield attr_val
 
     def __len__(self) -> int:
-        """Return count of subresources."""
+        """Return length of ResourceCollection."""
         count = 0
         for _ in self:
             count += 1
         return count
 
     def __contains__(self, elem: Any) -> bool:
-        """Return `True` if hash matches."""
+        """Return True if ResourceCollection contains ``elem``."""
         for ent in self:
             if ent == elem:
                 return True
@@ -98,36 +95,41 @@ class ResourceCollection:
             include_urls : bool = False
             ) -> dict[str, list[DataAttributeType]]:
         """
-        Get data for `pandas.DataFrame` constructor for subresources.
+        Get resources as data for :class:`pandas.DataFrame` constructor.
 
-        A new dataframe can be instantiated for example for entities as
+        For example, a new dataframe can be instantiated for entities as
         follows::
 
-        >>> import pandas as pd
-        >>> df = pd.DataFrame(data=filingset.entities.get_pandas_data())
+            import pandas as pd
+            df = pd.DataFrame(data=filingset.entities.get_pandas_data())
 
-        If `attr_names` is not given, most data attributes will be
-        extracted.
+        If parameter ``attr_names`` is not given, most data attributes
+        will be extracted.
 
         Parameters
         ----------
         attr_names: iterable of str, optional
             Valid attribute names of resource object.
         strip_timezone : bool, default True
-            Strip timezone information (always UTC) from `datetime`
-            values.
+            Strip timezone information (always UTC) from
+            :class:`~datetime.datetime` values.
         date_as_datetime : bool, default True
-            Convert `date` values to naive `datetime` to be converted to
-            `datetime64` by pandas.
+            Convert :class:`~datetime.date` values to naive
+            :class:`~datetime.datetime` to be converted to
+            :class:`pandas.datetime64` by pandas.
         include_urls : bool, default False
-            When `attr_names` is not given, include attributes ending
-            ``_url``.
+            When parameter ``attr_names`` is not given, include
+            attributes ending ``_url``.
 
         Returns
         -------
-        dict of str: list of DataAttributeType
+        data : dict of {str: list of DataAttributeType}
             Column names are the same as the attributes for resource of
             this type.
+
+        See Also
+        --------
+        FilingSet.get_pandas_data : For `Filing` resources.
         """
         data: dict[str, list[DataAttributeType]]
         if attr_names:
@@ -166,15 +168,16 @@ class ResourceCollection:
         This property is faster than ``len(obj) != 0``.
         """
         filing: Filing
-        for filing in self.filingset:
+        # Attr `filingset` is always iterable (attr-defined)
+        for filing in self.filingset: # type: ignore[attr-defined]
             if getattr(filing, self._attr_name):
                 return True
         return False
 
     def __repr__(self) -> str:
-        """Return string repr of resource collection."""
+        """Return repr with `item_class` and ``len(self)``."""
         return (
             f'{type(self).__name__}('
             f'item_class={self.item_class!r}, '
-            f'len()={len(self)})'
+            f'len(self)={len(self)})'
             )

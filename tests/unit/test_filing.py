@@ -415,7 +415,7 @@ def test_search_entity_fail(
     found_entity = filing._search_entity(entity_list, {})
 
     if api_id is None:
-        assert 'No entity defined for' in caplog.text
+        assert e_log_not_found in caplog.text
     else:
         assert e_log_found.format(api_id) in caplog.text
     assert found_entity is None

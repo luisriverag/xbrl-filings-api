@@ -1,4 +1,9 @@
-"""Module for processing API requests."""
+"""
+Module for processing API requests.
+
+Despite being an internal module, `FILING_QUERY_ATTRS` will be
+accessible from package root.
+"""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -17,7 +22,7 @@ import requests
 
 from xbrl_filings_api import options, stats
 from xbrl_filings_api.api_error import APIError
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.constants import _PROTOTYPE, NO_LIMIT
 from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.exceptions import (
@@ -29,6 +34,12 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
+
+__all__ = [
+    'generate_pages',
+    'api_attribute_map',
+    'FILING_QUERY_ATTRS',
+    ]
 
 UTC = timezone.utc
 logger = logging.getLogger(__name__)
@@ -51,10 +62,10 @@ def generate_pages(
 
     Parameters
     ----------
-    filters : mapping of str: {any, iterable of any}, optional
+    filters : mapping of {str: any or iterable of any}, optional
     limit : int or NO_LIMIT
     flags : ScopeFlag
-    res_colls : dict of str: ResourceCollection
+    res_colls : dict of {str: ResourceCollection}
     sort: sequence of str, optional
     add_api_params : mapping, optional
 
@@ -497,7 +508,7 @@ def _get_sort_query_param(sort: Sequence[str]) -> str:
 def _retrieve_page_json(
         url: str, params: Union[_ParamsType, None],
         query_time: datetime, aq_num: int
-        ) -> tuple[dict, _APIRequest]:
+        ) -> tuple[dict, APIRequest]:
     """
     Execute an API request and return the deserialized JSON object.
 
@@ -517,7 +528,7 @@ def _retrieve_page_json(
         url, params, headers={'Content-Type': 'application/vnd.api+json'},
         timeout=options.timeout_sec
         )
-    api_request = _APIRequest(res.url, query_time)
+    api_request = APIRequest(res.url, query_time)
 
     if res.status_code == 200:  # noqa: PLR2004
         logger.info(f'Success for page of API query #{aq_num}')
@@ -549,8 +560,8 @@ def _retrieve_page_json(
         raise JSONAPIFormatError(msg)
     elif json_frag.get('data') is None and json_frag.get('meta') is None:
         msg = (
-            'JSON:API document does not have any of the required keys "data", '
-            '"errors", "meta".'
+            'JSON:API document does not have any of the required keys '
+            '"data", "errors", "meta".'
             )
         raise JSONAPIFormatError(msg)
 
@@ -585,15 +596,15 @@ def _get_api_attribute_map() -> dict[str, str]:
 
 
 api_attribute_map = _get_api_attribute_map()
-"""
-Mapping from library attribute names to JSON:API used names.
+r"""
+Mapping from library attribute names to names used in the API.
 
-Is used to convert fields in `sort` and `filters` parameters of queries.
+Is used to convert fields in parameters ``sort`` and ``filters``.
 """
 
 FILING_QUERY_ATTRS = list(api_attribute_map)
 """
-List of resource attribute names for `sort` and `filter` parameters.
+List of resource attribute names for parameters ``sort`` and ``filter``.
 
 Does not include derived attributes. Despite capital letter naming, this
 value is derived from the library, but as per general API maintenance

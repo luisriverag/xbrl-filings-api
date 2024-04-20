@@ -8,22 +8,24 @@ import logging
 import re
 import urllib.parse
 from pathlib import PurePosixPath
-from typing import Union, overload
+from typing import Optional, Union
 
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import _Prototype
-from xbrl_filings_api.enums import GET_VALIDATION_MESSAGES
+from xbrl_filings_api.enums import ScopeFlag
+
+__all__ = ['ValidationMessage']
 
 logger = logging.getLogger(__name__)
 
 
 class ValidationMessage(APIResource):
     """
-    A single validation message of any severity.
+    Message for a filing in the database from a validator software.
 
-    The source of validation has not been published by filings.xbrl.org
-    but it seems likely that they originate from Arelle software.
+    The source of validation has not been published by the API provider.
+    However, it seems likely that they originate from Arelle software.
 
     Validation messages are issues in XBRL standard conformance, and the
     formula rules defined in the XBRL taxonomy.
@@ -35,25 +37,6 @@ class ValidationMessage(APIResource):
 
     Calculation inconsistency is the term used for issues in accounting
     coherence.
-
-    Attributes
-    ----------
-    api_id : str or None
-    severity : str or None
-    text : str or None
-    code : str or None
-    filing_api_id : str or None
-    filing : Filing or None
-    calc_computed_sum : float or None
-    calc_reported_sum : float or None
-    calc_context_id : str or None
-    calc_line_item : str or None
-    calc_short_role : str or None
-    calc_unreported_items : list of str or None
-    duplicate_greater : float or None
-    duplicate_lesser : float or None
-    query_time : datetime
-    request_url : str
     """
 
     TYPE: str = 'validation_message'
@@ -61,7 +44,7 @@ class ValidationMessage(APIResource):
     TEXT = 'attributes.message'
     CODE = 'attributes.code'
 
-    _FILING_FLAG = GET_VALIDATION_MESSAGES
+    _FILING_FLAG = ScopeFlag.GET_VALIDATION_MESSAGES
 
     _LINE_ITEM_RE = re.compile(r'\bfrom (\S+)')
     _SHORT_ROLE_RE = re.compile(r'\blink role (\S+)')
@@ -73,15 +56,17 @@ class ValidationMessage(APIResource):
     _DUPLICATE_1_RE = re.compile(r'\bvalue:\s*(\S+)')
     _DUPLICATE_2_RE = re.compile(r'!=\s+(\S+)')
 
-    @overload
-    def __init__(self, json_frag: dict, api_request: _APIRequest) -> None: ...
-    @overload
-    def __init__(self, json_frag: _Prototype) -> None: ...
     def __init__(
             self,
             json_frag: Union[dict, _Prototype],
-            api_request: Union[_APIRequest, None] = None
+            api_request: Optional[APIRequest] = None
             ) -> None:
+        # Signatures::
+        #     ValidationMessage(
+        #         json_frag: dict,
+        #         api_request: APIRequest
+        #         )
+        #     ValidationMessage(json_frag: _Prototype)
         super().__init__(json_frag, api_request)
 
         self.severity: Union[str, None] = self._json.get(self.SEVERITY)
@@ -112,7 +97,7 @@ class ValidationMessage(APIResource):
         """
 
         self.filing_api_id: Union[str, None] = None
-        """`api_id` of Filing object."""
+        """`api_id` of `filing` object."""
 
         # Filing object
         self.filing: Union[object, None] = None
@@ -150,7 +135,7 @@ class ValidationMessage(APIResource):
 
         This field contains the qualified name of the line item (XBRL
         concept) with the taxonomy prefix and the local name parts. It
-        could be for example "ifrs-full:Assets".
+        could be for example ``ifrs-full:Assets``.
 
         Based on attribute `text` for validation messages whose `code`
         is ``xbrl.5.2.5.2:calcInconsistency``.
@@ -286,18 +271,15 @@ class ValidationMessage(APIResource):
         return short_role
 
     def __repr__(self) -> str:
-        """
-        Return string repr of validation message.
-
-        Displays `api_id` and `code` attributes.
-        """
+        """Return repr with `api_id`, `code` and `severity`."""
         return (
             f'{type(self).__name__}('
-            f'api_id={self.api_id!r}, code={self.code!r})'
+            f'api_id={self.api_id!r}, code={self.code!r}, '
+            f'severity={self.severity!r})'
             )
 
     def __str__(self) -> str:
-        """Return `text` attribute value."""
+        """Return `text` attribute value or empty string."""
         if self.text is None:
             return ''
         return self.text

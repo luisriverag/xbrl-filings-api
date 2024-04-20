@@ -1,4 +1,4 @@
-"""Define `_JSONTree` class and related dataclasses."""
+"""Define `JSONTree` and `KeyPathRetrieveCounts` classes."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -13,57 +13,54 @@ from typing import Any, ClassVar, Optional, Union
 from xbrl_filings_api import options
 from xbrl_filings_api.enums import _ParseType
 
+__all__ = [
+    'KeyPathRetrieveCounts',
+    'JSONTree',
+    ]
+
 UTC = timezone.utc
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class _RetrieveCounter:
+    """Dataclass for retrieve counts of an unknown dot access path."""
+
     success_count: int
     total_count: int
 
 
 @dataclass(order=True, frozen=True)
 class KeyPathRetrieveCounts:
-    """Stores retrieve counts for JSON key paths of `class_name`."""
+    """Dataclass for retrieve counts of a defined dot access path."""
 
     class_name: str
     """Name of the `APIObject` class."""
     key_path: str
-    """Key access path in the JSON fragment of the API object."""
+    """Dot access path in the JSON fragment of the API object."""
     success_count: int
-    """Number of successful reads with a value other than `None`."""
+    """Number of successful reads with a value other than :pt:`None`."""
     total_count: int
     """Number of total reads."""
 
 
-class _JSONTree:
+class JSONTree:
     """
     Object for traversing and parsing API response.
 
-    When the required keys have been read, `close` method must be called
-    in the init methods of `APIObject` subclasses. This ensures the keys
-    which were never accessed (novel API features) are available via the
-    two class methods.
+    When the required keys have been read, method `close()` must be
+    called in the init methods of `APIObject` subclasses. This ensures
+    the keys which were never accessed (novel API features) are
+    available via the two class methods.
 
-    The class methods `get_unaccessed_key_paths` and
-    `get_key_path_availability_counts` are preferred to be called via
+    The class methods `get_unaccessed_key_paths()` and
+    `get_key_path_availability_counts()` are preferred to be called via
     the identically named functions of the `debug` module.
-
-    Attributes
-    ----------
-    class_name : str
-    tree : dict or None
-    do_not_track : bool
-
-    Class attributes
-    ----------------
-    unexpected_resource_types: set of tuples (str, str)
     """
 
     _unaccessed_paths: ClassVar[dict[str, set[str]]] = {}
     """
-    Unaccessed key paths of API objects.
+    Unaccessed dot access paths of API objects.
 
     Content::
 
@@ -72,7 +69,7 @@ class _JSONTree:
 
     _object_path_counter: ClassVar[dict[str, dict[str, _RetrieveCounter]]] = {}
     """
-    Counter of key path access of API objects.
+    Counter of dot access path access of API objects.
 
     Content::
 
@@ -98,34 +95,30 @@ class _JSONTree:
             do_not_track: bool = False
             ) -> None:
         """
-        Initialize a _JSONTree instance.
+        Initialize `JSONTree`.
 
         Parameters
         ----------
         class_name : str
-            The `__qualname__` of the parent `APIObject` subclass.
+            The ``__qualname__`` of the parent `APIObject` subclass.
         json_frag : dict or None
             The underlying JSON:API unserialized JSON as a dictionary
-            structure. An `_APIPage` contains the whole document.
+            structure. An `APIPage` contains the whole document.
         do_not_track : bool, default False
-            When `True`, does not track successful and total `get`
-            method calls, available via function
-            `debug.get_key_path_availability_counts`.
+            When :pt:`True`, does not track successful and total `get()`
+            method calls for `debug` module.
         """
-        self.class_name = class_name
+        self.class_name: str = class_name
         """
-        `__qualname__` of the `APIObject` subclass this tree is read
+        ``__qualname__`` of the `APIObject` subclass this tree is read
         for.
         """
         self.tree: Union[dict[str, Any], None] = json_frag
+        r"""JSON fragment as Python dict from API page response."""
+        self.do_not_track: bool = do_not_track
         """
-        JSON:API fragment as Python dict from argument `json_frag` for
-        querying.
-        """
-        self.do_not_track = do_not_track
-        """
-        When `True`, does not track successful and total `get` method
-        calls.
+        When :pt:`True`, does not track successful and total `get()`
+        method calls.
         """
 
         opcounter = self._object_path_counter
@@ -141,10 +134,10 @@ class _JSONTree:
         """
         Read JSON data from dict and parse values to Python literals.
 
-        Value `_ParseType.DATETIME` of `parse_type` parses ISO style UTC
-        strings such as '2023-05-09 10:51:50.382633'. The return value
-        is locale-aware and if the string does not specify timezone, it
-        will be on UTC.
+        Value `_ParseType.DATETIME` of parameter ``parse_type`` parses
+        ISO style UTC strings such as ``'2023-05-09 10:51:50.382633'``.
+        The return value is locale-aware and if the string does not
+        specify timezone, it will be on UTC.
 
         Value `_ParseType.DATE` parses naive dates and `_ParseType.URL`
         resolves relative URLs based on `options.entry_point_url`.
@@ -152,14 +145,14 @@ class _JSONTree:
         Parameters
         ----------
         key_path : str
-            A dot-delimited key path for navigation in a deeply nested
-            serialized JSON object.
-            E.g. 'relationships.validation_messages.links.related'.
+            A dot access path for nested access in a serialized JSON
+            fragment. E.g.
+            'relationships.validation_messages.links.related'.
         parse_type : _ParseType member, optional
             One of the `_ParseType` Enum members.
         """
         if self.tree is None:
-            msg = 'Cannot call get() when _JSONTree has been closed'
+            msg = 'Cannot call get() when JSONTree has been closed'
             raise Exception(msg)
         key_value = None
         comps = key_path.split('.')
@@ -199,8 +192,8 @@ class _JSONTree:
         """
         Close JSON tree for reading.
 
-        Remember all unaccessed and never existing key paths in the
-        nested dictionary structure but skip lists.
+        Remember all unaccessed and never existing dot access paths in
+        the nested dictionary structure but skip lists.
         """
         if self.do_not_track:
             return
@@ -250,7 +243,7 @@ class _JSONTree:
             if parsed_dt is None:
                 msg = (
                     f'Could not parse ISO datetime string {key_value!r} for '
-                    f'{self.class_name} object JSON fragment path '
+                    f'{self.class_name} object JSON fragment dot access path '
                     f'{key_path!r}.'
                     )
                 logger.warning(msg, stacklevel=2)
@@ -270,7 +263,7 @@ class _JSONTree:
             except ValueError:
                 msg = (
                     f'Could not parse ISO date string {key_value!r} for '
-                    f'{self.class_name} object JSON fragment path '
+                    f'{self.class_name} object JSON fragment dot access path '
                     f'{key_path!r}.'
                     )
                 logger.warning(msg, stacklevel=2)
@@ -285,7 +278,7 @@ class _JSONTree:
                 msg = (
                     f'Could not determine absolute URL string from '
                     f'{key_value!r} for {self.class_name} object JSON '
-                    f'fragment path {key_path!r}.'
+                    f'fragment dot access path {key_path!r}.'
                     )
                 logger.warning(msg, stacklevel=2)
             return parsed_url
@@ -295,11 +288,9 @@ class _JSONTree:
     @classmethod
     def get_unaccessed_key_paths(cls) -> set[tuple[str, str]]:
         """
-        Get unaccessed JSON key paths of objects.
+        Get unaccessed dot access paths of JSON objects.
 
-        Get the set of unaccessed key paths in unserialized JSON
-        fragments of API responses. List values (JSON arrays) are listed
-        as a single path.
+        See documentation of `debug.get_unaccessed_key_paths()`.
         """
         unaccessed: set[tuple[str, str]] = set()
         for class_name, key_path_set in cls._unaccessed_paths.items():
@@ -310,10 +301,9 @@ class _JSONTree:
     @classmethod
     def get_key_path_availability_counts(cls) -> set[KeyPathRetrieveCounts]:
         """
-        Get counts of key paths that did not resolve to `None`.
+        Get counts of dot access paths not resolving to :pt:`None`.
 
-        Get the set of successful retrieval counts for key paths in
-        unserialized JSON fragments of API responses.
+        See documentation of `debug.get_key_path_availability_counts()`.
         """
         availability: set[KeyPathRetrieveCounts] = set()
         for class_name, key_path_dict in cls._object_path_counter.items():

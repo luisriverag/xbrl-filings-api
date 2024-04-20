@@ -1,4 +1,4 @@
-"""Define tests for `_JSONTree`."""
+"""Define tests for `JSONTree`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #

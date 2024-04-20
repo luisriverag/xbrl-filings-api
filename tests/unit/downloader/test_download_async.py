@@ -132,12 +132,12 @@ async def test_stem_pattern_filename(mock_url_response, tmp_path):
 async def test_stem_pattern_no_placeholder(tmp_path):
     """
     Test raising error when attr `stem_pattern` misses placeholder
-    ``/name/``.
+    "/name/".
     """
     e_filename = 'test_stem_pattern_no_placeholder.zip'
     url = f'https://filings.xbrl.org/download_async/{e_filename}'
     e_filename = 'test_stem_pattern_filename' + '_test' + '.zip'
-    with pytest.raises(ValueError, match=r"Placeholder '/name/' missing"):
+    with pytest.raises(ValueError, match=r'Placeholder "/name/" missing'):
         await downloader.download_async(
             url=url,
             to_dir=tmp_path,

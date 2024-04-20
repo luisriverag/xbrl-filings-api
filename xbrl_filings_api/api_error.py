@@ -7,30 +7,26 @@
 from typing import Union
 
 from xbrl_filings_api.api_object import APIObject
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.exceptions import FilingsAPIError
+
+__all__ = ['APIError']
 
 
 class APIError(FilingsAPIError, APIObject):
-    """
-    An error from the filings.xbrl.org JSON:API.
+    r"""
+    Error returned by the JSON:API.
 
-    Attributes
-    ----------
-    title : str or None
-    detail : str or None
-    code: str or None
-    api_status : str or None
-    status : int
-    status_text : str
+    See Also
+    --------
+    xbrl_filings_api.exceptions : The module for all other exceptions.
     """
 
     _str_attrs = 'title', 'detail', 'code'
 
     def __init__(
-            self, json_frag: dict, api_request: _APIRequest,
+            self, json_frag: dict, api_request: APIRequest,
             status: int, status_text: str) -> None:
-        """Initiate an error of filings.xbrl.org API."""
         APIObject.__init__(self, json_frag, api_request)
 
         self.title: Union[str, None] = self._json.get('title')
@@ -43,7 +39,7 @@ class APIError(FilingsAPIError, APIObject):
         """Code of the error."""
 
         self.api_status: Union[str, None] = self._json.get('status')
-        """HTTP status code according to JSON:API reponse."""
+        r"""HTTP status code according to the JSON document."""
 
         # The following lines may be uncommented if they are taken into
         # use in filing.xbrl.org API.
@@ -58,7 +54,7 @@ class APIError(FilingsAPIError, APIObject):
         # self.meta: Union[str, None] = self._json.get('meta.abc')
 
         self.status: int = status
-        """HTTP status code of the reponse."""
+        """HTTP status code of the HTTP reponse."""
 
         self.status_text: Union[str, None] = status_text
         """HTTP status code description of the reponse."""
@@ -66,8 +62,22 @@ class APIError(FilingsAPIError, APIObject):
         self._json.close()
         FilingsAPIError.__init__(self)
 
+    def __repr__(self) -> str:
+        """Return repr with `title`, `detail`, and `code`."""
+        return (
+            f'{type(self).__name__}('
+            f'title={self.title!r}, '
+            f'detail={self.detail!r}, '
+            f'code={self.code!r})'
+            )
+
     def __str__(self) -> str:
-        """Return the error as string."""
+        """
+        Return "[<`title`> ][ | <`detail`>][ (<`code`>)]".
+
+        If only code is defined, return "Code: <``code``>". If none of
+        the three is defined, return empty string.
+        """
         pts = []
         if self.title:
             pts.append(str(self.title))
@@ -82,12 +92,3 @@ class APIError(FilingsAPIError, APIObject):
                 pts.append(f'({self.code})')
         pts = [pt.strip() for pt in pts]
         return ' '.join(pts)
-
-    def __repr__(self) -> str:
-        """Return string repr of API error."""
-        return (
-            f'{type(self).__name__}('
-            f'title={self.title!r}, '
-            f'detail={self.detail!r}, '
-            f'code={self.code!r})'
-            )

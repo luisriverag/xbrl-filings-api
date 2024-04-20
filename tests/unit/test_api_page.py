@@ -1,4 +1,4 @@
-"""Define tests for `_APIPage`."""
+"""Define tests for `APIPage`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -12,7 +12,7 @@ import pytest
 import responses
 
 import xbrl_filings_api as xf
-from xbrl_filings_api.api_page import _APIPage, _IncludedResource
+from xbrl_filings_api.api_page import APIPage, IncludedResource
 
 
 @pytest.fixture
@@ -49,9 +49,9 @@ def oldest3_fi_entities_filingspage(oldest3_fi_entities_response):
 
 @pytest.mark.paging
 def test_attributes(paging_swedish_size2_pg3_2nd_filingspage):
-    """Test _APIPage attributes."""
+    """Test APIPage attributes."""
     fpage: xf.FilingsPage = paging_swedish_size2_pg3_2nd_filingspage
-    assert isinstance(fpage, _APIPage)
+    assert isinstance(fpage, APIPage)
     def pmatch(s, *, isbigpage=False):
         return (
             r'https://filings\.xbrl\.org/api/filings\?.*'
@@ -70,7 +70,7 @@ def test_attributes(paging_swedish_size2_pg3_2nd_filingspage):
     assert isinstance(fpage._data, list)
     assert isinstance(fpage._included_resources, list)
     for inc_res in fpage._included_resources:
-        assert isinstance(inc_res, _IncludedResource)
+        assert isinstance(inc_res, IncludedResource)
     assert fpage._data_count > 10
 
 
@@ -136,7 +136,7 @@ def test_included_resources_unexpected():
 
 
 def test_raises_initiate_directly(dummy_api_request):
-    """Test _APIPage raises if initiated directly from parent class."""
+    """Test APIPage raises if initiated directly from parent class."""
     rsps_dummy = {
         'data': [],
         'links': {
@@ -147,8 +147,8 @@ def test_raises_initiate_directly(dummy_api_request):
         }
     with pytest.raises(
             NotImplementedError,
-            match=r'_APIPage can only be initialized via subclassing'):
-        _ = _APIPage(
+            match=r'APIPage can only be initialized via subclassing'):
+        _ = APIPage(
             json_frag=rsps_dummy,
             api_request=dummy_api_request
             )

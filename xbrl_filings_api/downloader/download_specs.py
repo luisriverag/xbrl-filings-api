@@ -8,13 +8,18 @@ from dataclasses import dataclass
 from pathlib import PurePath
 from typing import Any, Optional, Union
 
+__all__ = ['DownloadSpecs']
+
 
 @dataclass(frozen=True)
 class DownloadSpecs:
     """
-    Download specs to be consumed by `download_processor` module.
+    Dataclass of parameter values for ``downloader.download_async()``.
 
-    Used as input instructions in lists for parallel download functions.
+    Used as download instructions in lists for parallel download
+    functions which eventually end up as parameters for
+    :func:`download_async()`. Attribute `info` is only for keeping track
+    of downloads and is not used as a function parameter.
     """
 
     url: str
@@ -27,7 +32,7 @@ class DownloadSpecs:
     """
     Pattern to add to the filename stems.
 
-    Placeholder ``/name/`` is always required.
+    Placeholder "/name/" is always required.
     """
 
     filename: Optional[str] = None
@@ -35,9 +40,9 @@ class DownloadSpecs:
 
     sha256: Optional[str] = None
     """
-    Expected SHA-256 hash as a hex string.
+    Expected SHA-256 checksum as a hex string.
 
-    Case-insensitive. No hash is calculated if this parameter is not
+    Case-insensitive. No checksum is calculated if this parameter is not
     given.
     """
 

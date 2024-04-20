@@ -8,14 +8,16 @@ from dataclasses import dataclass
 from pathlib import PurePath
 from typing import Optional, Union
 
+__all__ = ['DownloadItem']
+
 
 @dataclass
 class DownloadItem:
     """
-    Download item class for download functions.
+    Dataclass defining download item for download functions.
 
-    Can be used to override download function parameters for a single
-    file.
+    Attributes override download function parameters values for
+    downloads of this file (JSON, XHTML, or package).
     """
 
     filename: Optional[str] = None
@@ -32,5 +34,5 @@ class DownloadItem:
     """
     Pattern to add to the filename stems.
 
-    Placeholder ``/name/`` is always required.
+    Placeholder "/name/" is always required.
     """

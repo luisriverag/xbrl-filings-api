@@ -9,8 +9,8 @@ from collections.abc import Iterable
 from itertools import chain
 from typing import Any, Union
 
-from xbrl_filings_api.api_page import _APIPage
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.api_page import APIPage
+from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.entity import Entity
 from xbrl_filings_api.enums import ScopeFlag
@@ -18,35 +18,19 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
 
+__all__ = ['FilingsPage']
+
 logger = logging.getLogger(__name__)
 
 
-class FilingsPage(_APIPage):
-    """
-    JSON:API response page containing filings as primary resource.
-
-    Attributes
-    ----------
-    query_time : datetime
-    query_filing_count : int or None
-    filing_list: list of Filing
-    entity_list : list of Entity or None
-    validation_message_list : list of ValidationMessage or None
-    jsonapi_version : str or None
-    api_self_url : str or None
-    api_prev_page_url : str or None
-    api_next_page_url : str or None
-    api_first_page_url : str or None
-    api_last_page_url : str or None
-    request_url : str
-    """
+class FilingsPage(APIPage):
+    r"""Response page containing filings as primary resource."""
 
     def __init__(
-            self, json_frag: dict, api_request: _APIRequest,
+            self, json_frag: dict, api_request: APIRequest,
             flags: ScopeFlag, received_api_ids: dict[str, set],
             res_colls: dict[str, ResourceCollection]
             ) -> None:
-        """Initiate a JSON:API response page."""
         super().__init__(json_frag, api_request)
 
         self.query_filing_count = self._data_count
@@ -70,7 +54,8 @@ class FilingsPage(_APIPage):
         """
         Set of `Entity` objects on this page.
 
-        Is `None` if `flags` parameter did not include `GET_ENTITY`.
+        Is :pt:`None` if ``flags`` parameter did not include
+        `GET_ENTITY`.
         """
 
         vmsgs = self._get_inc_resource(
@@ -87,7 +72,7 @@ class FilingsPage(_APIPage):
         """
         Set of `ValidationMessage` objects on this page.
 
-        Is `None` if `flags` parameter did not include
+        Is :pt:`None` if ``flags`` parameter did not include
         `GET_VALIDATION_MESSAGES`.
         """
 
@@ -102,7 +87,7 @@ class FilingsPage(_APIPage):
             self, received_api_ids: dict[str, set],
             res_colls: dict[str, ResourceCollection], flags: ScopeFlag
             ) -> list[Filing]:
-        """Get filings from from `data` key list."""
+        """Get filings from from document ``data`` key."""
         filing_list = []
         if not received_api_ids.get('Filing'):
             received_api_ids['Filing'] = set()
@@ -126,7 +111,7 @@ class FilingsPage(_APIPage):
             self, res_frag: dict[str, Any], received_set: set[str],
             res_colls: dict[str, ResourceCollection], flags: ScopeFlag
             ) -> Union[Filing, None]:
-        """Get filings from from a single `data` key fragment."""
+        """Get filings from from a single ``data`` key fragment."""
         res_id = str(res_frag.get('id'))
         if res_id in received_set:
             msg = f'Same filing returned again, api_id={res_id!r}.'
@@ -152,13 +137,13 @@ class FilingsPage(_APIPage):
                         vmsgs,
                         res_colls['ValidationMessage'] # type: ignore[arg-type]
                         )
-            api_request = _APIRequest(self.request_url, self.query_time)
+            api_request = APIRequest(self.request_url, self.query_time)
             return Filing(res_frag, api_request, entity_iter, message_iter)
 
     def _get_inc_resource(
             self,
             type_obj: type[APIResource],
-            api_request: _APIRequest,
+            api_request: APIRequest,
             received_api_ids: dict[str, set],
             flag_member: ScopeFlag,
             flags: ScopeFlag
@@ -198,7 +183,13 @@ class FilingsPage(_APIPage):
                     logger.warning(msg, stacklevel=2)
 
     def __repr__(self) -> str:
-        """Return string repr of filings page."""
+        """
+        Return repr with request_url, query_time, and len(filing_list).
+
+        Attribute `request_url` is shown as repr, `query_time` as
+        unprefixed datetime() constructor, and len(`filing_list`) as
+        integer.
+        """
         time_str = self.query_time.strftime('%Y, %m, %d, %H, %M, %S')
         query_time = f'datetime({time_str})'
         subreslist = ''

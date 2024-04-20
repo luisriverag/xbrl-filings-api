@@ -10,7 +10,7 @@ from typing import Any, Optional, Union
 
 from xbrl_filings_api import order_columns
 from xbrl_filings_api.api_object import APIObject
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.constants import (
     _PROTOTYPE,
     ATTRS_ALWAYS_EXCLUDE_FROM_DATA,
@@ -18,21 +18,17 @@ from xbrl_filings_api.constants import (
 )
 from xbrl_filings_api.enums import ScopeFlag
 
+__all__ = ['APIResource']
+
 UTC = timezone.utc
 
 
 class APIResource(APIObject):
-    """
-    A JSON:API resource.
+    r"""
+    Base class for JSON:API resources, i.e., data objects.
 
     Subclasses of this class may be read into a database. An instance
     resembles a database record.
-
-    Attributes
-    ----------
-    api_id : str or None
-    query_time : datetime
-    request_url : str
     """
 
     TYPE: Union[str, None] = None
@@ -41,17 +37,10 @@ class APIResource(APIObject):
     def __init__(
             self,
             json_frag: Union[dict, _Prototype],
-            api_request: Union[_APIRequest, None] = None
+            api_request: Union[APIRequest, None] = None
             ) -> None:
-        """
-        Initialize an API resource.
-
-        Parameters
-        ----------
-        json_frag : dict or _PROTOTYPE
-            JSON fragment in an API response. `_PROTOTYPE` constant may
-            be given to create a dummy instance.
-        """
+        # Constructing with only `_PROTOTYPE` as an argument creates a
+        # dummy object with instance attributes.
         if type(self) is APIResource:
             msg = 'APIResource can only be initialized via subclassing'
             raise NotImplementedError(msg)
@@ -60,7 +49,7 @@ class APIResource(APIObject):
         if json_frag == _PROTOTYPE:
             is_prototype = True
             json_frag = {}
-            api_request = _APIRequest('', datetime.now(UTC))
+            api_request = APIRequest('', datetime.now(UTC))
         if api_request is None:
             msg = 'Parameter api_request not given'
             raise ValueError(msg)
@@ -72,7 +61,12 @@ class APIResource(APIObject):
             )
 
         self.api_id: Union[str, None] = None
-        """``id`` from JSON:API."""
+        r"""
+        JSON-API resource ``id`` of `APIResource`.
+
+        Can be used as a unique identifier among resources of the same
+        type.
+        """
 
         api_id = self._json.get('id')
         self.api_id = str(api_id)
@@ -85,22 +79,24 @@ class APIResource(APIObject):
             filings: Optional[Iterable['APIResource']] = None
             ) -> list[str]:
         """
-        Get data attributes for an API resource subclass.
+        Return data attributes for an `APIResource`.
 
         Excludes internal and class attributes and the ones containing
         objects.
 
         For `Filing` objects this also means excluding attributes ending
-        ``_download_path`` if all `filings` have this column filled with
-        `None`. Additionally, if `GET_ENTITY` is not included in
-        `flags`, filings will exclude `entity_api_id`.
+        ``_download_path`` if every filing in parameter ``filings`` have
+        this attribute as :pt:`None`. Additionally, if `GET_ENTITY`
+        is not included in parameter ``flags``, returned attribute list
+        will exclude `entity_api_id`.
 
         Parameters
         ----------
         flags : ScopeFlag, optional
-            Only relevant for `Filing` resource type. See remarks above.
+            Used to exclude attribute `Filing.entity_api_id`.
         filings : iterable of Filing, optional
-            Only relevant for `Filing` resource type. See remarks above.
+            Used to exclude `Filing` attributes ending
+            ``_download_path``.
         """
         if cls is APIResource:
             raise NotImplementedError()
@@ -154,7 +150,7 @@ class APIResource(APIObject):
             has_entities: bool = False
             ) -> list[str]:
         """
-        List of available columns for this `APIResource` subclass.
+        Return list of available columns for an `APIResource`.
 
         Parameters
         ----------
@@ -172,9 +168,9 @@ class APIResource(APIObject):
         return cols
 
     def __eq__(self, other: Any) -> bool:
-        """Return true when hashes match."""
+        """Return :pt:`True` when both __hash__() match."""
         return self._hash == hash(other)
 
     def __hash__(self):
-        """Return hash of tuple `('APIResource', TYPE, api_id)`."""
+        """Return hash of ``('APIResource', cls.TYPE, self.api_id)``."""
         return self._hash

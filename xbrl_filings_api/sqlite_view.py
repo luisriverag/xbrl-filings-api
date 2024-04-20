@@ -7,10 +7,12 @@
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
+__all__ = ['SQLiteView']
+
 
 @dataclass(eq=True, frozen=True)
 class SQLiteView:
-    """Class which stores SQLite view creation instructions."""
+    """Dataclass for storing SQLite view creation instructions."""
 
     name: str = field(compare=True)
     """
@@ -27,5 +29,5 @@ class SQLiteView:
     `Filing` (as it will always be included).
     """
 
-    sql: str = field(compare=False)
+    sql: str = field(compare=False, repr=False)
     """SQL ``SELECT`` statement for the view."""

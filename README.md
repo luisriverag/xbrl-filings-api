@@ -7,14 +7,14 @@ Python API for filings.xbrl.org XBRL report repository.
 
 This library provides:
 
-1. Python-friendly access to the public API in ``filings.xbrl.org``
-2. Parallel downloading of associated files (ZIP, xHTML and JSON)
-3. Possibility to strip redundant language versions/corrected filings
-4. Filing objects have an `open()` method to show viewer report on web browser
-5. Integration to `pandas`
-6. Integration to SQLite database
+1. Python-friendly access to the public API in
+   [filings.xbrl.org](https://filings.xbrl.org)
+2. Parallel downloading of associated files (ZIP, XHTML and JSON)
+3. Integration to [pandas](https://pandas.pydata.org)
+4. Integration to [SQLite](https://www.sqlite.org/) database
   - Three default SQLite views, incl. one for accounting reliability
-7. A few useful derived attributes
+5. A few useful derived attributes
+6. Possibility to strip redundant language versions/corrected filings
 
 As of March 2024, all the filings in the database are Inline XBRL
 reports. They are either prepared in accordance to the European Single
@@ -46,7 +46,8 @@ pip install xbrl-filings-api
 
 ## License
 
-`xbrl-filings-api` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+``xbrl-filings-api`` is distributed under the terms of the
+[MIT](https://spdx.org/licenses/MIT.html) license.
 
 ## Data objects
 
@@ -72,9 +73,9 @@ Data attributes:
 | `error_count`           | int      | Count of validation errors          | (**X**) | `error_count`         |
 | `inconsistency_count`   | int      | Count of validation inconsistencies | (**X**) | `inconsistency_count` |
 | `warning_count`         | int      | Count of validation warnings        | (**X**) | `warning_count`       |
-| `added_time`            | datetime | Time when added to `filings.xbrl.org` | **X** | `date_added  `        |
+| `added_time`            | datetime | Time when added to the database     | **X** | `date_added  `          |
 | `added_time_str`        | str      | Original of `added_time`            | **X**   | `date_added  `        |
-| `processed_time`        | datetime | Time when processed for `filings.xbrl.org` | **X** | `processed`      |
+| `processed_time`        | datetime | Time when processed for the database | **X** | `processed`            |
 | `processed_time_str`    | str      | Original of `processed_time`        | **X**   | `processed`           |
 | `entity_api_id`         | str      | Same as `entity.api_id`             |         | Entity resource `id`  |
 | `json_url`              | str      | xBRL-JSON download URL              | (**X**) | `json_url`            |
@@ -86,7 +87,7 @@ Data attributes:
 | `json_download_path`    | str      | Path where `json_url` was downloaded |        | \-                    |
 | `package_download_path` | str      | Path where `package_url` was downloaded |     | \-                    |
 | `xhtml_download_path`   | str      | Path where `xhtml_url` was downloaded |       | \-                    |
-| `package_sha256`        | str      | SHA-256 hash of `package_url` file  |  **X**  |`sha256`               |
+| `package_sha256`        | str      | SHA-256 checksum of `package_url` file |  **X**  |`sha256`            |
 
 > **Warning**
 > As of October 2023, attributes ending with `_count` and `_url` could

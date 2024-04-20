@@ -4,45 +4,34 @@
 #
 # SPDX-License-Identifier: MIT
 
-from typing import Union, overload
+from typing import Optional, Union
 
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import _Prototype
-from xbrl_filings_api.enums import GET_ENTITY, _ParseType
+from xbrl_filings_api.enums import ScopeFlag, _ParseType
+
+__all__ = ['Entity']
 
 
 class Entity(APIResource):
-    """
-    Entity of ``filings.xbrl.org`` API.
-
-    Attributes
-    ----------
-    api_id : str or None
-    identifier: Union[str, None]
-    name: Union[str, None]
-    filings: set of Filing
-    api_entity_filings_url: Union[str, None]
-    query_time : datetime
-    request_url : str
-    """
+    """Entity (e.g. a group) in the database which has filed filings."""
 
     TYPE: str = 'entity'
     NAME = 'attributes.name'
     IDENTIFIER = 'attributes.identifier'
     API_ENTITY_FILINGS_URL = 'relationships.filings.links.related'
 
-    _FILING_FLAG = GET_ENTITY
+    _FILING_FLAG = ScopeFlag.GET_ENTITY
 
-    @overload
-    def __init__(self, json_frag: dict, api_request: _APIRequest) -> None: ...
-    @overload
-    def __init__(self, json_frag: _Prototype) -> None: ...
     def __init__(
             self,
             json_frag: Union[dict, _Prototype],
-            api_request: Union[_APIRequest, None] = None
+            api_request: Optional[APIRequest] = None
             ) -> None:
+        # Signatures::
+        #     Entity(json_frag: dict, api_request: APIRequest)
+        #     Entity(json_frag: _Prototype)
         super().__init__(json_frag, api_request)
 
         self.identifier: Union[str, None] = self._json.get(self.IDENTIFIER)
@@ -57,31 +46,31 @@ class Entity(APIResource):
 
         # Set of Filing objects
         self.filings: set[object] = set()
-        """Set of `Filing` objects from the query reported by this
-        entity.
+        """Set of :class:`Filing` objects from the query reported by
+        this entity.
         """
 
         self.api_entity_filings_url: Union[str, None] = self._json.get(
             self.API_ENTITY_FILINGS_URL, _ParseType.URL)
-        """A link to the JSON:API page with full list of filings by this
-        entity.
-        """
+        r"""URL to the page with full list of filings by this entity."""
 
         self._json.close()
 
     def __repr__(self) -> str:
-        """
-        Return string repr of the entity.
-
-        Displays `api_id` and `name` attributes.
-        """
+        """Return repr with `api_id` and `name`."""
         return (
             f'{type(self).__name__}('
             f'api_id={self.api_id!r}, name={self.name!r})'
             )
 
     def __str__(self) -> str:
-        """Return string str of the entity."""
+        """
+        Return "<`name`> (<`identifier`>)", or either alone.
+
+        If both are defined, full string is returned but if only one is
+        defined, it is returned. If neither is defined, return empty
+        string.
+        """
         if self.name and self.identifier:
             return f'{self.name} ({self.identifier})'
         if self.name:

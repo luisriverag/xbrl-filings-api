@@ -28,7 +28,7 @@ import responses
 import xbrl_filings_api as xf
 from tests.urlmock import UrlMock
 from xbrl_filings_api import FilingSet, ResourceCollection
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.api_request import APIRequest
 
 UTC = timezone.utc
 
@@ -181,8 +181,8 @@ def get_oldest3_fi_ent_vmessages_filingset(urlmock):
 
 @pytest.fixture(scope='package')
 def dummy_api_request():
-    """Dummy _APIRequest object."""
-    return _APIRequest(
+    """Dummy APIRequest object."""
+    return APIRequest(
         'https://filings.xbrl.org/api/filings?Dummy=Url',
         query_time=datetime(2000, 1, 1, 12, 0, 0, tzinfo=UTC)
         )

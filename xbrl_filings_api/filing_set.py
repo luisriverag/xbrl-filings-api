@@ -15,11 +15,11 @@ from datetime import date, datetime
 from pathlib import Path, PurePath
 from typing import Any, Optional, Union
 
-import xbrl_filings_api.options as options
 from xbrl_filings_api import (
     database_processor,
     download_specs_construct,
     downloader,
+    options,
 )
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import DataAttributeType, FileStringType
@@ -32,44 +32,58 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.validation_message import ValidationMessage
 
+__all__ = ['FilingSet']
+
 
 class FilingSet(set[Filing]):
-    """Subclassed `set` for `Filing` objects.
+    r"""Subclassed :class:`set` for `Filing` objects.
+
+    Can be initialized with the single argument being a iterable of
+    `Filing` objects.
 
     The class is an extended set type with certain filing-related
     attributes and methods.
 
-    Support for all set operations and other methods of the `set` class
-    are implemented. It is possible to mix FilingSets from different
-    queries into a single FilingSet without redundant copies. Due to
-    cross-referencing, the operations returning a new set (e.g. `union`
-    method and `|` operator) always deep copy all objects to the results
-    set. The in-place operations (e.g. `update` method and `|=`
-    operator) retain the objects from the left set but deep copy
-    everything from the right set. If working with large sets, it is
-    recommended to use in-place operations over new set operations.
+    Support for all set operations and other methods of the ``set``
+    class are implemented. It is possible to mix filing sets from
+    different queries into a single ``FilingSet`` without redundant
+    copies. Due to cross-referencing, the operations returning a new set
+    (e.g. `union` method and ``|`` operator) always deep copy all
+    objects to the results set. The in-place operations (e.g. `update`
+    method and ``|=`` operator) retain the objects from the left set but
+    deep copy everything from the right set. If working with large sets,
+    it is recommended to use in-place operations over new set
+    operations.
+
+    Defines operators ``|``, ``|=``, ``&``, ``&=``, ``-``, ``-=``,
+    ``^``, and ``^=``.
 
     `Filing` objects, as subclass of `APIResource`, have a custom
-    `__hash__` method and their hash is based on a tuple of string
-    'APIResource', class `TYPE` and object `api_id`. This means that
-    equality checks (`==`) and related methods are based on this tuple.
-    For example, when the actual filing object is not available, the
-    fastest way to check if a filing with `api_id` '123' is included in
-    the FilingSet is::
+    `__hash__() <APIResource.__hash__>` method and their hash is based
+    on a tuple of strings 'APIResource',
+    `Filing.TYPE <APIResource.TYPE>`, and
+    `Filing.api_id <APIResource.api_id>`. This means that equality
+    checks (``==`` operator) and related methods are based on this
+    tuple. For example, when the actual filing object is not available,
+    the fastest way to check if a filing with ``api_id`` '123' is
+    included in the filing set ``fs`` is::
 
-        ('APIResource', Filing.TYPE, '123') in filing_set
+        ('APIResource', Filing.TYPE, '123') in fs
 
-    Same applies in `entities` and `validation_messages`. These
-    collections are, however, lazy iterators.
-
-    Attributes
-    ----------
-    entities : ResourceCollection
-    validation_messages : ResourceCollection
-    columns : list of str
+    Same applies for `ResourceCollection` in attributes
+    `entities` and `validation_messages`. These collections are,
+    however, lazy iterators.
     """
 
     def __init__(self, filings: Optional[Iterable[Filing]] = None) -> None:
+        """
+        Initialize `FilingSet`.
+
+        Parameters
+        ----------
+        filings : iterable of Filing, optional
+            Initial filings.
+        """
         if filings is None:
             super().__init__()
         else:
@@ -79,9 +93,21 @@ class FilingSet(set[Filing]):
                         msg = 'All iterable items must be Filing objects.'
                         raise ValueError(msg)
             super().__init__(filings)
+
         self.entities = ResourceCollection(self, 'entity', Entity)
+        """
+        Lazy iterator for entity references in filings.
+
+        See documentation for `ResourceCollection` class.
+        """
+
         self.validation_messages = ResourceCollection(
             self, 'validation_messages', ValidationMessage)
+        """
+        Lazy iterator for validation message references in filings.
+
+        See documentation for `ResourceCollection` class.
+        """
 
     def download(
             self,
@@ -97,36 +123,47 @@ class FilingSet(set[Filing]):
             max_concurrent: Union[int, None] = 5,
             ) -> None:
         """
-        Download files according to `files` parameter.
+        Download files according to parameter ``files``.
+
+        The ``files`` parameter accepts three formats::
+
+            fs.download('json')
+            fs.download(['json', 'package'])
+            fs.download({
+                    'json': DownloadItem(),
+                    'package': DownloadItem(to_dir=other_dir)
+                }, to_dir)
 
         The filesystem path of the downloaded file will be saved in the
-        `Filing` object attributes {file}_download_path such as
+        `Filing` object attributes ``<file>_download_path`` such as
         ``json_download_path`` for the downloaded JSON file.
 
-        If there are ``package`` download definition(s) in the parameter
-        `files` and parameter `check_corruption` is True, the downloaded
+        If ``package`` files are requested to be downloaded and
+        parameter ``check_corruption`` is :pt:`True`, the downloaded
         package files will be checked through the `package_sha256`
-        attribute of `Filing` objects. If this hash attribute does not
-        match the one calculated from the downloaded file, an exception
-        `CorruptDownloadError` of the first erraneous occurrence will be
-        raised after all downloads have finished. The downloaded file(s)
-        will not be deleted but the filename(s) will be appended with
-        ending ``.corrupt``. However, attributes {file}_download_path
-        will not store these corrupt paths.
+        attribute. If these attribute values do not match the ones
+        calculated from the downloaded files, an exception
+        :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` of the
+        first corrupt file is raised after all downloads have finished.
+        The downloaded files will not be deleted but the filenames will
+        be appended with ending ".corrupt". However, attributes
+        `Filing.package_download_path` will not store these corrupt
+        paths.
 
-        The directories in `to_dir` will be created if they do not
-        exist. By default, filename is derived from download URL. If the
-        file already exists, it will be overwritten.
+        The directories in the path of parameter ``to_dir`` will be
+        created if they do not exist. By default, filename is derived
+        from download URL. If the file already exists, it will be
+        overwritten.
 
         If download is interrupted, the files will be left with ending
-        ``.unfinished``.
+        ".unfinished".
 
-        If no name could be derived from `url`, the file will be named
-        ``file0001``, ``file0002``, etc. In this case a new file is
-        always created.
+        If no name could be derived from the url attribute, the file
+        will be named ``file0001``, ``file0002``, etc. In this case a
+        new file is always created.
 
-        Parameter `stem_pattern` requires a placeholder ``/name/``. For
-        example pattern ``/name/_second_try`` will change original
+        Parameter ``stem_pattern`` requires a placeholder "/name/".
+        For example pattern ``/name/_second_try`` will change original
         filename ``743700XJC24THUPK0S03-2022-12-31-fi.xhtml`` into
         ``743700XJC24THUPK0S03-2022-12-31-fi_second_try.xhtml``. Not
         recommended for packages as their names should not be changed.
@@ -135,30 +172,37 @@ class FilingSet(set[Filing]):
 
         Parameters
         ----------
-        files : str or iterable of str or mapping of str: DownloadItem
-            Value, iterable item or mapping key must be in
+        files : str or iterable of str or mapping of {str: DownloadItem}
+            The ``str`` value must be in
             ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
-            override method parameters for a single file.
-        to_dir : str or pathlike, optional
+            override method arguments for the file.
+        to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
-            Pattern to add to the filename stems. Placeholder ``/name/``
+            Pattern to add to the filename stems. Placeholder "/name/"
             is always required.
         check_corruption : bool, default True
-            Calculate hashes for package files.
-        max_concurrent : int or None, default None
+            Raise
+            :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` for
+            any corrupt ``'package'`` file.
+        max_concurrent : int or None, default 5
             Maximum number of simultaneous downloads allowed. Value
-            `None` means unlimited.
+            :pt:`None` means unlimited.
 
         Raises
         ------
-        CorruptDownloadError
-            Filing attribute `package_sha256` does not match the
-            calculated hash of package file.
+        ~xbrl_filings_api.exceptions.CorruptDownloadError
+            When attribute `Filing.package_sha256` does not match the
+            calculated hash of ``'package'`` file and
+            ``check_corruption`` is :pt:`True`.
         requests.HTTPError
-            HTTP status error occurs.
+            When HTTP status error occurs.
         requests.ConnectionError
-            Connection fails.
+            When connection fails.
+
+        See Also
+        --------
+        Filing.download : For a single filing.
         """
         downloader.validate_stem_pattern(stem_pattern)
 
@@ -214,32 +258,38 @@ class FilingSet(set[Filing]):
             max_concurrent: Union[int, None] = 5
             ) -> AsyncIterator[downloader.DownloadResult]:
         """
-        Download files in type or types of `files`.
+        Download files and yield `DownloadResult` objects.
 
         The function follows the same logic as method `download()`. See
         documentation.
 
         Parameters
         ----------
-        files : str or iterable of str or mapping of str: DownloadItem
-            Value, iterable item or mapping key must be in
+        files : str or iterable of str or mapping of {str: DownloadItem}
+            The ``str`` value must be in
             ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
-            override method parameters for a single file.
-        to_dir : str or pathlike, optional
+            override method arguments for the file.
+        to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
-            Pattern to add to the filename stems. Placeholder ``/name/``
+            Pattern to add to the filename stems. Placeholder "/name/"
             is always required.
         check_corruption : bool, default True
-            Calculate hashes for package files.
+            Raise
+            :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` for
+            any corrupt ``'package'`` file.
         max_concurrent : int or None, default 5
             Maximum number of simultaneous downloads allowed. Value
-            `None` means unlimited.
+            :pt:`None` means unlimited.
 
         Yields
         ------
         DownloadResult
             Contains information on the finished download.
+
+        See Also
+        --------
+        Filing.download_aiter : For a single filing.
         """
         downloader.validate_stem_pattern(stem_pattern)
 
@@ -292,9 +342,8 @@ class FilingSet(set[Filing]):
         Save set to an SQLite3 database.
 
         The method has the same signature and follows the same rules as
-        function `to_sqlite()` in library root with the exception of
-        missing parameters `filters`, `sort`, `limit` and
-        `add_api_params`. See documentation.
+        the query function :func:`~xbrl_filings_api.query.to_sqlite`
+        with the exception of missing all query parameters.
 
         Flags also default to all tables turned on. If no additional
         information is present in the set, the tables will not be
@@ -302,7 +351,7 @@ class FilingSet(set[Filing]):
 
         Parameters
         ----------
-        path or Path
+        path : path-like
             Path to the SQLite database.
         update : bool, default False
             If the database already exists, update it with these
@@ -315,14 +364,18 @@ class FilingSet(set[Filing]):
         Raises
         ------
         FileExistsError
-            When ``update=False``, if the intended save path for the
-            database is an existing file.
+            When ``update`` is :pt:`False` and the intended save path
+            for the database is an existing file.
         DatabaseSchemaUnmatchError
-            When ``update=True``, if the file contains a database whose
-            schema does not match the expected format.
+            When ``update`` is :pt:`True` and the file contains a
+            database whose schema does not match the expected format.
         sqlite3.DatabaseError
-            When ``update=True``, if the file is not a database
-            (``err.sqlite_errorname='SQLITE_NOTADB'``) etc.
+            For example when ``update`` is :pt:`True` and the file is
+            not a database etc.
+
+        See Also
+        --------
+        xbrl_filings_api.to_sqlite : Query and save to SQLite.
         """
         ppath = path if isinstance(path, Path) else Path(path)
 
@@ -338,19 +391,20 @@ class FilingSet(set[Filing]):
             include_paths : bool = False
             ) -> dict[str, list[DataAttributeType]]:
         """
-        Get data as dict for `pandas.DataFrame` constructor for filings.
+        Get filings as data for :class:`pandas.DataFrame` constructor.
 
         A new dataframe can be instantiated by::
 
-        >>> import pandas as pd
-        >>> df = pd.DataFrame(data=filingset.get_pandas_data())
+            import pandas as pd
+            df = pd.DataFrame(data=filingset.get_pandas_data())
 
-        If `attr_names` is not given, data attributes excluding ones
-        ending ``_date_str`` will be extracted. Attributes ending in
-        ``_download_path`` will be extracted only if at least one file
-        of this type has been downloaded (and include_paths=True) and
-        `entity_api_id` if there is at least one entity object in the
-        set and `with_entity` is `False`.
+        If parameter ``attr_names`` is not given, data attributes
+        excluding ones ending ``_date_str`` will be extracted.
+        Attributes ending in ``_download_path`` will be extracted only
+        if at least one file of this type has been downloaded (and
+        ``include_paths`` is :pt:`True`) and `entity_api_id` if there is
+        at least one entity object in the set and parameter
+        ``with_entity`` is :pt:`False`.
 
         Parameters
         ----------
@@ -358,26 +412,31 @@ class FilingSet(set[Filing]):
             Valid attributes names of `Filing` object or ``entity.``
             prefixed attributes of its `Entity` object.
         with_entity : bool, default False
-            When `attr_names` is not given, include entity attributes to
-            the filing.
+            When parameter ``attr_names`` is not given, include entity
+            attributes to the filing.
         strip_timezone : bool, default True
-            Strip timezone information (always UTC) from `datetime`
-            values.
+            Strip timezone information (always UTC) from
+            :class:`~datetime.datetime` values.
         date_as_datetime : bool, default True
-            Convert `date` values to naive `datetime` to be converted to
-            `datetime64` by pandas.
+            Convert :class:`~datetime.date` values to naive
+            :class:`~datetime.datetime` to be converted to
+            :class:`pandas.datetime64` by pandas.
         include_urls : bool, default False
-            When `attr_names` is not given, include attributes ending
-            ``_url``.
+            When parameter ``attr_names`` is not given, include
+            attributes ending ``_url``.
         include_paths : bool, default False
-            When `attr_names` is not given, include attributes ending
-            ``_path``.
+            When parameter ``attr_names`` is not given, include
+            attributes ending ``_path``.
 
         Returns
         -------
-        dict of str: list of DataAttributeType
+        data : dict of {str: list of DataAttributeType}
             Column names are the same as the attributes for resource of
             this type.
+
+        See Also
+        --------
+        ResourceCollection.get_pandas_data : For other resources.
         """
         data: dict[str, list[DataAttributeType]]
         if attr_names:
@@ -424,28 +483,31 @@ class FilingSet(set[Filing]):
 
         Entities must be available on the `FilingSet`.
 
-        The method searches the `FilingSet` and leaves only one filing
+        The method searches the ``FilingSet`` and leaves only one filing
         for each group of same `entity_api_id`, `last_end_date` pairs,
         i.e., one filing for each unique enclosure of the same entity
-        for the same financial period. If `use_reporting_date` is True,
-        grouping is based on `entity_api_id`, `reporting_date` instead.
+        for the same financial period. If parameter
+        ``use_reporting_date`` is :pt:`True`, grouping is based on
+        ``entity_api_id``, `reporting_date` instead.
 
         Some entities report on multiple markets. If all these
-        country-specific filings are wished to retain, set
-        `all_markets=True`. Grouping will then also include `country`.
+        country-specific filings are wished to retain, set parameter
+        ``all_markets`` as :pt:`True`. Grouping will then also include
+        `country` as the last item.
 
         The selected filing from the group is chosen primarily on
-        `languages` parameter values matched on the `language`
-        attribute of a `Filing`. Parameter value `['sv', 'fi']` thus
-        means that Swedish filings are preferred, secondarily Finnish
-        and lastly the ones which have language as `None`. Value `None`
-        can be used in the iterable as well. Parameter value `None`
+        ``languages`` parameter values matched on the `Filing.language`
+        attribute. Parameter value ``['sv', 'fi']`` thus means that
+        Swedish filings are preferred, secondarily Finnish, and lastly
+        the ones which have language as :pt:`None`. Value :pt:`None` can
+        be used in the iterable as well. Parameter value :pt:`None`
         means no language preference.
 
         If there are more than one filing for the language match (or
-        language=None), the filings will be ordered based on their
-        `filing_index` and the last one is chosen which is practically
-        the one with highest filing number part of `filing_index`.
+        ``language`` is :pt:`None`), the filings will be ordered based
+        on their `filing_index` and the last one is chosen which is
+        practically the one with highest filing number part of
+        ``filing_index``.
 
         Parameters
         ----------
@@ -455,7 +517,7 @@ class FilingSet(set[Filing]):
             Use `reporting_date` instead of `last_end_date` when
             grouping.
         all_markets : bool, default False
-            Add `country` to grouping.
+            Append `country` as the last item in grouping.
 
         Returns
         -------
@@ -828,7 +890,12 @@ class FilingSet(set[Filing]):
         return FilingSet(self)
 
     def __repr__(self) -> str:
-        """Return string repr of filing set."""
+        """
+        Return repr with `len()` of self, entities, validation_messages.
+
+        Values len(`entities`) and len(`validation_messages`) are only
+        shown if more than zero are present.
+        """
         subreslist = ''
         if self.entities.exist:
             subreslist += f', len(entities)={len(self.entities)}'

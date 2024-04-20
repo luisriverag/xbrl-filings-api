@@ -138,7 +138,8 @@ def test_rogue_validation_messages_logging(caplog):
     """Test logging when ValidationMessage has no attribute filing."""
     e_log = (
         "No filing defined for ValidationMessage("
-        "api_id='987654', code='xbrl.5.2.5.2:calcInconsistency')"
+        "api_id='987654', code='xbrl.5.2.5.2:calcInconsistency', "
+        "severity='INCONSISTENCY')"
         )
     rsps_with_rogue_vmsg = {
         'data': [{

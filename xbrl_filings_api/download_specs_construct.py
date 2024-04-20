@@ -1,4 +1,4 @@
-"""Define function for constructing `DownloadSpecs` objects."""
+"""Define constructor for `downloader.DownloadSpecs` objects."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -13,6 +13,8 @@ from xbrl_filings_api.constants import FileStringType
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader import DownloadSpecs
+
+__all__ = ['construct']
 
 logger = logging.getLogger(__name__)
 
@@ -32,15 +34,16 @@ def construct(
         isfilingset: bool = False
         ) -> list[DownloadSpecs]:
     """
-    Construct a list of `DownloadSpecs` objects.
+    Construct a list of `downloader.DownloadSpecs` objects.
 
-    This function is used by methods `download` and `download_aiter` of
-    objects `Filing` and `FilingSet` to get a list of `DownloadSpecs`
-    objects for `downloader` subpackage.
+    This function is used by methods ``download`` and ``download_aiter``
+    of objects `Filing` and `FilingSet` to get a list of
+    ``DownloadSpecs`` objects for calls to `downloader` subpackage
+    functions.
 
     Returns
     -------
-    DownloadSpecs
+    downloader.DownloadSpecs
         Instructions for a concrete download.
     """
     if isinstance(files, str):

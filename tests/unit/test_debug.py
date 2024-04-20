@@ -12,7 +12,7 @@ import responses
 
 import xbrl_filings_api as xf
 import xbrl_filings_api.debug as xf_debug
-from xbrl_filings_api.json_tree import _JSONTree
+from xbrl_filings_api.json_tree import JSONTree
 
 ASML22EN_JSON_BASE = {
     'data': [{
@@ -75,9 +75,9 @@ def test_get_unaccessed_key_paths(monkeypatch):
     Test reading newly added data paths in JSON by `debug.get_unaccessed
     key_paths`.
     """
-    monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
-    monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
-    monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
+    monkeypatch.setattr(JSONTree, '_unaccessed_paths', {})
+    monkeypatch.setattr(JSONTree, '_object_path_counter', {})
+    monkeypatch.setattr(JSONTree, 'unexpected_resource_types', set())
     json_with_new_keys = copy.deepcopy(ASML22EN_JSON_BASE)
     json_with_new_keys['data'][0]['attributes']['new_attribute'] = 'new_value'
     json_with_new_keys['data'][0]['relationships']['new_rel'] = {
@@ -113,9 +113,9 @@ def test_get_key_path_availability_counts(monkeypatch):
     Test getting read counts for JSON properties by
     `debug.get_key_path_availability_counts`.
     """
-    monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
-    monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
-    monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
+    monkeypatch.setattr(JSONTree, '_unaccessed_paths', {})
+    monkeypatch.setattr(JSONTree, '_object_path_counter', {})
+    monkeypatch.setattr(JSONTree, 'unexpected_resource_types', set())
     with responses.RequestsMock() as rsps:
         rsps.add(
             method='GET',
@@ -149,9 +149,9 @@ def test_get_unexpected_resource_types_data(monkeypatch):
     Test detecting unexpected resource type by
     `debug.get_unexpected_resource_types` from ``data``.
     """
-    monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
-    monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
-    monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
+    monkeypatch.setattr(JSONTree, '_unaccessed_paths', {})
+    monkeypatch.setattr(JSONTree, '_object_path_counter', {})
+    monkeypatch.setattr(JSONTree, 'unexpected_resource_types', set())
     json_with_new_resource_types = copy.deepcopy(ASML22EN_JSON_BASE)
     json_with_new_resource_types['data'].append({
         'type': 'alien_type',
@@ -181,9 +181,9 @@ def test_get_unexpected_resource_types_included(monkeypatch):
     Test detecting unexpected resource type by
     `debug.get_unexpected_resource_types` from ``included``.
     """
-    monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
-    monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
-    monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
+    monkeypatch.setattr(JSONTree, '_unaccessed_paths', {})
+    monkeypatch.setattr(JSONTree, '_object_path_counter', {})
+    monkeypatch.setattr(JSONTree, 'unexpected_resource_types', set())
     json_with_new_resource_types = copy.deepcopy(ASML22EN_JSON_BASE)
     json_with_new_resource_types[
         'data'][0]['relationships']['entity']['data'] = {

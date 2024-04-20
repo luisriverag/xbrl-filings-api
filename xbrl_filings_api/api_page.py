@@ -1,4 +1,4 @@
-"""Define `_APIPage` and `_IncludedResource` classes."""
+"""Define `APIPage` and `IncludedResource` classes."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
@@ -10,54 +10,72 @@ from dataclasses import dataclass
 from typing import Union
 
 from xbrl_filings_api.api_object import APIObject
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.enums import _ParseType
+
+__all__ = [
+    'IncludedResource',
+    'APIPage',
+    ]
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class _IncludedResource:
+class IncludedResource:
+    """Dataclass for storing element in ``included`` section of page."""
+
     type_: str
     id_: str
     frag: dict
 
 
-class _APIPage(APIObject):
-    """
-    Base class for JSON:API response page or document.
+class APIPage(APIObject):
+    r"""Base class for JSON:API response page or document."""
 
-    Attributes
-    ----------
-    api_self_url : str or None
-    api_prev_page_url : str or None
-    api_next_page_url : str or None
-    api_first_page_url : str or None
-    api_last_page_url : str or None
-    jsonapi_version : str or None
-    query_time : datetime
-    request_url : str
-    """
-
-    def __init__(self, json_frag: dict, api_request: _APIRequest):
-        if type(self) is _APIPage:
-            msg = '_APIPage can only be initialized via subclassing'
+    def __init__(self, json_frag: dict, api_request: APIRequest):
+        if type(self) is APIPage:
+            msg = 'APIPage can only be initialized via subclassing'
             raise NotImplementedError(msg)
 
         super().__init__(json_frag, api_request)
+
+        self.api_self_url: Union[str, None] = self._json.get(
+            'links.self', _ParseType.URL)
+        """URL to this `APIPage`."""
+
+        self.api_prev_page_url: Union[str, None] = self._json.get(
+            'links.prev', _ParseType.URL)
+        """URL to previous `APIPage` in the query."""
+
+        self.api_next_page_url: Union[str, None] = self._json.get(
+            'links.next', _ParseType.URL)
+        """URL to next `APIPage` in the query."""
+
+        self.api_first_page_url: Union[str, None] = self._json.get(
+            'links.first', _ParseType.URL)
+        """URL to first `APIPage` in the query."""
+
+        self.api_last_page_url: Union[str, None] = self._json.get(
+            'links.last', _ParseType.URL)
+        """URL to last `APIPage` in the query."""
+
+        self.jsonapi_version: Union[str, None] = self._json.get(
+            'jsonapi.version')
+        r"""Version of the JSON-API protocol used on this `APIPage`."""
 
         self._data: Union[list, None] = self._json.get(
             'data')
         """List of main resources as unserialized JSON fragments of the
         page.
         """
+
         self._ensure_data_ids_are_strings()
 
-        self._included_resources: list[_IncludedResource] = (
+        self._included_resources: list[IncludedResource] = (
             self._get_included_resources())
         """
-        List of included resources as objects with fields `type_`, `id_`
-        and `frag`.
+        List of page subresources from ``included`` key.
 
         This list should be emptied and classified to class-specific
         attributes for sets of objects in the subclass `__init__`
@@ -70,30 +88,6 @@ class _APIPage(APIObject):
         the ones not on this page.
         """
 
-        self.api_self_url: Union[str, None] = self._json.get(
-            'links.self', _ParseType.URL)
-        """Link to this JSON:API page."""
-
-        self.api_prev_page_url: Union[str, None] = self._json.get(
-            'links.prev', _ParseType.URL)
-        """Link to previous JSON:API page in the query."""
-
-        self.api_next_page_url: Union[str, None] = self._json.get(
-            'links.next', _ParseType.URL)
-        """Link to next JSON:API page in the query."""
-
-        self.api_first_page_url: Union[str, None] = self._json.get(
-            'links.first', _ParseType.URL)
-        """Link to first JSON:API page in the query."""
-
-        self.api_last_page_url: Union[str, None] = self._json.get(
-            'links.last', _ParseType.URL)
-        """Link to last JSON:API page in the query."""
-
-        self.jsonapi_version: Union[str, None] = self._json.get(
-            'jsonapi.version')
-        """Version of the JSON:API specification of base API."""
-
         pr_count = len(self._data) if self._data else '0'
         logger.info(
             f'APIPage "{urllib.parse.unquote(self.request_url)}": '
@@ -101,8 +95,8 @@ class _APIPage(APIObject):
             f'{len(self._included_resources)} included subresources'
             )
 
-    def _get_included_resources(self) -> list[_IncludedResource]:
-        """Construct `_IncludedResource` objects from `included` key."""
+    def _get_included_resources(self) -> list[IncludedResource]:
+        """Construct `IncludedResource` objects from ``included``."""
         inc = self._json.get('included')
         resources = []
         if inc:
@@ -113,7 +107,7 @@ class _APIPage(APIObject):
                 if not isinstance(res_id, str):
                     res_id = str(res_id)
                 resources.append(
-                    _IncludedResource(res_type, res_id, res_frag))
+                    IncludedResource(res_type, res_id, res_frag))
         return resources
 
     def _ensure_data_ids_are_strings(self):

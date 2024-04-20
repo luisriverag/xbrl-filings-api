@@ -1,22 +1,147 @@
-"""
-Define default views for SQLite output.
-
-SQL Views
----------
-ViewNumericErrors
-    Examine summation errors and duplicate errors in filings.
-ViewEnclosure
-    Examine multi-language enclosures in an easy to read listing.
-ViewFilingAge
-    Examine the age of the data on the filings.
-
-"""
+"""Define default SQLite views for created/updated database file."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
 from xbrl_filings_api.sqlite_view import SQLiteView
+
+__all__ = [
+    'DEFAULT_VIEWS',
+    'ViewEnclosure',
+    'ViewFilingAge',
+    'ViewNumericErrors',
+    ]
+
+
+DEFAULT_VIEWS: list[SQLiteView] = []
+"""List of the default views added to exported SQLite databases."""
+
+ViewEnclosure = SQLiteView(
+    name='ViewEnclosure',
+    required_tables=('Entity',),
+    sql="""
+WITH f AS (
+  SELECT * FROM Filing
+  ORDER BY entity_api_id, reporting_date, country, language ASC NULLS LAST
+)
+SELECT
+  name AS entity_name,
+  reporting_date,
+  country,
+  count(*) AS filing_count,
+  group_concat(language, ', ') AS languages,
+  group_concat(f.api_id, ', ') AS filingApiIds,
+  max(error_count) AS error_count,
+  max(inconsistency_count) AS inconsistency_count,
+  max(warning_count) AS warning_count,
+  min(added_time) AS added_time,
+  max(processed_time) AS processed_time,
+  identifier AS entity_identifier,
+  entity_api_id
+FROM f
+  JOIN Entity ON entity_api_id = Entity.api_id
+GROUP BY entity_api_id, reporting_date, country
+ORDER BY name, reporting_date, country
+"""
+    )
+"""
+Examine multi-language enclosures in an easy to read listing.
+
+Filings in a single enclosure are defined to have the same
+``Filing.entity_api_id``, ``Filing.reporting_date`` and
+``Filing.country``.
+
+Ordered ascending on ``entity_name``, ``reporting_date``.
+
+Columns
+-------
+entity_name : TEXT or NULL
+    From ``Entity.name``.
+reporting_date : TEXT or NULL
+    From ``Filing.reporting_date``.
+country : TEXT or NULL
+    From ``Filing.country``.
+filing_count : INTEGER
+    Count of filings in the enclosure.
+languages : TEXT or NULL
+    Comma-separated list from ``Filing.language`` ordered alphabetically
+    ascending. As the the values may be ``NULL``, this list may have
+    fewer languages than there are actual filings.
+filingApiIds : TEXT or NULL
+    Comma-separated list from ``Filing.api_id`` is the same order as
+    ``languages``.
+error_count : INTEGER or NULL
+    Maximum from ``Filing.error_count`` values.
+inconsistency_count : INTEGER or NULL
+    Maximum from ``Filing.inconsistency_count`` values.
+warning_count : INTEGER or NULL
+    Maximum from ``Filing.warning_count`` values.
+added_time : TEXT or NULL
+    Earliest date from ``Filing.added_time``.
+processed_time : TEXT or NULL
+    Latest date from ``Filing.processed_time``.
+entity_identifier : TEXT or NULL
+    From ``Entity.identifier``.
+entity_api_id : TEXT
+    From ``Entity.api_id``.
+"""
+DEFAULT_VIEWS.append(ViewEnclosure)
+
+ViewFilingAge = SQLiteView(
+    name='ViewFilingAge',
+    required_tables=('Entity',),
+    sql="""
+SELECT
+  name AS entity_name,
+  reporting_date,
+  language,
+  cast(
+    julianday(date('now')) - julianday(reporting_date)
+  AS INTEGER) AS dataAgeDays,
+  country,
+  added_time,
+  processed_time,
+  cast(
+    julianday(processed_time) - julianday(added_time)
+  AS INTEGER) AS addedToProcessedDays,
+  f.api_id AS filing_api_id,
+  e.api_id AS entity_api_id
+FROM Filing AS f
+  JOIN Entity AS e ON f.entity_api_id=e.api_id
+ORDER BY dataAgeDays
+"""
+    )
+"""
+Examine the age of the data on the filings.
+
+Ordered ascending on ``dataAgeDays``.
+
+Columns
+-------
+entity_name : TEXT or NULL
+    From ``Entity.name``.
+reporting_date : TEXT or NULL
+    From ``Filing.reporting_date``.
+language : TEXT or NULL
+    From ``Filing.language``.
+dataAgeDays : INTEGER or NULL
+    Age of the data in the filing in full days.
+country : TEXT or NULL
+    From ``Filing.country``.
+added_time : TEXT or NULL
+    From ``Filing.added_time``.
+processed_time : TEXT or NULL
+    From ``Filing.processed_time``.
+addedToProcessedDays : INTEGER or NULL
+    Days passed from ``Filing.added_time`` to ``Filing.processed_time``
+    in full days.
+filing_api_id : TEXT
+    From ``Filing.api_id``.
+entity_api_id : TEXT
+    From ``Entity.api_id``.
+"""
+DEFAULT_VIEWS.append(ViewFilingAge)
 
 ViewNumericErrors = SQLiteView(
     name='ViewNumericErrors',
@@ -174,134 +299,4 @@ entity_api_id : TEXT
 validation_message_api_id : TEXT
     Column ``ValidationMessage.api_id``.
 """
-
-ViewEnclosure = SQLiteView(
-    name='ViewEnclosure',
-    required_tables=('Entity',),
-    sql="""
-WITH f AS (
-  SELECT * FROM Filing
-  ORDER BY entity_api_id, reporting_date, country, language ASC NULLS LAST
-)
-SELECT
-  name AS entity_name,
-  reporting_date,
-  country,
-  count(*) AS filing_count,
-  group_concat(language, ', ') AS languages,
-  group_concat(f.api_id, ', ') AS filingApiIds,
-  max(error_count) AS error_count,
-  max(inconsistency_count) AS inconsistency_count,
-  max(warning_count) AS warning_count,
-  min(added_time) AS added_time,
-  max(processed_time) AS processed_time,
-  identifier AS entity_identifier,
-  entity_api_id
-FROM f
-  JOIN Entity ON entity_api_id = Entity.api_id
-GROUP BY entity_api_id, reporting_date, country
-ORDER BY name, reporting_date, country
-"""
-    )
-"""
-Examine multi-language enclosures in an easy to read listing.
-
-Filings in a single enclosure are defined to have the same
-``Filing.entity_api_id``, ``Filing.reporting_date`` and
-``Filing.country``.
-
-Ordered ascending on ``entity_name``, ``reporting_date``.
-
-Columns
--------
-entity_name : TEXT or NULL
-    From ``Entity.name``.
-reporting_date : TEXT or NULL
-    From ``Filing.reporting_date``.
-country : TEXT or NULL
-    From ``Filing.country``.
-filing_count : INTEGER
-    Count of filings in the enclosure.
-languages : TEXT or NULL
-    Comma-separated list from ``Filing.language`` ordered alphabetically
-    ascending. As the the values may be ``NULL``, this list may have
-    fewer languages than there are actual filings.
-filingApiIds : TEXT or NULL
-    Comma-separated list from ``Filing.api_id`` is the same
-    order as ``languages``.
-error_count : INTEGER or NULL
-    Maximum from ``Filing.error_count`` values.
-inconsistency_count : INTEGER or NULL
-    Maximum from ``Filing.inconsistency_count`` values.
-warning_count : INTEGER or NULL
-    Maximum from ``Filing.warning_count`` values.
-added_time : TEXT or NULL
-    Earliest date from ``Filing.added_time``.
-processed_time : TEXT or NULL
-    Latest date from ``Filing.processed_time``.
-entity_identifier : TEXT or NULL
-    From ``Entity.identifier``.
-entity_api_id : TEXT
-    From ``Entity.api_id``.
-"""
-
-ViewFilingAge = SQLiteView(
-    name='ViewFilingAge',
-    required_tables=('Entity',),
-    sql="""
-SELECT
-  name AS entity_name,
-  reporting_date,
-  language,
-  cast(
-    julianday(date('now')) - julianday(reporting_date)
-  AS INTEGER) AS dataAgeDays,
-  country,
-  added_time,
-  processed_time,
-  cast(
-    julianday(processed_time) - julianday(added_time)
-  AS INTEGER) AS addedToProcessedDays,
-  f.api_id AS filing_api_id,
-  e.api_id AS entity_api_id
-FROM Filing AS f
-  JOIN Entity AS e ON f.entity_api_id=e.api_id
-ORDER BY dataAgeDays
-"""
-    )
-"""
-Examine the age of the data on the filings.
-
-Ordered ascending on ``dataAgeDays``.
-
-Columns
--------
-entity_name : TEXT or NULL
-    From ``Entity.name``.
-reporting_date : TEXT or NULL
-    From ``Filing.reporting_date``.
-language : TEXT or NULL
-    From ``Filing.language``.
-dataAgeDays : INTEGER or NULL
-    Age of the data in the filing in full days.
-country : TEXT or NULL
-    From ``Filing.country``.
-added_time : TEXT or NULL
-    From ``Filing.added_time``.
-processed_time : TEXT or NULL
-    From ``Filing.processed_time``.
-addedToProcessedDays : INTEGER or NULL
-    Days passed from ``Filing.added_time`` to ``Filing.processed_time``
-    in full days.
-filing_api_id : TEXT
-    From ``Filing.api_id``.
-entity_api_id : TEXT
-    From ``Entity.api_id``.
-"""
-
-DEFAULT_VIEWS: list[SQLiteView] = [
-    ViewNumericErrors,
-    ViewEnclosure,
-    ViewFilingAge,
-    ]
-"""List of the default views added to exported SQLite databases."""
+DEFAULT_VIEWS.append(ViewNumericErrors)

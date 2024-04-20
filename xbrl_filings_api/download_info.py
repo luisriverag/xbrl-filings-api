@@ -9,10 +9,12 @@ from typing import Any
 
 from xbrl_filings_api.constants import FileStringType
 
+__all__ = ['DownloadInfo']
+
 
 @dataclass
 class DownloadInfo:
-    """Attribute `info` for `DownloadSpecs` objects."""
+    """Dataclass for attribute `DownloadSpecs.info`."""
 
     obj: Any
     """Filing object which is used as the origin for the download."""

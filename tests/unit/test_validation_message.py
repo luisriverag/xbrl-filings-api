@@ -129,7 +129,8 @@ class TestCalcMsg:
         """Test ValidationMessage.__repr__ method for calc message."""
         e_repr = (
             "ValidationMessage("
-            "api_id='66614', code='xbrl.5.2.5.2:calcInconsistency')"
+            "api_id='66614', code='xbrl.5.2.5.2:calcInconsistency', "
+            "severity='INCONSISTENCY')"
             )
         assert repr(asml22en_calc_msg) == e_repr
 
@@ -187,7 +188,10 @@ class TestPositiveMsg:
         """
         Test ValidationMessage.__repr__ method for positive message.
         """
-        e_repr = "ValidationMessage(api_id='66615', code='message:positive')"
+        e_repr = (
+            "ValidationMessage(api_id='66615', code='message:positive', "
+            "severity='WARNING')"
+            )
         assert repr(asml22en_positive_msg) == e_repr
 
     def test_str(self, asml22en_positive_msg):
@@ -243,7 +247,8 @@ class TestDuplicateStrMsg:
         """
         e_repr = (
             "ValidationMessage("
-            "api_id='104877', code='message:tech_duplicated_facts1')"
+            "api_id='104877', code='message:tech_duplicated_facts1', "
+            "severity='WARNING')"
             )
         assert repr(assicurazioni21it_duplicate_str_msg) == e_repr
 
@@ -303,7 +308,8 @@ class TestDuplicateNumMsg:
         """
         e_repr = (
             "ValidationMessage("
-            "api_id='41766', code='message:tech_duplicated_facts1')"
+            "api_id='41766', code='message:tech_duplicated_facts1', "
+            "severity='WARNING')"
             )
         assert repr(tecnotree21fi_duplicate_num_msg) == e_repr
 

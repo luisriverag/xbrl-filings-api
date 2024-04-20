@@ -13,6 +13,8 @@ requirements to report the language in the file name was obscure.
 #
 # SPDX-License-Identifier: MIT
 
+__all__ = ['LANG_CODE_TRANSFORM']
+
 
 LANG_CODE_TRANSFORM = {
     'bul': 'bg', # Bulgarian

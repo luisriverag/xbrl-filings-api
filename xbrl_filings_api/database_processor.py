@@ -25,6 +25,8 @@ from xbrl_filings_api.exceptions import DatabaseSchemaUnmatchError
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.validation_message import ValidationMessage
 
+__all__ = ['sets_to_sqlite']
+
 logger = logging.getLogger(__name__)
 
 _CurrentSchemaType = dict[str, list[str]]
@@ -64,7 +66,7 @@ def _validate_path(db_path: Path, *, update: bool) -> None:
     Raises
     ------
     FileExistsError
-        When file exists in path and `update` is `False`.
+        When file exists in path and `update` is :pt:`False`.
     """
     if db_path.is_file():
         if not update:
@@ -96,9 +98,9 @@ def _create_database_or_extend_schema(
     """
     Create a new SQLite3 database or extend the database schema.
 
-    When `update=True`, any of the tables in existing database must
-    match required tables and all of these matching tables must have a
-    column ``api_id``.
+    When ``update`` is :pt:`True`, any of the tables in existing
+    database must match required tables and all of these matching tables
+    must have a column ``api_id``.
 
     Returns
     -------

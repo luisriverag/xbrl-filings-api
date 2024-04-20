@@ -1,9 +1,4 @@
-"""
-Standalone package for downloading files sequentially or in parallel.
-
-Parallel downloading provides an asynchronous iterator.
-
-"""
+"""Download manager for asynchronic parallel downloading."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #

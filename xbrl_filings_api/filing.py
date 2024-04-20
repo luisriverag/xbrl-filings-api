@@ -11,11 +11,14 @@ import webbrowser
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath
-from typing import ClassVar, Union, overload
+from typing import ClassVar, Optional, Union
 
-import xbrl_filings_api.options as options
-from xbrl_filings_api import download_specs_construct, downloader
-from xbrl_filings_api.api_request import _APIRequest
+from xbrl_filings_api import (
+    download_specs_construct,
+    downloader,
+    options,
+)
+from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import _PROTOTYPE, FileStringType, _Prototype
 from xbrl_filings_api.download_info import DownloadInfo
@@ -26,45 +29,18 @@ from xbrl_filings_api.exceptions import CorruptDownloadError
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
 from xbrl_filings_api.validation_message import ValidationMessage
 
+__all__ = ['Filing']
+
 logger = logging.getLogger(__name__)
 
 
 class Filing(APIResource):
     """
-    Represents a single XBRL filing i.e. a report package.
+    XBRL filing in the database based on a report package.
 
     Different language versions of the same report are separate filings.
     The language versions of the same report share the same
     `filing_index` except for the last integer.
-
-    Attributes
-    ----------
-    api_id : str or None
-    country : str or None
-    filing_index : str or None
-    language : str or None
-    last_end_date : date or None
-    reporting_date : date or None
-    error_count : str or None
-    inconsistency_count : str or None
-    warning_count : str or None
-    added_time : datetime or None
-    added_time_str : str or None
-    processed_time : datetime or None
-    processed_time_str : str or None
-    entity_api_id : str or None
-    entity : Entity or None
-    validation_messages : set of ValidationMessage or None
-    json_url : str or None
-    package_url : str or None
-    viewer_url : str or None
-    xhtml_url : str or None
-    query_time : datetime
-    request_url : str
-    json_download_path : str or None
-    package_download_path : str or None
-    xhtml_download_path : str or None
-    package_sha256 : str or None
     """
 
     TYPE: str = 'filing'
@@ -99,24 +75,21 @@ class Filing(APIResource):
         flags=re.VERBOSE | re.ASCII
         )
 
-    @overload
-    def __init__(
-        self,
-        json_frag: dict,
-        api_request: _APIRequest,
-        entity_iter: Union[Iterable[Entity], None] = None,
-        message_iter: Union[Iterable[ValidationMessage], None] = None
-        ) -> None: ...
-    @overload
-    def __init__(self, json_frag: _Prototype) -> None: ...
     def __init__(
             self,
             json_frag: Union[dict, _Prototype],
-            api_request: Union[_APIRequest, None] = None,
-            entity_iter: Union[Iterable[Entity], None] = None,
-            message_iter: Union[Iterable[ValidationMessage], None] = None
+            api_request: Optional[APIRequest] = None,
+            entity_iter: Optional[Iterable[Entity]] = None,
+            message_iter: Optional[Iterable[ValidationMessage]] = None
             ) -> None:
-        """Initialize a `Filing` object."""
+        # Signatures::
+        #     Filing(
+        #         json_frag: dict,
+        #         api_request: APIRequest,
+        #         entity_iter: Optional[Iterable[Entity]],
+        #         message_iter: Optional[Iterable[ValidationMessage]]
+        #         )
+        #     Filing(json_frag: _Prototype)
         super().__init__(json_frag, api_request)
 
         self.country: Union[str, None] = self._json.get(self.COUNTRY)
@@ -211,8 +184,8 @@ class Filing(APIResource):
         self.added_time: Union[datetime, None] = self._json.get(
             self.ADDED_TIME, _ParseType.DATETIME)
         """
-        Timezone-aware datetime when the filing was added to
-        filings.xbrl.org index.
+        Timezone-aware datetime when the filing was added to the
+        database.
 
         Has an arbitrary delay after the issuer actually filed the
         report at the OAM.
@@ -223,8 +196,7 @@ class Filing(APIResource):
         self.added_time_str: Union[str, None] = self._json.get(
             self.ADDED_TIME)
         """
-        Original timestamp when the filing was added to filings.xbrl.org
-        index.
+        Original timestamp when the filing was added to the database.
 
         Has an arbitrary delay after the issuer actually filed the
         report at the OAM.
@@ -236,7 +208,7 @@ class Filing(APIResource):
             self.PROCESSED_TIME, _ParseType.DATETIME)
         """
         Timezone-aware datetime when the filing was processed for the
-        filings.xbrl.org index.
+        database.
 
         The original field name in the API is ``processed``.
         """
@@ -245,31 +217,31 @@ class Filing(APIResource):
             self.PROCESSED_TIME)
         """
         Original timestamp when the filing was processed for the
-        filings.xbrl.org index.
+        database.
 
         The original field name in the API is ``processed``.
         """
 
         self.entity_api_id: Union[str, None] = self._get_entity_api_id()
-        """`api_id` of Entity object."""
+        """`api_id` of `entity` object."""
 
         self.entity: Union[Entity, None] = None
         """
         The entity object of this filing.
 
-        Is available when if GET_ENTITY is set in query function `flags`
-        parameter.
+        The object is available when flag `GET_ENTITY` is set in query
+        function parameter ``flags``.
         """
 
         self.validation_messages: Union[set[ValidationMessage], None] = None
         """
         The set of validation message objects of this filing.
 
-        Is available when `flags` parameter contains
-        `GET_VALIDATION_MESSAGES`. Not all filings have validation
-        messages. Unfortunately too many do have.
+        The object is available when flag `GET_VALIDATION_MESSAGES` is
+        set in query function parameter ``flags``. If filing has no
+        validation messages, the value is an empty :class:`set`.
 
-        When flag is not set, this attribute is `None`.
+        When flag is not set, this attribute is :pt:`None`.
         """
 
         self.json_url: Union[str, None] = self._json.get(
@@ -346,7 +318,7 @@ class Filing(APIResource):
         self.package_sha256: Union[str, None] = self._json.get(
             self.PACKAGE_SHA256)
         """
-        The SHA-256 hash of the report package file.
+        The SHA-256 checksum of the report package file.
 
         Used for checking that the download of `package_url` was
         successful and the report is genuine.
@@ -365,13 +337,12 @@ class Filing(APIResource):
 
     def __repr__(self) -> str:
         """
-        Return string repr of filing.
+        Return repr of ``api_id`` and other properties.
 
-        Always displays `api_id` as the first attribute.
+        If has entity, displays also `Filing.entity.name <Entity.name>`,
+        `reporting_date` and `language`.
 
-        If queried with flag `GET_ENTITY`, displays `entity.name`,
-        `reporting_date` and `language`. Otherwise displays only
-        `filing_index`.
+        Otherwise displays ``api_id`` and `filing_index`.
         """
         start = f'{type(self).__name__}(api_id={self.api_id!r}, '
         if self.entity:
@@ -388,11 +359,19 @@ class Filing(APIResource):
             return start + f'filing_index={self.filing_index!r})'
 
     def __str__(self) -> str:
-        """
-        Return filing as a string.
+        r"""
+        Return "[entity.name/filing_index] [reporting_date] [language]".
 
-        Text has parts `entity.name`/`filing_index`, `reporting_date`
-        and `language` (in square brackets).
+        If has entity, the first part is
+        `Filing.entity.name <Entity.name>`, otherwise it will be
+        `filing_index`.
+
+        Attribute ``reporting_date`` will be displayed in simple format
+        and ``language`` in square brackets. Simple format means that
+        last day of the year is the sole year (2022-12-31 -> "2022"),
+        last day of the month is month-year (2022-01-31 -> "Jan-2022")
+        and any other date is in ISO format (2022-01-15 ->
+        "2022-01-15").
         """
         parts = []
         if self.entity:
@@ -494,36 +473,44 @@ class Filing(APIResource):
             max_concurrent: Union[int, None] = None
             ) -> None:
         """
-        Download files of this `Filing` according to `files` parameter.
+        Download file(s) according to parameter ``files``.
+
+        The ``files`` parameter accepts three formats::
+
+            filing.download('json')
+            filing.download(['json', 'package'])
+            filing.download(
+                {'json': DownloadItem(filename='save.json')})
 
         The filesystem path of the downloaded file will be saved in the
-        `Filing` object attributes {file}_download_path such as
+        `Filing` object attributes ``<file>_download_path`` such as
         ``json_download_path`` for the downloaded JSON file.
 
-        If there are ``package`` download definition(s) in the parameter
-        `files` and parameter `check_corruption` is True, the downloaded
-        package files will be checked through the `package_sha256`
-        attribute of `Filing` objects. If this hash attribute does not
-        match the one calculated from the downloaded file, an exception
-        `CorruptDownloadError` of the first erraneous occurrence will be
-        raised after all downloads have finished. The downloaded file(s)
-        will not be deleted but the filename(s) will be appended with
-        ending ``.corrupt``. However, attributes {file}_download_path
-        will not store these corrupt paths.
+        If ``package`` file is requested to be downloaded and parameter
+        ``check_corruption`` is :pt:`True`, the downloaded package files
+        will be checked through the `package_sha256` attribute. If this
+        hash attribute does not match the one calculated from the
+        downloaded file, an exception
+        :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` is
+        raised after all downloads have finished. The downloaded files
+        will not be deleted but the filename will be appended with
+        ending ".corrupt". However, attribute `package_download_path`
+        will not store this corrupt paths.
 
-        The directories in `to_dir` will be created if they do not
-        exist. By default, filename is derived from download URL. If the
-        file already exists, it will be overwritten.
+        The directories in the path of parameter ``to_dir`` will be
+        created if they do not exist. By default, filename is derived
+        from download URL. If the file already exists, it will be
+        overwritten.
 
         If download is interrupted, the files will be left with ending
-        ``.unfinished``.
+        ".unfinished".
 
-        If no name could be derived from `url`, the file will be named
-        ``file0001``, ``file0002``, etc. In this case a new file is
-        always created.
+        If no name could be derived from the url attribute, the file
+        will be named ``file0001``, ``file0002``, etc. In this case a
+        new file is always created.
 
-        Parameter `stem_pattern` requires a placeholder ``/name/``. For
-        example pattern ``/name/_second_try`` will change original
+        Parameter ``stem_pattern`` requires a placeholder "/name/".
+        For example pattern ``/name/_second_try`` will change original
         filename ``743700XJC24THUPK0S03-2022-12-31-fi.xhtml`` into
         ``743700XJC24THUPK0S03-2022-12-31-fi_second_try.xhtml``. Not
         recommended for packages as their names should not be changed.
@@ -532,30 +519,37 @@ class Filing(APIResource):
 
         Parameters
         ----------
-        files : str or iterable of str or mapping of str: DownloadItem
-            Value, iterable item or mapping key must be in
+        files : str or iterable of str or mapping of {str: DownloadItem}
+            The ``str`` value must be in
             ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
-            override method parameters for a single file.
-        to_dir : str or pathlike, optional
+            override method arguments for the file.
+        to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
-            Pattern to add to the filename stems. Placeholder ``/name/``
+            Pattern to add to the filename stems. Placeholder "/name/"
             is always required.
         check_corruption : bool, default True
-            Calculate hashes for package files.
+            Raise
+            :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` for
+            a corrupt ``'package'`` file.
         max_concurrent : int or None, default None
             Maximum number of simultaneous downloads allowed. Value
-            `None` means unlimited.
+            :pt:`None` means unlimited.
 
         Raises
         ------
-        CorruptDownloadError
-            Filing attribute `package_sha256` does not match the
-            calculated hash of package file.
+        ~xbrl_filings_api.exceptions.CorruptDownloadError
+            When attribute `Filing.package_sha256` does not match the
+            calculated hash of ``'package'`` file and
+            ``check_corruption`` is :pt:`True`.
         requests.HTTPError
-            HTTP status error occurs.
+            When HTTP status error occurs.
         requests.ConnectionError
-            Connection fails.
+            When connection fails.
+
+        See Also
+        --------
+        FilingSet.download : For all filings in a `FilingSet`.
         """
         downloader.validate_stem_pattern(stem_pattern)
         items = download_specs_construct.construct(
@@ -605,32 +599,38 @@ class Filing(APIResource):
             max_concurrent: Union[int, None] = 5
             ) -> AsyncIterator[downloader.DownloadResult]:
         """
-        Download files in type or types of `files`.
+        Download file(s) and yield `DownloadResult` object(s).
 
         The method follows the same logic as `download()`. See
         documentation.
 
         Parameters
         ----------
-        files : str or iterable of str or mapping of str: DownloadItem
-            Value, iterable item or mapping key must be in
+        files : str or iterable of str or mapping of {str: DownloadItem}
+            The ``str`` value must be in
             ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
-            override method parameters for a single file.
-        to_dir : str or pathlike, optional
+            override method arguments for the file.
+        to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
-            Pattern to add to the filename stems. Placeholder ``/name/``
+            Pattern to add to the filename stems. Placeholder "/name/"
             is always required.
         check_corruption : bool, default True
-            Calculate hashes for package files.
+            Raise
+            :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` for
+            any corrupt ``'package'`` file.
         max_concurrent : int or None, default 5
             Maximum number of simultaneous downloads allowed. Value
-            `None` means unlimited.
+            :pt:`None` means unlimited.
 
         Yields
         ------
         DownloadResult
             Contains information on the finished download.
+
+        See Also
+        --------
+        FilingSet.download_aiter : For all filings in a `FilingSet`.
         """
         downloader.validate_stem_pattern(stem_pattern)
 
@@ -677,35 +677,37 @@ class Filing(APIResource):
         """
         Open the filing on web browser.
 
-        Opens the `viewer_url` if `options.open_viewer` is True
+        Opens the `viewer_url` if `options.open_viewer` is :pt:`True`
         (default), otherwise opens `xhtml_url`. They are the same
         document except the viewer has a JavaScript Inline XBRL viewer
         to drill into the tagged facts on the document.
 
         Browser can be customized by setting `options.browser` as value
-        returned by `webbrowser.get()`.
+        returned by :func:`webbrowser.get`.
 
         Parameters
         ----------
         new : int, default 0
-            Parameter `new` of `webbrowser.BaseBrowser.open()`. `0` for
-            the same window, `1` for a new window, `2` for a new tab.
+            Parameter ``new`` of :meth:`webbrowser.BaseBrowser.open`.
+            ``0`` for the same window, ``1`` for a new window, ``2`` for
+            a new tab.
         autoraise : bool, default True
-            Parameter `autoraise` of `webbrowser.BaseBrowser.open()`.
-            `False` for opening in background.
+            Parameter ``autoraise`` of
+            :meth:`webbrowser.BaseBrowser.open`. :pt:`False` for opening
+            in background.
 
         Returns
         -------
         bool
-            Value returned by `webbrowser.BaseBrowser.open()`.
+            Value returned by :meth:`webbrowser.BaseBrowser.open`.
 
         Raises
         ------
         ValueError
-            If attribute `viewer_url` (or `xhtml_url`) is None.
+            If attribute `viewer_url` (or `xhtml_url`) is :pt:`None`.
         webbrowser.Error
-            When `options.browser` is None and no runnable browser is
-            present.
+            When `options.browser` is :pt:`None` and no runnable browser
+            is present.
         """
         if options.browser is None:
             options.browser = webbrowser.get()

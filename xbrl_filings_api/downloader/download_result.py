@@ -7,10 +7,12 @@
 from dataclasses import dataclass
 from typing import Any, Union
 
+__all__ = ['DownloadResult']
+
 
 @dataclass(frozen=True)
 class DownloadResult:
-    """Result object from finished downloads."""
+    """Dataclass for result information from a finished download."""
 
     url: str
     """URL which was downloaded or attempted to download."""
@@ -22,4 +24,4 @@ class DownloadResult:
     """Exception raised while the file was being downloaded."""
 
     info: Any = None
-    """`DownloadSpecs` attribute `info` for parallel downloads."""
+    """Value of `DownloadSpecs.info` for parallel downloads."""

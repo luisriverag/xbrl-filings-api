@@ -1,5 +1,5 @@
 """
-Define tests for `_JSONTree`.
+Define tests for `JSONTree`.
 
 Methods `get_unaccessed_key_paths` and
 `get_key_path_availability_counts` are in scope of module `test_debug`
@@ -18,7 +18,7 @@ import pytest
 
 import xbrl_filings_api.options as options
 from xbrl_filings_api.enums import _ParseType
-from xbrl_filings_api.json_tree import _JSONTree
+from xbrl_filings_api.json_tree import JSONTree
 
 UTC = timezone.utc
 
@@ -82,16 +82,16 @@ ASML22EN_ENT_VMSG_FILING_FRAG = {
 
 @pytest.fixture
 def _reset_jsontree_state(monkeypatch):
-    """Reset the state of the _JSONTree type object."""
-    monkeypatch.setattr(_JSONTree, '_unaccessed_paths', {})
-    monkeypatch.setattr(_JSONTree, '_object_path_counter', {})
-    monkeypatch.setattr(_JSONTree, 'unexpected_resource_types', set())
+    """Reset the state of the JSONTree type object."""
+    monkeypatch.setattr(JSONTree, '_unaccessed_paths', {})
+    monkeypatch.setattr(JSONTree, '_object_path_counter', {})
+    monkeypatch.setattr(JSONTree, 'unexpected_resource_types', set())
 
 
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_init():
     """Test init function."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -99,13 +99,13 @@ def test_init():
     assert jtree.class_name == 'Filing'
     assert jtree.tree == ASML22EN_ENT_VMSG_FILING_FRAG
     assert jtree.do_not_track is False
-    assert _JSONTree.unexpected_resource_types == set()
+    assert JSONTree.unexpected_resource_types == set()
 
 
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_close_prematurely():
     """Test making a get call after tree has been closed."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -113,14 +113,14 @@ def test_close_prematurely():
     jtree.close()
     with pytest.raises(
             Exception,
-            match=r'Cannot call get\(\) when _JSONTree has been closed'):
+            match=r'Cannot call get\(\) when JSONTree has been closed'):
         jtree.get(key_path='attributes.country', parse_type=None)
 
 
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_close_twice():
-    """Test closing the _JSONTree twice."""
-    jtree = _JSONTree(
+    """Test closing the JSONTree twice."""
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -136,7 +136,7 @@ def test_close_twice():
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_get_date_value():
     """Test reading a date value from the tree."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -158,9 +158,9 @@ def test_get_date_value_bad_date(caplog):
     filing_frag['attributes']['period_end'] = '2022-99-99'
     e_log = (
         "Could not parse ISO date string '2022-99-99' for Filing object JSON "
-        "fragment path 'attributes.period_end'."
+        "fragment dot access path 'attributes.period_end'."
         )
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=filing_frag,
         do_not_track=False
@@ -178,7 +178,7 @@ def test_get_date_value_bad_date(caplog):
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_get_date_value_unparsed():
     """Test reading a date value from the tree unparsed."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -196,7 +196,7 @@ def test_get_date_value_unparsed():
 def test_get_datetime_value():
     """Test reading a datetime value from the tree."""
     e_datetime = datetime(2023, 4, 19, 10, 20, 23, 668110, tzinfo=UTC)
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -219,9 +219,9 @@ def test_get_datetime_value_bad_datetime(caplog):
     filing_frag['attributes']['processed'] = '2023-99-99 99:99:99.999999'
     e_log = (
         "Could not parse ISO datetime string '2023-99-99 99:99:99.999999' for "
-        "Filing object JSON fragment path 'attributes.processed'."
+        "Filing object JSON fragment dot access path 'attributes.processed'."
         )
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=filing_frag,
         do_not_track=False
@@ -242,7 +242,7 @@ def test_get_datetime_timezone0200_value():
     e_datetime = datetime(2023, 4, 19, 8, 20, 23, 668110, tzinfo=UTC)
     filing_frag = copy.deepcopy(ASML22EN_ENT_VMSG_FILING_FRAG)
     filing_frag['attributes']['processed'] = '2023-04-19 10:20:23.668110+0200'
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=filing_frag,
         do_not_track=False
@@ -261,7 +261,7 @@ def test_get_datetime_timezone0200_value():
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_get_datetime_value_unparsed():
     """Test reading a datetime value from the tree unparsed."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -283,7 +283,7 @@ def test_get_url_value(monkeypatch):
         'https://filings.xbrl.org/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0'
         '/asml-2022-12-31-en/reports/ixbrlviewer.html'
         )
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -306,9 +306,10 @@ def test_get_url_value_bad_url(monkeypatch, caplog):
     filing_frag['attributes']['viewer_url'] = 'http://[1:2:3:4:5:6/'
     e_log = (
         "Could not determine absolute URL string from 'http://[1:2:3:4:5:6/' "
-        "for Filing object JSON fragment path 'attributes.viewer_url'."
+        'for Filing object JSON fragment dot access path '
+        "'attributes.viewer_url'."
         )
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=filing_frag,
         do_not_track=False
@@ -329,7 +330,7 @@ def test_get_url_value_unparsed():
         '/724500Y6DUVHQD6OXN27/2022-12-31/ESEF/NL/0/asml-2022-12-31-en/reports'
         '/ixbrlviewer.html'
         )
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -345,7 +346,7 @@ def test_get_url_value_unparsed():
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_get_int_value():
     """Test reading an int value from the tree."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -361,7 +362,7 @@ def test_get_int_value():
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_get_int_value_as_url_noop():
     """Test reading an int value as an URL (no-op) from the tree."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -377,7 +378,7 @@ def test_get_int_value_as_url_noop():
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_get_dict_value():
     """Test reading a subdict value from the tree."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -394,7 +395,7 @@ def test_get_dict_value_parse_datetime_noop():
     Test reading a subdict value from the tree, parse_type=DATETIME
     (no-op).
     """
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -411,7 +412,7 @@ def test_get_dict_value_parse_datetime_noop():
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_do_not_track_false():
     """Test do_not_track=False reading."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=False
@@ -422,14 +423,14 @@ def test_do_not_track_false():
         )
     assert viewer_url == 'NL'
     jtree.close()
-    rcounts = _JSONTree.get_key_path_availability_counts()
+    rcounts = JSONTree.get_key_path_availability_counts()
     assert len(rcounts) == 1
     rcount = next(iter(rcounts))
     assert rcount.class_name == 'Filing'
     assert rcount.key_path == 'attributes.country'
     assert rcount.success_count == 1
     assert rcount.total_count == 1
-    uakpaths = _JSONTree.get_unaccessed_key_paths()
+    uakpaths = JSONTree.get_unaccessed_key_paths()
     assert 'attributes.country' not in uakpaths
     assert len(uakpaths) == 20
 
@@ -437,7 +438,7 @@ def test_do_not_track_false():
 @pytest.mark.usefixtures('_reset_jsontree_state')
 def test_raises_do_not_track_true():
     """Test do_not_track=True reading."""
-    jtree = _JSONTree(
+    jtree = JSONTree(
         class_name='Filing',
         json_frag=ASML22EN_ENT_VMSG_FILING_FRAG,
         do_not_track=True
@@ -448,6 +449,6 @@ def test_raises_do_not_track_true():
         )
     assert viewer_url == 'NL'
     jtree.close()
-    rcounts = _JSONTree.get_key_path_availability_counts()
+    rcounts = JSONTree.get_key_path_availability_counts()
     assert len(rcounts) == 0
-    assert _JSONTree.get_unaccessed_key_paths() == set()
+    assert JSONTree.get_unaccessed_key_paths() == set()

@@ -18,6 +18,14 @@ from xbrl_filings_api.downloader.download_result import DownloadResult
 from xbrl_filings_api.downloader.download_specs import DownloadSpecs
 from xbrl_filings_api.downloader.exceptions import CorruptDownloadError
 
+__all__ = [
+    'download',
+    'download_async',
+    'download_parallel',
+    'download_parallel_aiter',
+    'validate_stem_pattern',
+    ]
+
 
 def download(
         url: str,
@@ -29,7 +37,7 @@ def download(
         timeout: float = 30.0
         ) -> str:
     """
-    Download a file and optionally check if it is corrupt.
+    Download a file synchronously.
 
     See documentation of `download_async`.
     """
@@ -50,20 +58,22 @@ async def download_async(
         timeout: float = 30.0
         ) -> str:
     """
-    Download a file and optionally check if it is corrupt.
+    Download a file asynchronously.
 
-    The directories in `to_dir` will be created if they do not exist. If
-    no `filename` is given, name is derived from `url`. If file already
-    exists, it will be overwritten.
+    The directories in parameter ``to_dir`` will be created if they do
+    not exist. If no ``filename`` is given, name is derived from
+    parameter ``url``. If file already exists, it will be overwritten.
 
-    If the `sha256` does not match with the hash of the downloaded file,
-    `CorruptDownloadError` will be raised and the name of the downloaded
-    file will be appended with ``.corrupt``.
+    If the ``sha256`` does not match with the checksum of the downloaded
+    file,
+    :exc:`xbrl_filings_api.downloader.exceptions.CorruptDownloadError`
+    will be raised and the name of the downloaded file will be appended
+    with ".corrupt".
 
     If download is interrupted, the file will be left with a suffix
-    ``.unfinished``.
+    ".unfinished".
 
-    If no name could be derived from `url`, the file will be named
+    If no name could be derived from ``url``, the file will be named
     ``file0001``, ``file0002``, etc. In this case a new file is always
     created.
 
@@ -71,16 +81,16 @@ async def download_async(
     ----------
     url : str
         URL to download.
-    to_dir : str or path-like
+    to_dir : path-like
         Directory to save the file.
     stem_pattern : str, optional
-        Pattern to add to the filename stems. Placeholder ``/name/``
+        Pattern to add to the filename stems. Placeholder "/name/"
         is always required.
     filename : str, optional
         Name to be used for the saved file.
     sha256 : str, optional
-        Expected SHA-256 hash as a hex string. Case-insensitive. No
-        hash is calculated if this parameter is not given.
+        Expected SHA-256 checksum as a hex string. Case-insensitive. No
+        checksum is calculated if this parameter is not given.
     timeout : float, default 30.0
         Maximum timeout for getting an initial response from the server
         in seconds.
@@ -92,8 +102,8 @@ async def download_async(
 
     Raises
     ------
-    CorruptDownloadError
-        Filing attribute `package_sha256` does not match the calculated
+    xbrl_filings_api.downloader.exceptions.CorruptDownloadError
+        Attribute `Filing.package_sha256` does not match the calculated
         hash of package file.
     requests.HTTPError
         HTTP status error occurs.
@@ -160,7 +170,8 @@ def download_parallel(
     """
     Download multiple files in parallel.
 
-    The order of `items` is not guaranteed on the returned list.
+    The order in parameter ``items`` is not guaranteed on the returned
+    list.
 
     See documentation of `download_parallel_aiter`.
 
@@ -200,31 +211,32 @@ async def download_parallel_aiter(
         timeout: float = 30.0
         ) -> AsyncIterator[DownloadResult]:
     """
-    Download multiple files in parallel.
+    Download multiple files in parallel, return asynchronous iterator.
 
-    The ordering of `items` defines the order in which the requests will
-    be started. As the downloads take arbitrary periods of time to
-    finish, it does not guarantee the same order in the yielded results.
-    For this purpose, an additional any-typed attribute `info` of both
-    `DownloadSpecs` and `DownloadResult` is provided to keep track of
-    individual downloads.
+    The ordering in parameter ``items`` defines the order in which the
+    requests will be started. As the downloads take arbitrary periods of
+    time to finish, it does not guarantee the same order in the yielded
+    results. For this purpose, an additional any-typed attribute
+    ``info`` of both `DownloadSpecs` and `DownloadResult` is provided to
+    keep track of individual downloads.
 
-    Yielded `DownloadResult` objects will not have the `path` attribute
-    value when the `sha256` check fails even though the file is in fact
-    saved with filename suffix '.corrupt'.
+    Yielded `DownloadResult` objects will not have the
+    :attr:`~DownloadResult.path` attribute value when the ``sha256``
+    check fails even though the file is in fact saved with filename
+    suffix ".corrupt".
 
-    Calls function `download_async` via parameter `items`.
+    Calls function `download_async` via parameter ``items``.
 
     Parameters
     ----------
     items : list of DownloadSpecs
         Instances of `DownloadSpecs` accept the same parameters as
         function `download_async` with an additional no-op attribute
-        `info`.
+        :attr:`~DownloadSpecs.info`.
     max_concurrent : int or None, default None
         Maximum number of simultaneous downloads allowed at any moment.
-        If `None`, all downloads will be started immediately. If 1,
-        downloading will be sequential.
+        If :pt:`None`, all downloads will be started immediately. If
+        ``1``, downloading will be sequential.
     timeout : float, default 30.0
         Maximum timeout for getting the initial response for a single
         download from the server in seconds.
@@ -294,7 +306,7 @@ async def _download_parallel_worker(
 
 def validate_stem_pattern(stem_pattern: Union[str, None]):
     """
-    Validate `stem_pattern` parameter of module functions.
+    Validate parameter ``stem_pattern`` of module functions.
 
     Parameters
     ----------
@@ -308,7 +320,7 @@ def validate_stem_pattern(stem_pattern: Union[str, None]):
     """
     if stem_pattern and '/name/' not in stem_pattern:
         msg = (
-            "Placeholder '/name/' missing in 'stem_pattern' value "
+            'Placeholder "/name/" missing in \'stem_pattern\' value '
             + repr(stem_pattern)
             )
         raise ValueError(msg)

@@ -1,10 +1,13 @@
 """
 The exceptions for the library.
 
-Exception `APIError` is defined separately in module `api_error`.
+All the exceptions are accessible through the package root namespace.
 
-All of the exceptions are subclasses of `FilingsAPIError or
-`FilingsAPIWarning`. This includes `APIError`.
+All of the exceptions are subclasses of :class:`FilingsAPIError` or
+:class:`FilingsAPIWarning`. This includes :class:`APIError`.
+
+Exception :class:`APIError` is defined separately in module
+:mod:`api_error` due to also being a subclass of :class:`APIObject`.
 
 """
 
@@ -12,9 +15,19 @@ All of the exceptions are subclasses of `FilingsAPIError or
 #
 # SPDX-License-Identifier: MIT
 
+__all__ = [
+    'FilingsAPIError',
+    'FilingsAPIWarning',
+    'CorruptDownloadError',
+    'DatabaseSchemaUnmatchError',
+    'HTTPStatusError',
+    'JSONAPIFormatError',
+    'FilterNotSupportedWarning',
+    ]
+
 
 class FilingsAPIError(Exception):
-    """
+    r"""
     Base class for exceptions in this library.
 
     Not to be confused with `APIError` which is a subclass of this class
@@ -22,7 +35,13 @@ class FilingsAPIError(Exception):
     """
 
     def __str__(self) -> str:
-        """Return error as text."""
+        """
+        Return "[<``msg``>] [<attr>=<value>] [len(``body``)=<value>]".
+
+        Placeholder ``attr`` refers to any own attribute of the
+        exception instance except ``msg`` or ``body``. Placeholder
+        ``value`` is always in :func:`repr` format.
+        """
         parts = []
         msg = getattr(self, 'msg', None)
         if msg:
@@ -47,69 +66,27 @@ class FilingsAPIWarning(UserWarning):
     """Base class for warnings in this library."""
 
 
-class HTTPStatusError(FilingsAPIError):
-    """
-    The API returns no errors and the HTTP status is other than 200.
-
-    Attributes
-    ----------
-    status_code : int
-    status_text : str
-    body : str
-    """
-
-    def __init__(self, status_code: int, status_text: str, body: str) -> None:
-        """Initialize `HTTPStatusError`."""
-        self.status_code = status_code
-        """HTTP status code."""
-        self.status_text = status_text
-        """Description of the HTTP status."""
-        self.body = body
-        """Body text of the response."""
-        super().__init__()
-
-
-class JSONAPIFormatError(FilingsAPIError):
-    """
-    The API returns a JSON:API document in bad format.
-
-    Attributes
-    ----------
-    msg : str
-    """
-
-    def __init__(self, msg: str) -> None:
-        """Initialize `JSONAPIFormatError`."""
-        self.msg = msg
-        """Error message."""
-        super().__init__()
-
-
 class CorruptDownloadError(FilingsAPIError):
     """
-    SHA-256 hash of the downloaded file does not match value from API.
+    SHA-256 checksum does not match expected value from API.
 
-    Attributes
-    ----------
-    path : str
-    url : str
-    calculated_hash : str
-    expected_hash : str
+    See Also
+    --------
+    downloader.CorruptDownloadError : Not FilingsAPIError subclassed.
     """
 
     def __init__(
             self, path: str, url: str, calculated_hash: str,
             expected_hash: str) -> None:
-        """Initialize `CorruptDownloadError`."""
-        self.path = path
+        self.path: str = path
         """Path where the file was saved."""
-        self.url = url
+        self.url: str = url
         """URL where the file was downloaded from."""
-        self.calculated_hash = calculated_hash
-        """Actual SHA-256 hash of the file in lowercase hex."""
-        self.expected_hash = expected_hash
+        self.calculated_hash: str = calculated_hash
+        """Actual SHA-256 checksum of the file in lowercase hex."""
+        self.expected_hash: str = expected_hash
         """
-        Expected SHA-256 hash of the file in lowercase hex.
+        Expected SHA-256 checksum of the file in lowercase hex.
 
         Originates from `Filing` attribute `package_sha256`.
         """
@@ -122,15 +99,33 @@ class DatabaseSchemaUnmatchError(FilingsAPIError):
 
     Either none of the expected tables are present or none of the
     expected columns for a matching table.
-
-    Attributes
-    ----------
-    path : str
     """
 
     def __init__(self, path: str):
-        self.path = path
+        self.path: str = path
         """Path for the database file."""
+        super().__init__()
+
+
+class HTTPStatusError(FilingsAPIError):
+    """No APIError but the HTTP status is not 200."""
+
+    def __init__(self, status_code: int, status_text: str, body: str) -> None:
+        self.status_code: int = status_code
+        """HTTP status code."""
+        self.status_text: str = status_text
+        """Description of the HTTP status."""
+        self.body: str = body
+        """Body text of the response."""
+        super().__init__()
+
+
+class JSONAPIFormatError(FilingsAPIError):
+    r"""The API returns a JSON:API document in bad format."""
+
+    def __init__(self, msg: str) -> None:
+        self.msg: str = msg
+        """Error message."""
         super().__init__()
 
 

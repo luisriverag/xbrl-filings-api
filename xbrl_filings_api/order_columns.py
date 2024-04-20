@@ -6,6 +6,8 @@
 
 from collections.abc import Iterable
 
+__all__ = ['order_columns']
+
 
 def order_columns(cols: Iterable[str]) -> list[str]:
     """Order column names for display."""
