@@ -12,9 +12,9 @@ __all__ = [
     'DataAttributeType',
     'FileStringType',
     'NO_LIMIT',
+    'Prototype',
+    'PROTOTYPE',
     'YearFilterMonthsType',
-    '_Prototype',
-    '_PROTOTYPE',
     ]
 
 
@@ -47,11 +47,11 @@ Used as a value to the parameter ``limit``.
 Accessible through the package root namespace.
 """
 
+class Prototype:
+    """Type of special value `PROTOTYPE`."""
+
+PROTOTYPE = Prototype()
+"""A special value for APIResource to construct a dummy instance."""
+
 YearFilterMonthsType = tuple[tuple[int, int], tuple[int, int]]
 """Months chosen when only a year is given in a date filter."""
-
-class _Prototype:
-    """Type of special value `_PROTOTYPE`."""
-
-_PROTOTYPE = _Prototype()
-"""A special value for APIResource to construct a dummy instance."""

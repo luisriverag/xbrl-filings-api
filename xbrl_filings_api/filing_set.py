@@ -26,10 +26,10 @@ from xbrl_filings_api.constants import DataAttributeType, FileStringType
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.exceptions import CorruptDownloadError
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.resource_collection import ResourceCollection
+from xbrl_filings_api.scope_flag import ScopeFlag
 from xbrl_filings_api.validation_message import ValidationMessage
 
 __all__ = ['FilingSet']

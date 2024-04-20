@@ -11,7 +11,7 @@ from datetime import date, datetime, timezone
 from typing import Any, ClassVar, Optional, Union
 
 from xbrl_filings_api import options
-from xbrl_filings_api.enums import _ParseType
+from xbrl_filings_api.parse_type import ParseType
 
 __all__ = [
     'KeyPathRetrieveCounts',
@@ -129,17 +129,17 @@ class JSONTree:
             upaths[self.class_name] = set()
 
     def get(
-            self, key_path: str, parse_type: Optional[_ParseType] = None
+            self, key_path: str, parse_type: Optional[ParseType] = None
             ) -> Any:
         """
         Read JSON data from dict and parse values to Python literals.
 
-        Value `_ParseType.DATETIME` of parameter ``parse_type`` parses
+        Value `ParseType.DATETIME` of parameter ``parse_type`` parses
         ISO style UTC strings such as ``'2023-05-09 10:51:50.382633'``.
         The return value is locale-aware and if the string does not
         specify timezone, it will be on UTC.
 
-        Value `_ParseType.DATE` parses naive dates and `_ParseType.URL`
+        Value `ParseType.DATE` parses naive dates and `ParseType.URL`
         resolves relative URLs based on `options.entry_point_url`.
 
         Parameters
@@ -148,8 +148,8 @@ class JSONTree:
             A dot access path for nested access in a serialized JSON
             fragment. E.g.
             'relationships.validation_messages.links.related'.
-        parse_type : _ParseType member, optional
-            One of the `_ParseType` Enum members.
+        parse_type : ParseType member, optional
+            One of the `ParseType` Enum members.
         """
         if self.tree is None:
             msg = 'Cannot call get() when JSONTree has been closed'
@@ -223,11 +223,11 @@ class JSONTree:
             self._unaccessed_paths[self.class_name].add('.'.join(comps))
 
     def _parse_value(
-            self, key_value: str, parse_type: Union[_ParseType, None],
+            self, key_value: str, parse_type: Union[ParseType, None],
             key_path: str
             ) -> Union[datetime, date, str, None]:
         """Parse string value of `key_path` based on `parse_type`."""
-        if parse_type == _ParseType.DATETIME:
+        if parse_type == ParseType.DATETIME:
             parsed_dt = None
             for try_i in range(2):
                 try:
@@ -255,7 +255,7 @@ class JSONTree:
 
             return parsed_dt
 
-        elif parse_type == _ParseType.DATE:
+        elif parse_type == ParseType.DATE:
             parsed_date = None
             try:
                 parts = [int(part) for part in key_value.split('-')]
@@ -269,7 +269,7 @@ class JSONTree:
                 logger.warning(msg, stacklevel=2)
             return parsed_date
 
-        elif parse_type == _ParseType.URL:
+        elif parse_type == ParseType.URL:
             parsed_url = None
             try:
                 parsed_url = urllib.parse.urljoin(

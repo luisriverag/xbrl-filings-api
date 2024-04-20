@@ -96,7 +96,6 @@ from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader.download_result import DownloadResult
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.exceptions import (
     CorruptDownloadError,
     DatabaseSchemaUnmatchError,
@@ -112,6 +111,7 @@ from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.query import filing_page_iter, get_filings, to_sqlite
 from xbrl_filings_api.request_processor import FILING_QUERY_ATTRS
 from xbrl_filings_api.resource_collection import ResourceCollection
+from xbrl_filings_api.scope_flag import ScopeFlag
 from xbrl_filings_api.sqlite_view import SQLiteView
 from xbrl_filings_api.validation_message import ValidationMessage
 

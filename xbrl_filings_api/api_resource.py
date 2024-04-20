@@ -12,11 +12,11 @@ from xbrl_filings_api import order_columns
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.constants import (
-    _PROTOTYPE,
     ATTRS_ALWAYS_EXCLUDE_FROM_DATA,
-    _Prototype,
+    PROTOTYPE,
+    Prototype,
 )
-from xbrl_filings_api.enums import ScopeFlag
+from xbrl_filings_api.scope_flag import ScopeFlag
 
 __all__ = ['APIResource']
 
@@ -36,17 +36,17 @@ class APIResource(APIObject):
 
     def __init__(
             self,
-            json_frag: Union[dict, _Prototype],
+            json_frag: Union[dict, Prototype],
             api_request: Union[APIRequest, None] = None
             ) -> None:
-        # Constructing with only `_PROTOTYPE` as an argument creates a
+        # Constructing with only `PROTOTYPE` as an argument creates a
         # dummy object with instance attributes.
         if type(self) is APIResource:
             msg = 'APIResource can only be initialized via subclassing'
             raise NotImplementedError(msg)
 
         is_prototype = False
-        if json_frag == _PROTOTYPE:
+        if json_frag == PROTOTYPE:
             is_prototype = True
             json_frag = {}
             api_request = APIRequest('', datetime.now(UTC))
@@ -55,7 +55,7 @@ class APIResource(APIObject):
             raise ValueError(msg)
 
         super().__init__(
-            json_frag=json_frag, # type: ignore[arg-type] # Never _PROTOTYPE
+            json_frag=json_frag, # type: ignore[arg-type] # Never PROTOTYPE
             api_request=api_request,
             do_not_track=is_prototype
             )
@@ -100,7 +100,7 @@ class APIResource(APIObject):
         """
         if cls is APIResource:
             raise NotImplementedError()
-        resource_proto = cls(_PROTOTYPE)
+        resource_proto = cls(PROTOTYPE)
         attrs = [
             attr for attr in dir(resource_proto)
             if not (
@@ -129,7 +129,7 @@ class APIResource(APIObject):
         ----------
         filings : iterable of Filing
         """
-        fproto = cls(_PROTOTYPE)
+        fproto = cls(PROTOTYPE)
         dlattrs = [
             att for att in dir(fproto)
             if not att.startswith('_') and att.endswith('_download_path')

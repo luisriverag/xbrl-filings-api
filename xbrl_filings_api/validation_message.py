@@ -12,8 +12,8 @@ from typing import Optional, Union
 
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.constants import _Prototype
-from xbrl_filings_api.enums import ScopeFlag
+from xbrl_filings_api.constants import Prototype
+from xbrl_filings_api.scope_flag import ScopeFlag
 
 __all__ = ['ValidationMessage']
 
@@ -58,7 +58,7 @@ class ValidationMessage(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, _Prototype],
+            json_frag: Union[dict, Prototype],
             api_request: Optional[APIRequest] = None
             ) -> None:
         # Signatures::
@@ -66,7 +66,7 @@ class ValidationMessage(APIResource):
         #         json_frag: dict,
         #         api_request: APIRequest
         #         )
-        #     ValidationMessage(json_frag: _Prototype)
+        #     ValidationMessage(json_frag: Prototype)
         super().__init__(json_frag, api_request)
 
         self.severity: Union[str, None] = self._json.get(self.SEVERITY)

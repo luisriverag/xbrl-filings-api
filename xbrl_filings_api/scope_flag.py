@@ -1,15 +1,12 @@
-"""Enums for the package."""
+"""Define enum `ScopeFlag`."""
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
 #
 # SPDX-License-Identifier: MIT
 
-from enum import Enum, Flag, auto
+from enum import Flag, auto
 
-__all__ = [
-    'ScopeFlag',
-    '_ParseType',
-    ]
+__all__ = ['ScopeFlag']
 
 
 class ScopeFlag(Flag):
@@ -40,21 +37,3 @@ class ScopeFlag(Flag):
 
     Accessible through the package root namespace.
     """
-
-
-class _ParseType(Enum):
-    """Parsing selection for dot access paths in API response."""
-
-    DATE = auto()
-    """Parsed into :class:`datetime.date`."""
-
-    DATETIME = auto()
-    """
-    Parsed into timezone-aware :class:`~datetime.datetime`.
-
-    Timezone will be the one specified in the string or UTC, if
-    unspecified.
-    """
-
-    URL = auto()
-    """Relative URLs will be parsed into absolute URLs."""

@@ -46,7 +46,7 @@ class APIError(FilingsAPIError, APIObject):
 
         # self.api_id: Union[str, None] = self._json.get('id')
         # self.about_url: Union[str, None] = self._json.get(
-        #     'links.about', _ParseType.URL)
+        #     'links.about', ParseType.URL)
         # self.source_pointer: Union[str, None] = self._json.get(
         #     'source.pointer')
         # self.source_parameter: Union[str, None] = self._json.get(

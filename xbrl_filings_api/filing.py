@@ -20,13 +20,13 @@ from xbrl_filings_api import (
 )
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.constants import _PROTOTYPE, FileStringType, _Prototype
+from xbrl_filings_api.constants import PROTOTYPE, FileStringType, Prototype
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import _ParseType
 from xbrl_filings_api.exceptions import CorruptDownloadError
 from xbrl_filings_api.lang_code_transform import LANG_CODE_TRANSFORM
+from xbrl_filings_api.parse_type import ParseType
 from xbrl_filings_api.validation_message import ValidationMessage
 
 __all__ = ['Filing']
@@ -77,7 +77,7 @@ class Filing(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, _Prototype],
+            json_frag: Union[dict, Prototype],
             api_request: Optional[APIRequest] = None,
             entity_iter: Optional[Iterable[Entity]] = None,
             message_iter: Optional[Iterable[ValidationMessage]] = None
@@ -89,7 +89,7 @@ class Filing(APIResource):
         #         entity_iter: Optional[Iterable[Entity]],
         #         message_iter: Optional[Iterable[ValidationMessage]]
         #         )
-        #     Filing(json_frag: _Prototype)
+        #     Filing(json_frag: Prototype)
         super().__init__(json_frag, api_request)
 
         self.country: Union[str, None] = self._json.get(self.COUNTRY)
@@ -137,7 +137,7 @@ class Filing(APIResource):
         """
 
         self.last_end_date: Union[date, None] = self._json.get(
-            self.LAST_END_DATE, _ParseType.DATE)
+            self.LAST_END_DATE, ParseType.DATE)
         """
         The end date of the last period in the marked-up report
         contents.
@@ -182,7 +182,7 @@ class Filing(APIResource):
         `validation_messages`."""
 
         self.added_time: Union[datetime, None] = self._json.get(
-            self.ADDED_TIME, _ParseType.DATETIME)
+            self.ADDED_TIME, ParseType.DATETIME)
         """
         Timezone-aware datetime when the filing was added to the
         database.
@@ -205,7 +205,7 @@ class Filing(APIResource):
         """
 
         self.processed_time: Union[datetime, None] = self._json.get(
-            self.PROCESSED_TIME, _ParseType.DATETIME)
+            self.PROCESSED_TIME, ParseType.DATETIME)
         """
         Timezone-aware datetime when the filing was processed for the
         database.
@@ -245,7 +245,7 @@ class Filing(APIResource):
         """
 
         self.json_url: Union[str, None] = self._json.get(
-            self.JSON_URL, _ParseType.URL)
+            self.JSON_URL, ParseType.URL)
         """
         Download URL for a derived xBRL-JSON document.
 
@@ -262,7 +262,7 @@ class Filing(APIResource):
         """
 
         self.package_url: Union[str, None] = self._json.get(
-            self.PACKAGE_URL, _ParseType.URL)
+            self.PACKAGE_URL, ParseType.URL)
         """
         Download URL for the official ESEF report package as filed to
         the OAM by the issuer.
@@ -276,7 +276,7 @@ class Filing(APIResource):
         """
 
         self.viewer_url: Union[str, None] = self._json.get(
-            self.VIEWER_URL, _ParseType.URL)
+            self.VIEWER_URL, ParseType.URL)
         """
         URL to a website with an inline XBRL viewer for this report.
 
@@ -289,7 +289,7 @@ class Filing(APIResource):
         """
 
         self.xhtml_url: Union[str, None] = self._json.get(
-            self.XHTML_URL, _ParseType.URL)
+            self.XHTML_URL, ParseType.URL)
         """
         Download URL for the inline XBRL report extracted from the
         official report package.
@@ -733,10 +733,10 @@ class Filing(APIResource):
     def _search_entity(
             self,
             entity_iter: Union[Iterable[Entity], None],
-            json_frag: Union[dict, _Prototype]
+            json_frag: Union[dict, Prototype]
             ) -> Union[Entity, None]:
         """Search for an `Entity` object for the filing."""
-        if json_frag == _PROTOTYPE or entity_iter is None:
+        if json_frag == PROTOTYPE or entity_iter is None:
             return None
         if not self.entity_api_id:
             msg = f'No entity defined for {self!r}'
@@ -760,10 +760,10 @@ class Filing(APIResource):
     def _search_validation_messages(
             self,
             message_iter: Union[Iterable[ValidationMessage], None],
-            json_frag: Union[dict, _Prototype]
+            json_frag: Union[dict, Prototype]
             ) -> Union[set[ValidationMessage], None]:
         """Search `ValidationMessage` objects for this filing."""
-        if json_frag == _PROTOTYPE or message_iter is None:
+        if json_frag == PROTOTYPE or message_iter is None:
             return None
 
         found_msgs = set()

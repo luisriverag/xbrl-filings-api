@@ -11,7 +11,7 @@ from typing import Union
 
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_request import APIRequest
-from xbrl_filings_api.enums import _ParseType
+from xbrl_filings_api.parse_type import ParseType
 
 __all__ = [
     'IncludedResource',
@@ -41,23 +41,23 @@ class APIPage(APIObject):
         super().__init__(json_frag, api_request)
 
         self.api_self_url: Union[str, None] = self._json.get(
-            'links.self', _ParseType.URL)
+            'links.self', ParseType.URL)
         """URL to this `APIPage`."""
 
         self.api_prev_page_url: Union[str, None] = self._json.get(
-            'links.prev', _ParseType.URL)
+            'links.prev', ParseType.URL)
         """URL to previous `APIPage` in the query."""
 
         self.api_next_page_url: Union[str, None] = self._json.get(
-            'links.next', _ParseType.URL)
+            'links.next', ParseType.URL)
         """URL to next `APIPage` in the query."""
 
         self.api_first_page_url: Union[str, None] = self._json.get(
-            'links.first', _ParseType.URL)
+            'links.first', ParseType.URL)
         """URL to first `APIPage` in the query."""
 
         self.api_last_page_url: Union[str, None] = self._json.get(
-            'links.last', _ParseType.URL)
+            'links.last', ParseType.URL)
         """URL to last `APIPage` in the query."""
 
         self.jsonapi_version: Union[str, None] = self._json.get(

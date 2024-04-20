@@ -13,9 +13,9 @@ from xbrl_filings_api.api_page import APIPage
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.resource_collection import ResourceCollection
+from xbrl_filings_api.scope_flag import ScopeFlag
 from xbrl_filings_api.validation_message import ValidationMessage
 
 __all__ = ['FilingsPage']

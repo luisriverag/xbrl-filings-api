@@ -8,8 +8,9 @@ from typing import Optional, Union
 
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.constants import _Prototype
-from xbrl_filings_api.enums import ScopeFlag, _ParseType
+from xbrl_filings_api.constants import Prototype
+from xbrl_filings_api.parse_type import ParseType
+from xbrl_filings_api.scope_flag import ScopeFlag
 
 __all__ = ['Entity']
 
@@ -26,12 +27,12 @@ class Entity(APIResource):
 
     def __init__(
             self,
-            json_frag: Union[dict, _Prototype],
+            json_frag: Union[dict, Prototype],
             api_request: Optional[APIRequest] = None
             ) -> None:
         # Signatures::
         #     Entity(json_frag: dict, api_request: APIRequest)
-        #     Entity(json_frag: _Prototype)
+        #     Entity(json_frag: Prototype)
         super().__init__(json_frag, api_request)
 
         self.identifier: Union[str, None] = self._json.get(self.IDENTIFIER)
@@ -51,7 +52,7 @@ class Entity(APIResource):
         """
 
         self.api_entity_filings_url: Union[str, None] = self._json.get(
-            self.API_ENTITY_FILINGS_URL, _ParseType.URL)
+            self.API_ENTITY_FILINGS_URL, ParseType.URL)
         r"""URL to the page with full list of filings by this entity."""
 
         self._json.close()

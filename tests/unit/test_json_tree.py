@@ -17,8 +17,8 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 
 import xbrl_filings_api.options as options
-from xbrl_filings_api.enums import _ParseType
 from xbrl_filings_api.json_tree import JSONTree
+from xbrl_filings_api.parse_type import ParseType
 
 UTC = timezone.utc
 
@@ -143,7 +143,7 @@ def test_get_date_value():
         )
     last_end_date = jtree.get(
         key_path='attributes.period_end',
-        parse_type=_ParseType.DATE
+        parse_type=ParseType.DATE
         )
     assert last_end_date == date(2022, 12, 31)
     jtree.close()
@@ -167,7 +167,7 @@ def test_get_date_value_bad_date(caplog):
         )
     last_end_date = jtree.get(
         key_path='attributes.period_end',
-        parse_type=_ParseType.DATE
+        parse_type=ParseType.DATE
         )
     assert last_end_date is None
     assert e_log in caplog.text
@@ -203,7 +203,7 @@ def test_get_datetime_value():
         )
     processed_time = jtree.get(
         key_path='attributes.processed',
-        parse_type=_ParseType.DATETIME
+        parse_type=ParseType.DATETIME
         )
     assert processed_time == e_datetime
     assert processed_time.tzinfo == UTC
@@ -228,7 +228,7 @@ def test_get_datetime_value_bad_datetime(caplog):
         )
     processed_time = jtree.get(
         key_path='attributes.processed',
-        parse_type=_ParseType.DATETIME
+        parse_type=ParseType.DATETIME
         )
     assert processed_time is None
     assert e_log in caplog.text
@@ -249,7 +249,7 @@ def test_get_datetime_timezone0200_value():
         )
     processed_time = jtree.get(
         key_path='attributes.processed',
-        parse_type=_ParseType.DATETIME
+        parse_type=ParseType.DATETIME
         )
     # 2 hours less in UTC
     assert processed_time == e_datetime
@@ -290,7 +290,7 @@ def test_get_url_value(monkeypatch):
         )
     viewer_url = jtree.get(
         key_path='attributes.viewer_url',
-        parse_type=_ParseType.URL
+        parse_type=ParseType.URL
         )
     assert viewer_url == e_url
     jtree.close()
@@ -316,7 +316,7 @@ def test_get_url_value_bad_url(monkeypatch, caplog):
         )
     viewer_url = jtree.get(
         key_path='attributes.viewer_url',
-        parse_type=_ParseType.URL
+        parse_type=ParseType.URL
         )
     assert viewer_url is None
     assert e_log in caplog.text
@@ -369,7 +369,7 @@ def test_get_int_value_as_url_noop():
         )
     inconsistency_count = jtree.get(
         key_path='attributes.inconsistency_count',
-        parse_type=_ParseType.URL
+        parse_type=ParseType.URL
         )
     assert inconsistency_count == 4
     jtree.close()
@@ -402,7 +402,7 @@ def test_get_dict_value_parse_datetime_noop():
         )
     rel_entity = jtree.get(
         key_path='relationships.entity',
-        parse_type=_ParseType.DATETIME
+        parse_type=ParseType.DATETIME
         )
     assert isinstance(rel_entity, dict)
     assert rel_entity['data']['type'] == 'entity'

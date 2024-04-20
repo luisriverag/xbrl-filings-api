@@ -23,8 +23,7 @@ import requests
 from xbrl_filings_api import options, stats
 from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_request import APIRequest
-from xbrl_filings_api.constants import _PROTOTYPE, NO_LIMIT
-from xbrl_filings_api.enums import ScopeFlag
+from xbrl_filings_api.constants import NO_LIMIT, PROTOTYPE
 from xbrl_filings_api.exceptions import (
     FilterNotSupportedWarning,
     HTTPStatusError,
@@ -34,6 +33,7 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
+from xbrl_filings_api.scope_flag import ScopeFlag
 
 __all__ = [
     'generate_pages',
@@ -570,7 +570,7 @@ def _retrieve_page_json(
 
 def _get_api_attribute_map() -> dict[str, str]:
     attrmap: dict[str, str] = {}
-    fproto = Filing(_PROTOTYPE)
+    fproto = Filing(PROTOTYPE)
     clsmap = {'api_id': 'id'}
     for prop in dir(fproto):
         # Exclude class attributes from instance attributes

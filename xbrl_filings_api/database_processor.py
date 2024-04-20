@@ -20,9 +20,9 @@ from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import DataAttributeType
 from xbrl_filings_api.entity import Entity
-from xbrl_filings_api.enums import ScopeFlag
 from xbrl_filings_api.exceptions import DatabaseSchemaUnmatchError
 from xbrl_filings_api.filing import Filing
+from xbrl_filings_api.scope_flag import ScopeFlag
 from xbrl_filings_api.validation_message import ValidationMessage
 
 __all__ = ['sets_to_sqlite']
