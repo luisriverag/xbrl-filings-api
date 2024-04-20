@@ -1,4 +1,4 @@
-r"""
+"""
 Python API for filings.xbrl.org XBRL report repository.
 
 The API provides an access to an international public repository of XBRL
@@ -8,58 +8,77 @@ validation messages.
 Modules whose contents are not exported directly are `options`, `stats`,
 `debug`, and `downloader.stats`.
 
-Classes
--------
-Filing
-    Filing objects are returned by the API. This is the primary resource
-    class.
-Entity
-    Entity objects are returned by the API and found from the `entity`
-    attribute of `Filing` objects. Describes the filer.
-ValidationMessage
-    Validation message objects are returned by the API. Describe issues
-    found by the validator software in the filings.
-APIError
-    First error returned by the JSON:API.
-FilingSet
-    Set of filings returned by the query functions.
-ResourceCollection
-    Collection of other API resources except filings. Can be accessed
-    through special attributes of `FilingSet` object.
-FilingsPage
-    An API page which contains predefined number of filings and other
-    related resources.
-DownloadInfo
-DownloadItem
-    Download item for a single file which overrides the values set in
-    download parameters of the download function.
-DownloadResult
-APIObject
-    Base class for all JSON-originated API objects.
-APIResource
-    Base class for API data object such as filings or entities.
-SQLiteView
-    Defines an SQL view in an SQLite database.
-ScopeFlag
-    Enum defining query scopes.
-
 Constants
 ---------
 DEFAULT_VIEWS
+    List of the default views added to exported SQLite databases.
 FILING_QUERY_ATTRS
+    List of resource attribute names for parameters sort and filter.
 GET_ENTITY
+    Retrieve entities of filings.
 GET_ONLY_FILINGS
+    Retrieve only filings and nothing else. Overrides other flags.
 GET_VALIDATION_MESSAGES
+    Retrieve validation messages of filings.
 NO_LIMIT
+    Fetches all filings that match the query.
 
 Functions
 ---------
 get_filings
-    Retrieve filings from the API.
+    Return a FilingSet of all the filings matching the query.
 to_sqlite
-    Retrieve filings from the API and save them to an SQLite3 database.
+    Insert all filings from the query to an SQLite database.
 filing_page_iter
-    Iterate API query results page by page.
+    Lazily iterate query results page by page.
+
+Classes
+-------
+Filing
+    XBRL filing in the database based on a report package.
+Entity
+    Entity (e.g. a group) in the database which has filed filings.
+ValidationMessage
+    Message for a filing in the database from a validator software.
+FilingSet
+    Subclassed :class:`set` for `Filing` objects.
+ResourceCollection
+    Collection of subresources of a `FilingSet` object.
+FilingsPage
+    Response page containing filings as primary resource.
+DownloadInfo
+    Dataclass for attribute DownloadSpecs.info.
+DownloadItem
+    Dataclass defining download item for download functions.
+DownloadResult
+    Dataclass for result information from a finished download.
+APIObject
+    Base class for JSON:API objects.
+APIResource
+    Base class for JSON:API resources, i.e., data objects.
+SQLiteView
+    Dataclass for storing SQLite view creation instructions.
+ScopeFlag
+    Flags for API resource retrieval scope.
+
+Exceptions
+----------
+APIError
+    First error returned by the JSON:API.
+CorruptDownloadError
+    SHA-256 checksum does not match expected value from API.
+DatabaseSchemaUnmatchError
+    The file contains a database whose schema is non-conformant.
+FilingsAPIError
+    Base class for exceptions in this library.
+FilingsAPIWarning
+    Base class for warnings in this library.
+FilterNotSupportedWarning
+    Used filter is not supported but can be used.
+HTTPStatusError
+    No APIError but the HTTP status is not 200.
+JSONAPIFormatError
+    The API returns a JSON:API document in bad format.
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
