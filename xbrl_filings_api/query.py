@@ -12,8 +12,8 @@ supports equivalence filtering of one value, but by giving the
 mapping a value which is an iterable of strings, you may execute
 multiple equivalence filtering queries in one function/method call.
 
-You will find the list of valid filtering attributes in list
-`FILING_QUERY_ATTRS`. Please note that derived attributes such as
+You will find the list of valid filtering attributes in the keys of dict
+`api_attribute_map`. Please note that derived attributes such as
 ``reporting_date`` or ``language`` may not be used for filtering.
 
 To filter only the filings reported in Finland, you may use the
@@ -64,9 +64,8 @@ is ascending, but descending order can be obtained by prefixing the
 attribute with a minus sign (-). As with filtering, attributes
 ending with ``_count`` and ``_url`` did not work in July 2023.
 
-The attributes in ``FILING_QUERY_ATTRS`` dict are valid values for sort.
-To get the most recently added filings, specify the following
-parameter::
+The keys of `api_attribute_map` dict are valid values for sort. To get
+the most recently added filings, specify the following parameter::
 
     sort='-added_time'
 

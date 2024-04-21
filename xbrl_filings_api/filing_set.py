@@ -211,7 +211,6 @@ class FilingSet(set[Filing]):
             items.extend(
                 download_specs_construct.construct(
                     files, filing, to_dir, stem_pattern,
-                    Filing.VALID_DOWNLOAD_FORMATS,
                     check_corruption=check_corruption,
                     isfilingset=True
                     ))
@@ -298,7 +297,6 @@ class FilingSet(set[Filing]):
             items.extend(
                 download_specs_construct.construct(
                     files, filing, to_dir, stem_pattern,
-                    Filing.VALID_DOWNLOAD_FORMATS,
                     check_corruption=check_corruption,
                     isfilingset=True
                     ))
@@ -891,7 +889,7 @@ class FilingSet(set[Filing]):
 
     def __repr__(self) -> str:
         """
-        Return repr with `len()` of self, entities, validation_messages.
+        Return repr with len() of self, entities, validation_messages.
 
         Values len(`entities`) and len(`validation_messages`) are only
         shown if more than zero are present.

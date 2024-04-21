@@ -31,7 +31,9 @@ class APIResource(APIObject):
     resembles a database record.
     """
 
-    TYPE: Union[str, None] = None
+    TYPE: str = ''
+    """JSON-API resource ``type`` of `APIResource` subclass."""
+
     _FILING_FLAG: ScopeFlag
 
     def __init__(

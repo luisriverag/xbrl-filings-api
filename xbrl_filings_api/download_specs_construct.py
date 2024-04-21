@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: MIT
 
 import logging
-from collections.abc import Container, Iterable, Mapping
+from collections.abc import Iterable, Mapping
 from pathlib import PurePath
 from typing import Any, Union
 
-from xbrl_filings_api.constants import FileStringType
+from xbrl_filings_api.constants import FILE_STRING_CHOICE, FileStringType
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader import DownloadSpecs
@@ -28,7 +28,6 @@ def construct(
         filing: Any,
         to_dir: Union[str, PurePath, None],
         stem_pattern: Union[str, None],
-        valid_file_formats: Container,
         *,
         check_corruption: bool,
         isfilingset: bool = False
@@ -55,7 +54,6 @@ def construct(
             download_item = files[file]
             full_item = _get_filing_download_specs(
                 file, download_item, filing, to_dir, stem_pattern,
-                valid_file_formats,
                 check_corruption=check_corruption,
                 isfilingset=isfilingset
                 )
@@ -68,7 +66,7 @@ def construct(
             # isinstance(files, str) in the beginning of the method
             full_item = _get_filing_download_specs(
                 file, # type: ignore[arg-type]
-                None, filing, to_dir, stem_pattern, valid_file_formats,
+                None, filing, to_dir, stem_pattern,
                 check_corruption=check_corruption,
                 isfilingset=isfilingset
                 )
@@ -86,13 +84,12 @@ def _get_filing_download_specs(
         filing: Any,
         to_dir: Union[str, PurePath, None],
         stem_pattern: Union[str, None],
-        valid_file_formats: Container,
         *,
         check_corruption: bool,
         isfilingset: bool
         ) -> Union[DownloadSpecs, None]:
-    if file not in valid_file_formats:
-        msg = f'File {file!r} is not among {valid_file_formats!r}'
+    if file not in FILE_STRING_CHOICE:
+        msg = f'File {file!r} is not among {FILE_STRING_CHOICE!r}'
         raise ValueError(msg)
 
     url = getattr(filing, f'{file}_url')

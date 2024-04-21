@@ -1,8 +1,7 @@
 """
 Module for processing API requests.
 
-Despite being an internal module, `FILING_QUERY_ATTRS` will be
-accessible from package root.
+Sets value of `constants.api_attribute_map` as an import side effect.
 """
 
 # SPDX-FileCopyrightText: 2023 Lauri Salmela <lauri.m.salmela@gmail.com>
@@ -20,7 +19,7 @@ from typing import Any, Literal, Union
 
 import requests
 
-from xbrl_filings_api import options, stats
+from xbrl_filings_api import constants, options, stats
 from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.constants import NO_LIMIT, PROTOTYPE
@@ -35,16 +34,10 @@ from xbrl_filings_api.order_columns import order_columns
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.scope_flag import ScopeFlag
 
-__all__ = [
-    'generate_pages',
-    'api_attribute_map',
-    'FILING_QUERY_ATTRS',
-    ]
+__all__ = ['generate_pages']
 
 UTC = timezone.utc
 logger = logging.getLogger(__name__)
-
-api_attribute_map: dict[str, str]
 
 _ParamsType = dict[str, Union[str, int]]
 
@@ -258,11 +251,10 @@ def _get_params_list_on_filters(
 def _filters_to_query_params(
         single_filters: dict[str, str]
         ) -> dict[str, str]:
-    global api_attribute_map  # noqa: PLW0602
     qparams = {}
     for field_name, value in single_filters.items():
         try:
-            supported_name = api_attribute_map[field_name]
+            supported_name = constants.api_attribute_map[field_name]
         except KeyError:
             msg = (
                 f'Field name "{field_name}" is not supported but can be used '
@@ -489,14 +481,13 @@ def _get_month_end(year: int, month: int) -> date:
 
 
 def _get_sort_query_param(sort: Sequence[str]) -> str:
-    global api_attribute_map  # noqa: PLW0602
     qparam = ''
     for field in sort:
         if qparam != '':
             qparam += ','
         field_name = field[1:] if field.startswith('-') else field
         try:
-            field_name = api_attribute_map[field_name]
+            field_name = constants.api_attribute_map[field_name]
         except KeyError:
             pass
         if field.startswith('-'):
@@ -595,18 +586,4 @@ def _get_api_attribute_map() -> dict[str, str]:
     return attrmap
 
 
-api_attribute_map = _get_api_attribute_map()
-r"""
-Mapping from library attribute names to names used in the API.
-
-Is used to convert fields in parameters ``sort`` and ``filters``.
-"""
-
-FILING_QUERY_ATTRS = list(api_attribute_map)
-"""
-List of resource attribute names for parameters ``sort`` and ``filter``.
-
-Does not include derived attributes. Despite capital letter naming, this
-value is derived from the library, but as per general API maintenance
-principles, this list is expected only to grow.
-"""
+constants.api_attribute_map = _get_api_attribute_map()

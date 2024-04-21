@@ -39,7 +39,7 @@ class ValidationMessage(APIResource):
     coherence.
     """
 
-    TYPE: str = 'validation_message'
+    TYPE = 'validation_message'
     SEVERITY = 'attributes.severity'
     TEXT = 'attributes.message'
     CODE = 'attributes.code'

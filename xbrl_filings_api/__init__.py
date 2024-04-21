@@ -10,10 +10,10 @@ Modules whose contents are not exported directly are `options`, `stats`,
 
 Constants
 ---------
+api_attribute_map
+    Mapping from library attribute names to names used in the API.
 DEFAULT_VIEWS
     List of the default views added to exported SQLite databases.
-FILING_QUERY_ATTRS
-    List of resource attribute names for parameters sort and filter.
 GET_ENTITY
     Retrieve entities of filings.
 GET_ONLY_FILINGS
@@ -90,7 +90,7 @@ import logging
 from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_object import APIObject
 from xbrl_filings_api.api_resource import APIResource
-from xbrl_filings_api.constants import NO_LIMIT
+from xbrl_filings_api.constants import NO_LIMIT, api_attribute_map
 from xbrl_filings_api.default_views import DEFAULT_VIEWS
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
@@ -109,7 +109,6 @@ from xbrl_filings_api.filing import Filing
 from xbrl_filings_api.filing_set import FilingSet
 from xbrl_filings_api.filings_page import FilingsPage
 from xbrl_filings_api.query import filing_page_iter, get_filings, to_sqlite
-from xbrl_filings_api.request_processor import FILING_QUERY_ATTRS
 from xbrl_filings_api.resource_collection import ResourceCollection
 from xbrl_filings_api.scope_flag import ScopeFlag
 from xbrl_filings_api.sqlite_view import SQLiteView

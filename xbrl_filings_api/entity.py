@@ -18,7 +18,7 @@ __all__ = ['Entity']
 class Entity(APIResource):
     """Entity (e.g. a group) in the database which has filed filings."""
 
-    TYPE: str = 'entity'
+    TYPE = 'entity'
     NAME = 'attributes.name'
     IDENTIFIER = 'attributes.identifier'
     API_ENTITY_FILINGS_URL = 'relationships.filings.links.related'

@@ -11,7 +11,7 @@ import webbrowser
 from collections.abc import AsyncIterator, Iterable, Mapping
 from datetime import date, datetime, timedelta
 from pathlib import PurePath, PurePosixPath
-from typing import ClassVar, Optional, Union
+from typing import Optional, Union
 
 from xbrl_filings_api import (
     download_specs_construct,
@@ -43,7 +43,7 @@ class Filing(APIResource):
     `filing_index` except for the last integer.
     """
 
-    TYPE: str = 'filing'
+    TYPE = 'filing'
     COUNTRY = 'attributes.country'
     FILING_INDEX = 'attributes.fxo_id'
     LAST_END_DATE = 'attributes.period_end'
@@ -60,7 +60,6 @@ class Filing(APIResource):
     XHTML_URL = 'attributes.report_url'
     PACKAGE_SHA256 = 'attributes.sha256'
 
-    VALID_DOWNLOAD_FORMATS: ClassVar[set[str]] = {'json', 'package', 'xhtml'}
     _NOT_NUM_RE = re.compile(r'\D', re.ASCII)
     _DATE_RE = re.compile(
         pattern=r'''
@@ -553,7 +552,7 @@ class Filing(APIResource):
         """
         downloader.validate_stem_pattern(stem_pattern)
         items = download_specs_construct.construct(
-            files, self, to_dir, stem_pattern, self.VALID_DOWNLOAD_FORMATS,
+            files, self, to_dir, stem_pattern,
             check_corruption=check_corruption
             )
         results = downloader.download_parallel(
@@ -635,7 +634,7 @@ class Filing(APIResource):
         downloader.validate_stem_pattern(stem_pattern)
 
         items = download_specs_construct.construct(
-            files, self, to_dir, stem_pattern, self.VALID_DOWNLOAD_FORMATS,
+            files, self, to_dir, stem_pattern,
             check_corruption=check_corruption
             )
         dliter = downloader.download_parallel_aiter(

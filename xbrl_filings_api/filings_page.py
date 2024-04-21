@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class FilingsPage(APIPage):
-    r"""Response page containing filings as primary resource."""
+    """Response page containing filings as primary resource."""
 
     def __init__(
             self, json_frag: dict, api_request: APIRequest,
