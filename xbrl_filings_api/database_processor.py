@@ -7,6 +7,8 @@
 # Double quotes are used in all SQL strings by default.
 # ruff: noqa: Q000
 
+from __future__ import annotations
+
 import errno
 import logging
 import os
@@ -14,7 +16,7 @@ import sqlite3
 from collections.abc import Collection, Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Optional
 
 from xbrl_filings_api import options, order_columns
 from xbrl_filings_api.api_resource import APIResource
@@ -273,7 +275,7 @@ def _exec(
         sql: str,
         params: Sequence[str] = (),
         *,
-        many: Union[Collection[Sequence[DataAttributeType]], None] = None
+        many: Optional[Collection[Sequence[DataAttributeType]]] = None
         ) -> None:
     data_len = f' <count: {len(many)}>' if many else ''
     logger.debug(sql + ';' + data_len)

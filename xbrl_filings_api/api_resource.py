@@ -24,7 +24,7 @@ UTC = timezone.utc
 
 
 class APIResource(APIObject):
-    r"""
+    """
     Base class for JSON:API resources, i.e., data objects.
 
     Subclasses of this class may be read into a database. An instance
@@ -62,16 +62,14 @@ class APIResource(APIObject):
             do_not_track=is_prototype
             )
 
-        self.api_id: Union[str, None] = None
+        api_id = self._json.get('id')
+        self.api_id: str = str(api_id)
         r"""
         JSON-API resource ``id`` of `APIResource`.
 
         Can be used as a unique identifier among resources of the same
         type.
         """
-
-        api_id = self._json.get('id')
-        self.api_id = str(api_id)
 
         self._hash = hash(('APIResource', self.TYPE, self.api_id))
 
@@ -99,6 +97,11 @@ class APIResource(APIObject):
         filings : iterable of Filing, optional
             Used to exclude `Filing` attributes ending
             ``_download_path``.
+
+        Returns
+        -------
+        list of str
+            List of data attributes.
         """
         if cls is APIResource:
             raise NotImplementedError()
@@ -119,6 +122,14 @@ class APIResource(APIObject):
             if not flags or ScopeFlag.GET_ENTITY not in flags:
                 attrs.remove('entity_api_id')
         return order_columns.order_columns(attrs)
+
+    def __eq__(self, other: Any) -> bool:
+        """Return :pt:`True` when both __hash__() match."""
+        return self._hash == hash(other)
+
+    def __hash__(self):
+        """Return hash of ``('APIResource', cls.TYPE, self.api_id)``."""
+        return self._hash
 
     @classmethod
     def _get_unused_download_paths(cls, filings: Iterable[Any]) -> set[str]:
@@ -145,34 +156,3 @@ class APIResource(APIObject):
             else:
                 unused.add(attr_name)
         return unused
-
-    @classmethod
-    def get_columns(
-            cls, *, filings: Union[Iterable[Any], None] = None,
-            has_entities: bool = False
-            ) -> list[str]:
-        """
-        Return list of available columns for an `APIResource`.
-
-        Parameters
-        ----------
-        filings: iterable of Filing, optional
-            Only relevant for `Filing` objects.
-        has_entities : bool, default False
-            Only relevant for `Filing` objects.
-        """
-        if cls is APIResource:
-            raise NotImplementedError()
-        flags = ScopeFlag.GET_ONLY_FILINGS
-        if has_entities:
-            flags = ScopeFlag.GET_ENTITY
-        cols = cls.get_data_attributes(flags, filings)
-        return cols
-
-    def __eq__(self, other: Any) -> bool:
-        """Return :pt:`True` when both __hash__() match."""
-        return self._hash == hash(other)
-
-    def __hash__(self):
-        """Return hash of ``('APIResource', cls.TYPE, self.api_id)``."""
-        return self._hash

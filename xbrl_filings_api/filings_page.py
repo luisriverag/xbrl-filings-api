@@ -52,7 +52,7 @@ class FilingsPage(APIPage):
         self.entity_list: Union[list[Entity], None] = (
             ents) # type: ignore[assignment]
         """
-        Set of `Entity` objects on this page.
+        List of `Entity` objects on this page.
 
         Is :pt:`None` if ``flags`` parameter did not include
         `GET_ENTITY`.
@@ -70,7 +70,7 @@ class FilingsPage(APIPage):
         self.validation_message_list: Union[list[ValidationMessage], None] = (
             vmsgs) # type: ignore[assignment]
         """
-        Set of `ValidationMessage` objects on this page.
+        List of `ValidationMessage` objects on this page.
 
         Is :pt:`None` if ``flags`` parameter did not include
         `GET_VALIDATION_MESSAGES`.
@@ -82,6 +82,42 @@ class FilingsPage(APIPage):
             received_api_ids, res_colls, flags)
         self._check_validation_messages_references()
         self._determine_unexpected_inc_resources()
+
+    def __repr__(self) -> str:
+        """
+        Return repr with request_url, query_time, and len(filing_list).
+
+        Attribute `request_url` is shown as repr, `query_time` as
+        unprefixed datetime() constructor, and len(`filing_list`) as
+        integer.
+        """
+        time_str = self.query_time.strftime('%Y, %m, %d, %H, %M, %S')
+        query_time = f'datetime({time_str})'
+        subreslist = ''
+        if self.entity_list is not None:
+            subreslist += f', len(entity_list)={len(self.entity_list)}'
+        if self.validation_message_list is not None:
+            subreslist += (
+                ', len(validation_message_list)='
+                + str(len(self.validation_message_list))
+                )
+        return (
+            f'{type(self).__name__}('
+            f'request_url={self.request_url!r}, '
+            f'query_time={query_time}, '
+            f'len(filing_list)={len(self.filing_list)}{subreslist})'
+            )
+
+    def _check_validation_messages_references(self) -> None:
+        if self.validation_message_list is not None:
+            for vmsg in self.validation_message_list:
+                if vmsg.filing is None:
+                    msg = f'No filing defined for {vmsg!r}'
+                    logger.warning(msg, stacklevel=2)
+
+    def _determine_unexpected_inc_resources(self) -> None:
+        self._json.unexpected_resource_types.update(
+            [(res.type_, 'included') for res in self._included_resources])
 
     def _get_filings(
             self, received_api_ids: dict[str, set],
@@ -106,6 +142,37 @@ class FilingsPage(APIPage):
                     self._json.unexpected_resource_types.add(
                         (res_type, 'data'))
         return filing_list
+
+    def _get_inc_resource(
+            self,
+            type_obj: type[APIResource],
+            api_request: APIRequest,
+            received_api_ids: dict[str, set],
+            flag_member: ScopeFlag,
+            flags: ScopeFlag
+            ) -> Union[list[APIResource], None]:
+        if (ScopeFlag.GET_ONLY_FILINGS in flags or flag_member not in flags):
+            return None
+
+        resource_list = []
+        type_name = type_obj.__name__
+        if not received_api_ids.get(type_name):
+            received_api_ids[type_name] = set()
+        received_set = received_api_ids[type_name]
+
+        found_ix = []
+        for res_i, res in enumerate(self._included_resources):
+            if res.type_ == type_obj.TYPE:
+                if res.id_ not in received_set:
+                    received_set.add(res.id_)
+                    # Construct Entity() or ValidationMessage()
+                    res_instance = type_obj(res.frag, api_request)
+                    resource_list.append(res_instance)
+                    found_ix.append(res_i)
+        found_ix.reverse()
+        for res_i in found_ix:
+            del self._included_resources[res_i]
+        return resource_list
 
     def _parse_filing_fragment(
             self, res_frag: dict[str, Any], received_set: set[str],
@@ -139,70 +206,3 @@ class FilingsPage(APIPage):
                         )
             api_request = APIRequest(self.request_url, self.query_time)
             return Filing(res_frag, api_request, entity_iter, message_iter)
-
-    def _get_inc_resource(
-            self,
-            type_obj: type[APIResource],
-            api_request: APIRequest,
-            received_api_ids: dict[str, set],
-            flag_member: ScopeFlag,
-            flags: ScopeFlag
-            ) -> Union[list[APIResource], None]:
-        if (ScopeFlag.GET_ONLY_FILINGS in flags or flag_member not in flags):
-            return None
-
-        resource_list = []
-        type_name = type_obj.__name__
-        if not received_api_ids.get(type_name):
-            received_api_ids[type_name] = set()
-        received_set = received_api_ids[type_name]
-
-        found_ix = []
-        for res_i, res in enumerate(self._included_resources):
-            if res.type_ == type_obj.TYPE:
-                if res.id_ not in received_set:
-                    received_set.add(res.id_)
-                    # Construct Entity() or ValidationMessage()
-                    res_instance = type_obj(res.frag, api_request)
-                    resource_list.append(res_instance)
-                    found_ix.append(res_i)
-        found_ix.reverse()
-        for res_i in found_ix:
-            del self._included_resources[res_i]
-        return resource_list
-
-    def _determine_unexpected_inc_resources(self) -> None:
-        self._json.unexpected_resource_types.update(
-            [(res.type_, 'included') for res in self._included_resources])
-
-    def _check_validation_messages_references(self) -> None:
-        if self.validation_message_list is not None:
-            for vmsg in self.validation_message_list:
-                if vmsg.filing is None:
-                    msg = f'No filing defined for {vmsg!r}'
-                    logger.warning(msg, stacklevel=2)
-
-    def __repr__(self) -> str:
-        """
-        Return repr with request_url, query_time, and len(filing_list).
-
-        Attribute `request_url` is shown as repr, `query_time` as
-        unprefixed datetime() constructor, and len(`filing_list`) as
-        integer.
-        """
-        time_str = self.query_time.strftime('%Y, %m, %d, %H, %M, %S')
-        query_time = f'datetime({time_str})'
-        subreslist = ''
-        if self.entity_list is not None:
-            subreslist += f', len(entity_list)={len(self.entity_list)}'
-        if self.validation_message_list is not None:
-            subreslist += (
-                ', len(validation_message_list)='
-                + str(len(self.validation_message_list))
-                )
-        return (
-            f'{type(self).__name__}('
-            f'request_url={self.request_url!r}, '
-            f'query_time={query_time}, '
-            f'len(filing_list)={len(self.filing_list)}{subreslist})'
-            )

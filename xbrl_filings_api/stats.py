@@ -3,7 +3,7 @@ Module for API stats counters.
 
 See Also
 --------
-downloader.stats : Stats for the downloader subpackage.
+xbrl_filings_api.downloader.stats : Stats for the downloader subpackage.
 
 """
 

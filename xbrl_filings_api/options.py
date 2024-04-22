@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import logging
 import webbrowser
 from collections.abc import Iterable
@@ -73,10 +75,9 @@ views: Union[Iterable[SQLiteView], None] = DEFAULT_VIEWS
 """
 SQLite3 views to be added to created/edited databases.
 
-The :attr:`SQLiteView.name` attributes of objects may not be
-overlapping.
+The `SQLiteView.name` attributes of objects may not be overlapping.
 
-Default value is :data:`DEFAULT_VIEWS`.
+Default value is `DEFAULT_VIEWS`.
 """
 
 year_filter_months: YearFilterMonthsType = ((0, 8), (1, 8))

@@ -36,11 +36,21 @@ logger = logging.getLogger(__name__)
 
 class Filing(APIResource):
     """
-    XBRL filing in the database based on a report package.
+    XBRL filing in the database based on a report package file.
 
-    Different language versions of the same report are separate filings.
-    The language versions of the same report share the same
-    `filing_index` except for the last integer.
+    A filing object has data attributes originating directly from the
+    API database as well as some derived attributes (e.g. `language` and
+    `reporting_date`).
+
+    All :class:`~datetime.datetime` attributes whose name ends
+    ``'_time'`` have an additional attribute ending ``'_time_str'`` for
+    the original string received from the API.
+
+    Every data attribute has a similarly named upper-case class constant
+    which states the dot access-based location of the value origin in
+    the JSON object fragment of the original API response. E.g. the
+    accessor string for attribute `filing_index` can be read from
+    attribute ``FILING_INDEX``.
     """
 
     TYPE = 'filing'
@@ -105,7 +115,7 @@ class Filing(APIResource):
         Database identifier for the filing.
 
         The index is structured as:
-          1. LEI identifier
+          1. Company identifier such as LEI code
           2. Reporting date
           3. Filing system
           4. Country
@@ -250,28 +260,27 @@ class Filing(APIResource):
 
         The document is programmatically reserialized version of the
         Inline XBRL report. The conversion was carried by Arelle XBRL
-        processor. The file is not a 'pure' data file but follows the
-        information model of Open Information Model which includes for
-        example declaration of XML-like namespaces inside a JSON file.
-
-        The strange case of letters in this new XBRL term emphasizing
-        the last three instead of all four was probably due to the fact
-        that in the history of XBRL, more than one person has written
-        these letters in a noncanonical order.
+        processor. The format of the JSON follows the Open Information
+        Model which includes for example declaration of XML-like
+        namespaces inside the JSON file.
         """
 
         self.package_url: Union[str, None] = self._json.get(
             self.PACKAGE_URL, ParseType.URL)
         """
-        Download URL for the official ESEF report package as filed to
-        the OAM by the issuer.
+        Download URL for the report package file.
+
+        In the case of :abbr:`ESEF (European Single Electronic Format)`
+        filings, this is the official report file published to the index
+        of the :abbr:`OAM (Officially Appointed Mechanism)` in the
+        country where the entity has issued securities.
 
         The report package is a ZIP archive which follows a predefined
         format. It consists of an inline XBRL report (iXBRL) and the
         extension taxonomy. The graphical iXBRL report can be found from
         'reports' directory inside the root folder and due to its visual
-        elements (including embedded image files) it is typically the
-        largest file in the package.
+        elements (notably embedded image files) it is typically the
+        largest file in the ZIP archive.
         """
 
         self.viewer_url: Union[str, None] = self._json.get(
@@ -290,19 +299,20 @@ class Filing(APIResource):
         self.xhtml_url: Union[str, None] = self._json.get(
             self.XHTML_URL, ParseType.URL)
         """
-        Download URL for the inline XBRL report extracted from the
-        official report package.
+        Download URL for the inline XBRL report.
 
         Contains the actual data of the filing and its visual, PDF-like
-        representation. The document has been extracted from the
-        'reports' folder of the official report package. The report is
-        an XHTML document with embedded inline XBRL markup.
+        representation. In the case of ESEF filings, the document has
+        been extracted from the 'reports' folder of the `package_url`
+        file. The report is an XHTML document with embedded inline XBRL
+        markup.
 
-        As this file is not compressed, it is likely to have a larger
-        download size than the actual report package file.
+        As this file is not compressed, it might have larger download
+        size than the actual report package file.
 
         The original field name in the API is ``report_url`` despite the
-        fact that this file is not the official report but a part of it.
+        fact that this file is not the official report for many filings
+        such as ESEF.
         """
 
         self.json_download_path: Union[str, None] = None
@@ -333,130 +343,6 @@ class Filing(APIResource):
 
         self.language = self._derive_language()
         self.reporting_date = self._derive_reporting_date()
-
-    def __repr__(self) -> str:
-        """
-        Return repr of ``api_id`` and other properties.
-
-        If has entity, displays also `Filing.entity.name <Entity.name>`,
-        `reporting_date` and `language`.
-
-        Otherwise displays ``api_id`` and `filing_index`.
-        """
-        start = f'{type(self).__name__}(api_id={self.api_id!r}, '
-        if self.entity:
-            rrepdate = 'None'
-            if self.reporting_date:
-                rdate_str = self.reporting_date.strftime('%Y, %m, %d')
-                rrepdate = f'date({rdate_str})'
-            return (
-                start + f'entity.name={self.entity.name!r}, '
-                f'reporting_date={rrepdate}, '
-                f'language={self.language!r})'
-                )
-        else:
-            return start + f'filing_index={self.filing_index!r})'
-
-    def __str__(self) -> str:
-        r"""
-        Return "[entity.name/filing_index] [reporting_date] [language]".
-
-        If has entity, the first part is
-        `Filing.entity.name <Entity.name>`, otherwise it will be
-        `filing_index`.
-
-        Attribute ``reporting_date`` will be displayed in simple format
-        and ``language`` in square brackets. Simple format means that
-        last day of the year is the sole year (2022-12-31 -> "2022"),
-        last day of the month is month-year (2022-01-31 -> "Jan-2022")
-        and any other date is in ISO format (2022-01-15 ->
-        "2022-01-15").
-        """
-        parts = []
-        if self.entity:
-            if self.entity.name:
-                parts.append(self.entity.name)
-        if len(parts) == 0 and self.filing_index:
-            parts.append(self.filing_index)
-
-        if self.reporting_date:
-            parts.append(self._get_simple_filing_date(self.reporting_date))
-        if self.language:
-            parts.append(f'[{self.language}]')
-        return ' '.join(parts)
-
-    def _get_simple_filing_date(self, rdate: date) -> str:
-        if rdate.month == 12 and rdate.day == 31: # noqa: PLR2004 # No magic
-            return str(rdate.year)
-        if rdate.month != (rdate + timedelta(days=1)).month:
-            return rdate.strftime('%b-%Y')
-        return str(rdate)
-
-    def _derive_language(self) -> Union[str, None]:
-        stems = (
-            self._get_url_stem(self.package_url),
-            self._get_url_stem(self.xhtml_url)
-            )
-        resolved = None
-        for stem in stems:
-            if not stem:
-                continue
-
-            normstem = stem.replace('_', '-')
-            last_part = normstem.split('-')[-1]
-            if not last_part.isalpha():
-                continue
-
-            part_len = len(last_part)
-            last_part = last_part.lower()
-            if part_len == 2:  # noqa: PLR2004
-                # Looks like an alpha-2 code, quacks like an alpha-2
-                # code
-                resolved = last_part
-                break
-            elif part_len == 3: # noqa: PLR2004
-                # Seems like a translatable alpha-3 code
-                resolved = LANG_CODE_TRANSFORM.get(last_part)
-                if resolved:
-                    break
-        resolved = self._correct_common_language_code_mistakes(
-            resolved, self.country)
-        return resolved
-
-    def _correct_common_language_code_mistakes(
-            self, resolved: Union[str, None], country: Union[str, None]
-            ) -> Union[str, None]:
-        if country == 'CZ' and resolved == 'cz':
-            resolved = 'cs'
-        if country == 'SE' and resolved == 'se':
-            resolved = 'sv'
-        if country == 'DK' and resolved == 'dk':
-            resolved = 'da'
-        if country == 'NO' and resolved in ('nb', 'nn'):
-            # Not an actual mistake but specifying Bokmaal or Nynorsk
-            # ortography is way too specific
-            resolved = 'no'
-        return resolved
-
-    def _derive_reporting_date(self) -> Union[date, None]:
-        out_dt = self.last_end_date
-
-        stem = self._get_url_stem(self.package_url)
-        if not stem:
-            return out_dt
-
-        normstem = self._NOT_NUM_RE.sub('-', stem)
-        mlist = self._DATE_RE.findall(normstem)
-        if mlist:
-            year, month, day = mlist[-1]
-            try:
-                try_dt = date(int(year), int(month), int(day))
-            except ValueError:
-                # Bad date e.g. 2000-02-31
-                pass
-            else:
-                out_dt = try_dt
-        return out_dt
 
     def download(
             self,
@@ -519,9 +405,9 @@ class Filing(APIResource):
         Parameters
         ----------
         files : str or iterable of str or mapping of {str: DownloadItem}
-            The ``str`` value must be in
-            ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
-            override method arguments for the file.
+            All of the ``str`` values in annotation are `FileStringType`
+            literals. `DownloadItem` attributes override method
+            arguments for the file.
         to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
@@ -606,9 +492,9 @@ class Filing(APIResource):
         Parameters
         ----------
         files : str or iterable of str or mapping of {str: DownloadItem}
-            The ``str`` value must be in
-            ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
-            override method arguments for the file.
+            All of the ``str`` values in annotation are `FileStringType`
+            literals. `DownloadItem` attributes override method
+            arguments for the file.
         to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
@@ -729,6 +615,168 @@ class Filing(APIResource):
             autoraise=autoraise
             )
 
+    def __repr__(self) -> str:
+        """
+        Return repr of ``api_id`` and other properties.
+
+        If has entity, displays ``api_id``,
+        `Filing.entity.name <Entity.name>`, `reporting_date` and
+        `language`.
+
+        Otherwise displays ``api_id`` and `filing_index`.
+        """
+        start = f'{type(self).__name__}(api_id={self.api_id!r}, '
+        if self.entity:
+            rrepdate = 'None'
+            if self.reporting_date:
+                rdate_str = self.reporting_date.strftime('%Y, %m, %d')
+                rrepdate = f'date({rdate_str})'
+            return (
+                start + f'entity.name={self.entity.name!r}, '
+                f'reporting_date={rrepdate}, '
+                f'language={self.language!r})'
+                )
+        else:
+            return start + f'filing_index={self.filing_index!r})'
+
+    def __str__(self) -> str:
+        r"""
+        Return "[entity.name/filing_index] [reporting_date] [language]".
+
+        If has entity, the first part is
+        `Filing.entity.name <Entity.name>`, otherwise it will be
+        `filing_index`.
+
+        Attribute `reporting_date` will be displayed in simple format
+        and `language` in square brackets. Simple format means that
+        last day of the year is the sole year (2022-12-31 -> "2022"),
+        last day of the month is month-year (2022-01-31 -> "Jan-2022")
+        and any other date is in ISO format (2022-01-15 ->
+        "2022-01-15").
+        """
+        parts = []
+        if self.entity:
+            if self.entity.name:
+                parts.append(self.entity.name)
+        if len(parts) == 0 and self.filing_index:
+            parts.append(self.filing_index)
+
+        if self.reporting_date:
+            parts.append(self._get_simple_filing_date(self.reporting_date))
+        if self.language:
+            parts.append(f'[{self.language}]')
+        return ' '.join(parts)
+
+    def _derive_language(self) -> Union[str, None]:
+        stems = (
+            self._get_url_stem(self.package_url),
+            self._get_url_stem(self.xhtml_url)
+            )
+        resolved = None
+        for stem in stems:
+            if not stem:
+                continue
+
+            normstem = stem.replace('_', '-')
+            last_part = normstem.split('-')[-1]
+            if not last_part.isalpha():
+                continue
+
+            part_len = len(last_part)
+            last_part = last_part.lower()
+            if part_len == 2:  # noqa: PLR2004
+                # Looks like an alpha-2 code, quacks like an alpha-2
+                # code
+                resolved = last_part
+                break
+            elif part_len == 3: # noqa: PLR2004
+                # Seems like a translatable alpha-3 code
+                resolved = LANG_CODE_TRANSFORM.get(last_part)
+                if resolved:
+                    break
+        resolved = self._correct_common_language_code_mistakes(
+            resolved, self.country)
+        return resolved
+
+    def _correct_common_language_code_mistakes(
+            self, resolved: Union[str, None], country: Union[str, None]
+            ) -> Union[str, None]:
+        if country == 'CZ' and resolved == 'cz':
+            resolved = 'cs'
+        if country == 'SE' and resolved == 'se':
+            resolved = 'sv'
+        if country == 'DK' and resolved == 'dk':
+            resolved = 'da'
+        if country == 'NO' and resolved in ('nb', 'nn'):
+            # Not an actual mistake but specifying Bokmaal or Nynorsk
+            # ortography is way too specific
+            resolved = 'no'
+        return resolved
+
+    def _derive_reporting_date(self) -> Union[date, None]:
+        out_dt = self.last_end_date
+
+        stem = self._get_url_stem(self.package_url)
+        if not stem:
+            return out_dt
+
+        normstem = self._NOT_NUM_RE.sub('-', stem)
+        mlist = self._DATE_RE.findall(normstem)
+        if mlist:
+            year, month, day = mlist[-1]
+            try:
+                try_dt = date(int(year), int(month), int(day))
+            except ValueError:
+                # Bad date e.g. 2000-02-31
+                pass
+            else:
+                out_dt = try_dt
+        return out_dt
+
+    def _get_entity_api_id(self) -> Union[str, None]:
+        api_id = self._json.get(self.ENTITY_API_ID)
+        if api_id is not None and not isinstance(api_id, str):
+            api_id = str(api_id)
+        return api_id
+
+    def _get_simple_filing_date(self, rdate: date) -> str:
+        if rdate.month == 12 and rdate.day == 31: # noqa: PLR2004 # No magic
+            return str(rdate.year)
+        if rdate.month != (rdate + timedelta(days=1)).month:
+            return rdate.strftime('%b-%Y')
+        return str(rdate)
+
+    def _get_url_stem(self, url: Union[str, None]) -> Union[str, None]:
+        if url is None:
+            return None
+        presult = None
+        try:
+            presult = urllib.parse.urlparse(url)
+        except ValueError:
+            pass
+        if (not isinstance(presult, urllib.parse.ParseResult)
+                or ':' not in url):
+            return None
+
+        url_path = None
+        if presult.path.strip():
+            url_path = urllib.parse.unquote(presult.path)
+        if url_path is None:
+            return None
+
+        file_stem = None
+        try:
+            urlpath = PurePosixPath(url_path)
+        except ValueError:
+            pass
+        else:
+            file_stem = urlpath.stem
+
+        if isinstance(file_stem, str) and file_stem.strip():
+            return file_stem
+        else:
+            return None
+
     def _search_entity(
             self,
             entity_iter: Union[Iterable[Entity], None],
@@ -786,40 +834,3 @@ class Filing(APIResource):
                         )
                     logger.warning(msg, stacklevel=2)
         return found_msgs
-
-    def _get_url_stem(self, url: Union[str, None]) -> Union[str, None]:
-        if url is None:
-            return None
-        presult = None
-        try:
-            presult = urllib.parse.urlparse(url)
-        except ValueError:
-            pass
-        if (not isinstance(presult, urllib.parse.ParseResult)
-                or ':' not in url):
-            return None
-
-        url_path = None
-        if presult.path.strip():
-            url_path = urllib.parse.unquote(presult.path)
-        if url_path is None:
-            return None
-
-        file_stem = None
-        try:
-            urlpath = PurePosixPath(url_path)
-        except ValueError:
-            pass
-        else:
-            file_stem = urlpath.stem
-
-        if isinstance(file_stem, str) and file_stem.strip():
-            return file_stem
-        else:
-            return None
-
-    def _get_entity_api_id(self) -> Union[str, None]:
-        api_id = self._json.get(self.ENTITY_API_ID)
-        if api_id is not None and not isinstance(api_id, str):
-            api_id = str(api_id)
-        return api_id

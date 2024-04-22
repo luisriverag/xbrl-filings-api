@@ -50,7 +50,7 @@ def get_unaccessed_key_paths() -> list[tuple[str, str]]:
 
     Returns
     -------
-    list of tuples (str, str)
+    list of tuple (str, str)
         List of ordered tuples in form :pt:`(class_qualname, key_path)`.
     """
     return sorted(JSONTree.get_unaccessed_key_paths())
@@ -64,7 +64,7 @@ def get_unexpected_resource_types() -> list[tuple[str, str]]:
 
     Returns
     -------
-    list of tuples (str, str)
+    list of tuple (str, str)
         List of ordered tuples in form :pt:`(type_str, origin)`.
     """
     return sorted(JSONTree.unexpected_resource_types)

@@ -35,7 +35,7 @@ filing_page_iter
 Classes
 -------
 Filing
-    XBRL filing in the database based on a report package.
+    XBRL filing in the database based on a report package file.
 Entity
     Entity (e.g. a group) in the database which has filed filings.
 ValidationMessage
@@ -46,6 +46,8 @@ ResourceCollection
     Collection of subresources of a `FilingSet` object.
 FilingsPage
     Response page containing filings as primary resource.
+APIPage
+    Base class for JSON:API response page or document.
 DownloadInfo
     Dataclass for attribute DownloadSpecs.info.
 DownloadItem
@@ -89,6 +91,7 @@ import logging
 
 from xbrl_filings_api.api_error import APIError
 from xbrl_filings_api.api_object import APIObject
+from xbrl_filings_api.api_page import APIPage
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import NO_LIMIT, api_attribute_map
 from xbrl_filings_api.default_views import DEFAULT_VIEWS

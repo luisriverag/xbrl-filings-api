@@ -65,7 +65,7 @@ def generate_pages(
     Yields
     ------
     FilingsPage
-        New page object from API.
+        New page object from HTTP response.
 
     Raises
     ------

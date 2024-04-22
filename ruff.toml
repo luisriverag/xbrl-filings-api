@@ -89,6 +89,8 @@ ignore = [
     "PT001",
     # Ignore multiline quote checks (docstring: double, other: single)
     "Q001",
+    # Do not demand union as binary OR operator (|)
+    "UP007",
     # Allow unnecessary open mode parameters ('r')
     "UP015",
 ]

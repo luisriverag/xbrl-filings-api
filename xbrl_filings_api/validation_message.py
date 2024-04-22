@@ -69,6 +69,15 @@ class ValidationMessage(APIResource):
         #     ValidationMessage(json_frag: Prototype)
         super().__init__(json_frag, api_request)
 
+        self.code: Union[str, None] = self._json.get(self.CODE)
+        """
+        The code describing the source of the broken rule.
+
+        For example, code ``xbrl.5.2.5.2:calcInconsistency`` refers to
+        XBRL 2.1 base specification heading 5.2.5.2 with title "The
+        <calculationArc> element".
+        """
+
         self.severity: Union[str, None] = self._json.get(self.SEVERITY)
         """
         Severity of the validation message.
@@ -86,24 +95,6 @@ class ValidationMessage(APIResource):
         """Validation message text."""
         if isinstance(self.text, str):
             self.text = self.text.strip()
-
-        self.code: Union[str, None] = self._json.get(self.CODE)
-        """
-        The code describing the source of the broken rule.
-
-        For example, code ``xbrl.5.2.5.2:calcInconsistency`` refers to
-        XBRL 2.1 base specification heading 5.2.5.2 with title "The
-        <calculationArc> element".
-        """
-
-        self.filing_api_id: Union[str, None] = None
-        """`api_id` of `filing` object."""
-
-        # Filing object
-        self.filing: Union[object, None] = None
-        """`Filing` object of this validation message."""
-
-        self._json.close()
 
         self.calc_computed_sum: Union[float, None] = None
         """
@@ -195,34 +186,33 @@ class ValidationMessage(APIResource):
         than 2 duplicated facts).
         """
 
+        self.filing_api_id: Union[str, None] = None
+        """`api_id` of `filing` object."""
+
+        # Filing object
+        self.filing: Union[object, None] = None
+        """`Filing` object of this validation message."""
+
+        self._json.close()
+
         if self.code == 'xbrl.5.2.5.2:calcInconsistency':
             self._derive_calc_prefixed_attrs()
         elif self.code == 'message:tech_duplicated_facts1':
             self._derive_duplicate_prefixed_attrs()
 
-    def _derive_calc_prefixed_attrs(self):
-        self.calc_computed_sum = self._derive_calc_float(
-            self._COMPUTED_SUM_RE, 'calc_computed_sum')
-        self.calc_reported_sum = self._derive_calc_float(
-            self._REPORTED_SUM_RE, 'calc_reported_sum')
-        self.calc_context_id = self._derive_calc(self._CONTEXT_ID_RE)
-        self.calc_line_item = self._derive_calc(self._LINE_ITEM_RE)
-        unreported_items = self._derive_calc(self._UNREPORTED_ITEMS_RE)
-        self.calc_short_role = self._derive_calc_short_role()
+    def __repr__(self) -> str:
+        """Return repr with `api_id`, `code` and `severity`."""
+        return (
+            f'{type(self).__name__}('
+            f'api_id={self.api_id!r}, code={self.code!r}, '
+            f'severity={self.severity!r})'
+            )
 
-        if unreported_items and unreported_items.lower() != 'none':
-            self.calc_unreported_items = (
-                self._COMMA_RE.split(unreported_items))
-
-    def _derive_duplicate_prefixed_attrs(self):
-        duplicate_1 = self._derive_calc_float(
-            self._DUPLICATE_1_RE, 'duplicate_*')
-        duplicate_2 = self._derive_calc_float(
-            self._DUPLICATE_2_RE, 'duplicate_*')
-        if (isinstance(duplicate_1, float)
-                and isinstance(duplicate_2, float)):
-            self.duplicate_greater = max(duplicate_1, duplicate_2)
-            self.duplicate_lesser = min(duplicate_1, duplicate_2)
+    def __str__(self) -> str:
+        """Return `text` attribute value or empty string."""
+        if self.text is None:
+            return ''
+        return self.text
 
     def _derive_calc(self, re_obj: re.Pattern) -> Union[str, None]:
         mt = re_obj.search(self.text)
@@ -244,6 +234,20 @@ class ValidationMessage(APIResource):
                     )
                 logger.warning(msg, stacklevel=2)
         return calc_float
+
+    def _derive_calc_prefixed_attrs(self):
+        self.calc_computed_sum = self._derive_calc_float(
+            self._COMPUTED_SUM_RE, 'calc_computed_sum')
+        self.calc_reported_sum = self._derive_calc_float(
+            self._REPORTED_SUM_RE, 'calc_reported_sum')
+        self.calc_context_id = self._derive_calc(self._CONTEXT_ID_RE)
+        self.calc_line_item = self._derive_calc(self._LINE_ITEM_RE)
+        unreported_items = self._derive_calc(self._UNREPORTED_ITEMS_RE)
+        self.calc_short_role = self._derive_calc_short_role()
+
+        if unreported_items and unreported_items.lower() != 'none':
+            self.calc_unreported_items = (
+                self._COMMA_RE.split(unreported_items))
 
     def _derive_calc_short_role(self) -> Union[str, None]:
         matched_uri = self._derive_calc(self._SHORT_ROLE_RE)
@@ -270,16 +274,12 @@ class ValidationMessage(APIResource):
             short_role = plib_path.name
         return short_role
 
-    def __repr__(self) -> str:
-        """Return repr with `api_id`, `code` and `severity`."""
-        return (
-            f'{type(self).__name__}('
-            f'api_id={self.api_id!r}, code={self.code!r}, '
-            f'severity={self.severity!r})'
-            )
-
-    def __str__(self) -> str:
-        """Return `text` attribute value or empty string."""
-        if self.text is None:
-            return ''
-        return self.text
+    def _derive_duplicate_prefixed_attrs(self):
+        duplicate_1 = self._derive_calc_float(
+            self._DUPLICATE_1_RE, 'duplicate_*')
+        duplicate_2 = self._derive_calc_float(
+            self._DUPLICATE_2_RE, 'duplicate_*')
+        if (isinstance(duplicate_1, float)
+                and isinstance(duplicate_2, float)):
+            self.duplicate_greater = max(duplicate_1, duplicate_2)
+            self.duplicate_lesser = min(duplicate_1, duplicate_2)

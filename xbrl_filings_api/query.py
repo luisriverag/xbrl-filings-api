@@ -13,8 +13,8 @@ mapping a value which is an iterable of strings, you may execute
 multiple equivalence filtering queries in one function/method call.
 
 You will find the list of valid filtering attributes in the keys of dict
-`api_attribute_map`. Please note that derived attributes such as
-``reporting_date`` or ``language`` may not be used for filtering.
+`api_attribute_map`. Bear in mind that derived attributes such as
+`reporting_date` or `language` may not be used for filtering.
 
 To filter only the filings reported in Finland, you may use the
 following parameter::
@@ -115,8 +115,8 @@ def get_filings(
     Parameters
     ----------
     filters : mapping of {str: any or iterable of any}, optional
-        Mapping of filters. Iterable values may be used for AND-style
-        multirequest queries.
+        Mapping of filters. Iterable values may be used to make a logic
+        OR-style query with multiple API requests.
     sort : str or sequence of str, optional
         Used together with ``limit`` to return filings from either end
         of sorted attribute values. Order is lost in `FilingSet` object.
@@ -210,8 +210,8 @@ def to_sqlite(
         If the database already exists, update it with retrieved
         records. Old records are updated and new ones are added.
     filters : mapping of {str: any or iterable of any}, optional
-        Mapping of filters. Iterable values may be used for AND-style
-        multirequest queries.
+        Mapping of filters. Iterable values may be used to make a logic
+        OR-style query with multiple API requests.
     sort : str or sequence of str, optional
         Used together with parameter ``limit`` to return filings from
         either end of sorted attribute values. Order is lost in
@@ -302,8 +302,8 @@ def filing_page_iter(
     Parameters
     ----------
     filters : mapping of {str: any or iterable of any}, optional
-        Mapping of filters. Iterable values may be used for AND-style
-        multirequest queries.
+        Mapping of filters. Iterable values may be used to make a logic
+        OR-style query with multiple API requests.
     sort : str or sequence of str, optional
         Sort filings on pages. Default order is ascending; prefix
         attribute name with minus (-) to get descending order.

@@ -1,11 +1,12 @@
 """
 Define alpha-3 to alpha-2 language code transformations.
 
-Dictionary for tranformation of offial European Union languages from
-ISO 639-2 (alpha-3 codes) to ISO 639-1 (alpha-2 codes).
+Defines :class:`dict` ``LANG_CODE_TRANSFORM`` for tranformation of
+offial European Union languages from ISO 639-2 (alpha-3 codes) to ISO
+639-1 (alpha-2 codes).
 
 The transformations are needed for year 2020 ESEF reports when
-requirements to report the language in the file name was obscure.
+requirements to report the language in the file name were obscure.
 
 """
 

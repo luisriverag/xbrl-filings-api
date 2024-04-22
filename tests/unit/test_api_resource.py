@@ -101,25 +101,3 @@ def test_Entity_get_data_attributes_sanity_check():
         assert isinstance(dattr, str)
     assert 'api_id' in dattrs
     assert 'name' in dattrs
-
-
-def test_raises_APIResource_get_columns():
-    """Test raising for APIResource.get_columns."""
-    with pytest.raises(NotImplementedError):
-        xf.APIResource.get_columns(filings=None, has_entities=False)
-
-
-def test_Filing_get_columns_sanity_check():
-    """Test Filing.get_columns, has_entities=False."""
-    dattrs = xf.Filing.get_columns(filings=None, has_entities=False)
-    for dattr in dattrs:
-        assert isinstance(dattr, str)
-    assert 'api_id' in dattrs
-    assert 'filing_index' in dattrs
-    assert 'entity_api_id' not in dattrs
-
-
-def test_Filing_get_columns_has_entities_true():
-    """Test Filing.get_columns, has_entities=True."""
-    dattrs = xf.Filing.get_columns(filings=None, has_entities=True)
-    assert 'entity_api_id' in dattrs

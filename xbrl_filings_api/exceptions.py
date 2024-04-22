@@ -36,11 +36,12 @@ class FilingsAPIError(Exception):
 
     def __str__(self) -> str:
         """
-        Return "[<``msg``>] [<attr>=<value>] [len(``body``)=<value>]".
+        Return "[<``msg``>] [list of <attr>=<value>]".
 
         Placeholder ``attr`` refers to any own attribute of the
         exception instance except ``msg`` or ``body``. Placeholder
-        ``value`` is always in :func:`repr` format.
+        ``value`` is always in :func:`repr` format. The attribute
+        ``body``, has a different display form: ``len(body)=<len>``.
         """
         parts = []
         msg = getattr(self, 'msg', None)

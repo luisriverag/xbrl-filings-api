@@ -109,6 +109,17 @@ class FilingSet(set[Filing]):
         See documentation for `ResourceCollection` class.
         """
 
+    @property
+    def columns(self) -> list[str]:
+        """List of available columns for filings of this set."""
+        flags = ScopeFlag.GET_ONLY_FILINGS
+        if self.entities.exist:
+            flags = ScopeFlag.GET_ENTITY
+        return Filing.get_data_attributes(
+            flags=flags,
+            filings=self
+            )
+
     def download(
             self,
             files: Union[
@@ -173,9 +184,9 @@ class FilingSet(set[Filing]):
         Parameters
         ----------
         files : str or iterable of str or mapping of {str: DownloadItem}
-            The ``str`` value must be in
-            ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
-            override method arguments for the file.
+            All of the ``str`` values in annotation are `FileStringType`
+            literals. `DownloadItem` attributes override method
+            arguments for the file.
         to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
@@ -265,9 +276,9 @@ class FilingSet(set[Filing]):
         Parameters
         ----------
         files : str or iterable of str or mapping of {str: DownloadItem}
-            The ``str`` value must be in
-            ``{'json', 'package', 'xhtml'}``. `DownloadItem` attributes
-            override method arguments for the file.
+            All of the ``str`` values in annotation are `FileStringType`
+            literals. `DownloadItem` attributes override method
+            arguments for the file.
         to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
@@ -326,61 +337,6 @@ class FilingSet(set[Filing]):
                 yresult = downloader.DownloadResult(
                     yresult.url, yresult.path, err, yresult.info)
             yield yresult
-
-    def to_sqlite(
-            self,
-            path: Union[str, Path],
-            *,
-            update: bool = False,
-            flags: ScopeFlag = (
-                ScopeFlag.GET_ENTITY
-                | ScopeFlag.GET_VALIDATION_MESSAGES)
-            ) -> None:
-        """
-        Save set to an SQLite3 database.
-
-        The method has the same signature and follows the same rules as
-        the query function :func:`~xbrl_filings_api.query.to_sqlite`
-        with the exception of missing all query parameters.
-
-        Flags also default to all tables turned on. If no additional
-        information is present in the set, the tables will not be
-        created if they do not exist.
-
-        Parameters
-        ----------
-        path : path-like
-            Path to the SQLite database.
-        update : bool, default False
-            If the database already exists, update it with these
-            records. Old records are updated and new ones are added.
-        flags : ScopeFlag, default GET_ENTITY | GET_VALIDATION_MESSAGES
-            Scope of saving. Flag `GET_ENTITY` will save entity records
-            of filings and `GET_VALIDATION_MESSAGES` the validation
-            messages.
-
-        Raises
-        ------
-        FileExistsError
-            When ``update`` is :pt:`False` and the intended save path
-            for the database is an existing file.
-        DatabaseSchemaUnmatchError
-            When ``update`` is :pt:`True` and the file contains a
-            database whose schema does not match the expected format.
-        sqlite3.DatabaseError
-            For example when ``update`` is :pt:`True` and the file is
-            not a database etc.
-
-        See Also
-        --------
-        xbrl_filings_api.to_sqlite : Query and save to SQLite.
-        """
-        ppath = path if isinstance(path, Path) else Path(path)
-
-        data_objs, flags = self._get_data_sets(flags)
-
-        database_processor.sets_to_sqlite(
-            flags, ppath, data_objs, update=update)
 
     def get_pandas_data(
             self, attr_names: Optional[Iterable[str]] = None, *,
@@ -570,22 +526,78 @@ class FilingSet(set[Filing]):
         self.difference_update(popped)
         return FilingSet(popped)
 
-    def _get_last_filing_index_filing(
-            self, filings: set[Filing]
-            ) -> Union[Filing, None]:
-        if len(filings) == 0:
-            return None
-        str_indexes = [
-            '' if f.filing_index is None else f.filing_index
-            for f in filings
-            ]
-        max_filing_index = max(str_indexes)
-        def filter_filing_index_str(filing: Filing) -> bool:
-            ismatch = filing.filing_index == max_filing_index
-            if not ismatch and max_filing_index == '':
-                ismatch = filing.filing_index is None
-            return ismatch
-        return next(filter(filter_filing_index_str, filings))
+    def to_sqlite(
+            self,
+            path: Union[str, Path],
+            *,
+            update: bool = False,
+            flags: ScopeFlag = (
+                ScopeFlag.GET_ENTITY
+                | ScopeFlag.GET_VALIDATION_MESSAGES)
+            ) -> None:
+        """
+        Save set to an SQLite3 database.
+
+        The method has the same signature and follows the same rules as
+        the query function :func:`~xbrl_filings_api.query.to_sqlite`
+        with the exception of missing all query parameters.
+
+        Flags also default to all tables turned on. If no additional
+        information is present in the set, the tables will not be
+        created if they do not exist.
+
+        Parameters
+        ----------
+        path : path-like
+            Path to the SQLite database.
+        update : bool, default False
+            If the database already exists, update it with these
+            records. Old records are updated and new ones are added.
+        flags : ScopeFlag, default GET_ENTITY | GET_VALIDATION_MESSAGES
+            Scope of saving. Flag `GET_ENTITY` will save entity records
+            of filings and `GET_VALIDATION_MESSAGES` the validation
+            messages.
+
+        Raises
+        ------
+        FileExistsError
+            When ``update`` is :pt:`False` and the intended save path
+            for the database is an existing file.
+        DatabaseSchemaUnmatchError
+            When ``update`` is :pt:`True` and the file contains a
+            database whose schema does not match the expected format.
+        sqlite3.DatabaseError
+            For example when ``update`` is :pt:`True` and the file is
+            not a database etc.
+
+        See Also
+        --------
+        xbrl_filings_api.to_sqlite : Query and save to SQLite.
+        """
+        ppath = path if isinstance(path, Path) else Path(path)
+
+        data_objs, flags = self._get_data_sets(flags)
+
+        database_processor.sets_to_sqlite(
+            flags, ppath, data_objs, update=update)
+
+    def __repr__(self) -> str:
+        """
+        Return repr with len() of self, entities, validation_messages.
+
+        Values len(`entities`) and len(`validation_messages`) are only
+        shown if more than zero are present.
+        """
+        subreslist = ''
+        if self.entities.exist:
+            subreslist += f', len(entities)={len(self.entities)}'
+        if self.validation_messages.exist:
+            subreslist += (
+                f', len(validation_messages)={len(self.validation_messages)}')
+        return (
+            f'{type(self).__name__}('
+            f'len(self)={len(self)}{subreslist})'
+            )
 
     def _get_data_sets(
             self, flags: ScopeFlag
@@ -613,59 +625,22 @@ class FilingSet(set[Filing]):
             flags = ScopeFlag.GET_ONLY_FILINGS
         return data_objs, flags
 
-    @property
-    def columns(self) -> list[str]:
-        """List of available columns for filings of this set."""
-        return Filing.get_columns(
-            filings=self,
-            has_entities=self.entities.exist
-            )
-
-    def _check_arg_iters(self, args) -> None:
-        for arg in args:
-            if not isinstance(arg, Iterable):
-                msg = f'{type(arg).__name__!r} object is not iterable'
-                raise TypeError(msg)
-            if any(not isinstance(item, Filing) for item in arg):
-                msg = 'Arguments must be iterables of Filing objects.'
-                raise ValueError(msg)
-
-    def _deepcopy_filing_with_vmessages(self, source: Filing) -> Filing:
-        """
-        Deep copy Filing and its `validation_messages`.
-
-        Retain `entity` reference without copying.
-        """
-        orig_entity = source.entity
-        source.entity = None
-        new = copy.deepcopy(source)
-        source.entity = new.entity = orig_entity
-        return new
-
-    def _deepcopy_entity(self, source: Entity) -> Entity:
-        """Deep copy Entity and shallow copy its `filings`."""
-        orig_filings = source.filings
-        source.filings = set()
-        new = copy.deepcopy(source)
-        source.filings = orig_filings
-        new.filings = orig_filings.copy()
-        return new
-
-    def _deepcopy_filingset_contents(self, fs: 'FilingSet'):
-        new_filings = [self._deepcopy_filing_with_vmessages(f) for f in fs]
-        fs.clear()
-        set.update(fs, new_filings)
-        ents = list(fs.entities) # Freeze lazy collection
-        for ent in ents:
-            new_ent = self._deepcopy_entity(ent) # type: ignore[arg-type]
-            new_ent_filings: set[Filing] = set()
-            # Type of `filings` is `set[object]` due to cross-references
-            for filing in new_ent.filings:
-                match_id = filing.api_id # type: ignore[attr-defined]
-                new_filing = next(f for f in fs if f.api_id == match_id)
-                new_ent_filings.add(new_filing)
-                new_filing.entity = new_ent
-            new_ent.filings = new_ent_filings # type: ignore[assignment]
+    def _get_last_filing_index_filing(
+            self, filings: set[Filing]
+            ) -> Union[Filing, None]:
+        if len(filings) == 0:
+            return None
+        str_indexes = [
+            '' if f.filing_index is None else f.filing_index
+            for f in filings
+            ]
+        max_filing_index = max(str_indexes)
+        def filter_filing_index_str(filing: Filing) -> bool:
+            ismatch = filing.filing_index == max_filing_index
+            if not ismatch and max_filing_index == '':
+                ismatch = filing.filing_index is None
+            return ismatch
+        return next(filter(filter_filing_index_str, filings))
 
     # Superclass operations
 
@@ -887,20 +862,48 @@ class FilingSet(set[Filing]):
         """Return new FilingSet."""
         return FilingSet(self)
 
-    def __repr__(self) -> str:
-        """
-        Return repr with len() of self, entities, validation_messages.
+    def _check_arg_iters(self, args) -> None:
+        for arg in args:
+            if not isinstance(arg, Iterable):
+                msg = f'{type(arg).__name__!r} object is not iterable'
+                raise TypeError(msg)
+            if any(not isinstance(item, Filing) for item in arg):
+                msg = 'Arguments must be iterables of Filing objects.'
+                raise ValueError(msg)
 
-        Values len(`entities`) and len(`validation_messages`) are only
-        shown if more than zero are present.
+    def _deepcopy_entity(self, source: Entity) -> Entity:
+        """Deep copy Entity and shallow copy its `filings`."""
+        orig_filings = source.filings
+        source.filings = set()
+        new = copy.deepcopy(source)
+        source.filings = orig_filings
+        new.filings = orig_filings.copy()
+        return new
+
+    def _deepcopy_filing_with_vmessages(self, source: Filing) -> Filing:
         """
-        subreslist = ''
-        if self.entities.exist:
-            subreslist += f', len(entities)={len(self.entities)}'
-        if self.validation_messages.exist:
-            subreslist += (
-                f', len(validation_messages)={len(self.validation_messages)}')
-        return (
-            f'{type(self).__name__}('
-            f'len(self)={len(self)}{subreslist})'
-            )
+        Deep copy Filing and its `validation_messages`.
+
+        Retain `entity` reference without copying.
+        """
+        orig_entity = source.entity
+        source.entity = None
+        new = copy.deepcopy(source)
+        source.entity = new.entity = orig_entity
+        return new
+
+    def _deepcopy_filingset_contents(self, fs: 'FilingSet'):
+        new_filings = [self._deepcopy_filing_with_vmessages(f) for f in fs]
+        fs.clear()
+        set.update(fs, new_filings)
+        ents = list(fs.entities) # Freeze lazy collection
+        for ent in ents:
+            new_ent = self._deepcopy_entity(ent) # type: ignore[arg-type]
+            new_ent_filings: set[Filing] = set()
+            # Type of `filings` is `set[object]` due to cross-references
+            for filing in new_ent.filings:
+                match_id = filing.api_id # type: ignore[attr-defined]
+                new_filing = next(f for f in fs if f.api_id == match_id)
+                new_ent_filings.add(new_filing)
+                new_filing.entity = new_ent
+            new_ent.filings = new_ent_filings # type: ignore[assignment]

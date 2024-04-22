@@ -58,13 +58,15 @@ class JSONTree:
     the identically named functions of the `debug` module.
     """
 
-    _unaccessed_paths: ClassVar[dict[str, set[str]]] = {}
+    unexpected_resource_types: ClassVar[set[tuple[str, str]]] = set()
     """
-    Unaccessed dot access paths of API objects.
+    Set of unexpected API resource types.
+
+    Read by calling function `debug.get_unexpected_resource_types`.
 
     Content::
 
-        _unaccessed_paths[class_name] = {key_path1, key_path2, ...}
+        unexpected_resource_types.pop() = (type_str, origin)
     """
 
     _object_path_counter: ClassVar[dict[str, dict[str, _RetrieveCounter]]] = {}
@@ -76,16 +78,45 @@ class JSONTree:
         _object_path_counter[class_name][key_path] = _RetrieveCounter()
     """
 
-    unexpected_resource_types: ClassVar[set[tuple[str, str]]] = set()
+    _unaccessed_paths: ClassVar[dict[str, set[str]]] = {}
     """
-    Set of unexpected API resource types.
-
-    Read by calling function `debug.get_unexpected_resource_types`.
+    Unaccessed dot access paths of API objects.
 
     Content::
 
-        unexpected_resource_types.pop() = (type_str, origin)
+        _unaccessed_paths[class_name] = {key_path1, key_path2, ...}
     """
+
+    @classmethod
+    def get_key_path_availability_counts(cls) -> set[KeyPathRetrieveCounts]:
+        """
+        Get counts of dot access paths not resolving to :pt:`None`.
+
+        See documentation of `debug.get_key_path_availability_counts()`.
+        """
+        availability: set[KeyPathRetrieveCounts] = set()
+        for class_name, key_path_dict in cls._object_path_counter.items():
+            availability.update((
+                KeyPathRetrieveCounts(
+                    class_name, key_path, counter.success_count,
+                    counter.total_count
+                    )
+                for key_path, counter in key_path_dict.items()
+                ))
+        return availability
+
+    @classmethod
+    def get_unaccessed_key_paths(cls) -> set[tuple[str, str]]:
+        """
+        Get unaccessed dot access paths of JSON objects.
+
+        See documentation of `debug.get_unaccessed_key_paths()`.
+        """
+        unaccessed: set[tuple[str, str]] = set()
+        for class_name, key_path_set in cls._unaccessed_paths.items():
+            unaccessed.update(
+                (class_name, key_path) for key_path in key_path_set)
+        return unaccessed
 
     def __init__(
             self,
@@ -100,25 +131,25 @@ class JSONTree:
         Parameters
         ----------
         class_name : str
-            The ``__qualname__`` of the parent `APIObject` subclass.
+            The ``__qualname__`` of the owner `APIObject` subclass.
         json_frag : dict or None
-            The underlying JSON:API unserialized JSON as a dictionary
-            structure. An `APIPage` contains the whole document.
+            JSON fragment as Python dict from API page response.
         do_not_track : bool, default False
             When :pt:`True`, does not track successful and total `get()`
             method calls for `debug` module.
         """
         self.class_name: str = class_name
-        """
-        ``__qualname__`` of the `APIObject` subclass this tree is read
-        for.
-        """
+        """The ``__qualname__`` of the owner `APIObject` subclass."""
         self.tree: Union[dict[str, Any], None] = json_frag
-        r"""JSON fragment as Python dict from API page response."""
+        r"""
+        JSON fragment as Python dict from API page response.
+
+        An `APIPage` subclass contains the whole JSON document.
+        """
         self.do_not_track: bool = do_not_track
         """
         When :pt:`True`, does not track successful and total `get()`
-        method calls.
+        method calls for `debug` module.
         """
 
         opcounter = self._object_path_counter
@@ -127,6 +158,22 @@ class JSONTree:
         upaths = self._unaccessed_paths
         if not upaths.get(self.class_name):
             upaths[self.class_name] = set()
+
+    def close(self) -> None:
+        """
+        Close JSON tree for reading.
+
+        Remember all unaccessed and never existing dot access paths in
+        the nested dictionary structure but skip lists.
+        """
+        if self.do_not_track:
+            return
+        if self.tree is None:
+            msg = 'Cannot close the same object more than once'
+            raise Exception(msg)
+        for key in self.tree:
+            self._find_unaccessed(self.tree, [key])
+        self.tree = None
 
     def get(
             self, key_path: str, parse_type: Optional[ParseType] = None
@@ -188,22 +235,6 @@ class JSONTree:
                 counter.total_count += 1
         return key_value
 
-    def close(self) -> None:
-        """
-        Close JSON tree for reading.
-
-        Remember all unaccessed and never existing dot access paths in
-        the nested dictionary structure but skip lists.
-        """
-        if self.do_not_track:
-            return
-        if self.tree is None:
-            msg = 'Cannot close the same object more than once'
-            raise Exception(msg)
-        for key in self.tree:
-            self._find_unaccessed(self.tree, [key])
-        self.tree = None
-
     def _find_unaccessed(
             self, json_frag: dict, comps: list[str]) -> None:
         """
@@ -226,7 +257,7 @@ class JSONTree:
             self, key_value: str, parse_type: Union[ParseType, None],
             key_path: str
             ) -> Union[datetime, date, str, None]:
-        """Parse string value of `key_path` based on `parse_type`."""
+        """Parse value of ``key_path`` based on ``parse_type``."""
         if parse_type == ParseType.DATETIME:
             parsed_dt = None
             for try_i in range(2):
@@ -284,34 +315,3 @@ class JSONTree:
             return parsed_url
 
         return key_value
-
-    @classmethod
-    def get_unaccessed_key_paths(cls) -> set[tuple[str, str]]:
-        """
-        Get unaccessed dot access paths of JSON objects.
-
-        See documentation of `debug.get_unaccessed_key_paths()`.
-        """
-        unaccessed: set[tuple[str, str]] = set()
-        for class_name, key_path_set in cls._unaccessed_paths.items():
-            unaccessed.update(
-                (class_name, key_path) for key_path in key_path_set)
-        return unaccessed
-
-    @classmethod
-    def get_key_path_availability_counts(cls) -> set[KeyPathRetrieveCounts]:
-        """
-        Get counts of dot access paths not resolving to :pt:`None`.
-
-        See documentation of `debug.get_key_path_availability_counts()`.
-        """
-        availability: set[KeyPathRetrieveCounts] = set()
-        for class_name, key_path_dict in cls._object_path_counter.items():
-            availability.update((
-                KeyPathRetrieveCounts(
-                    class_name, key_path, counter.success_count,
-                    counter.total_count
-                    )
-                for key_path, counter in key_path_dict.items()
-                ))
-        return availability

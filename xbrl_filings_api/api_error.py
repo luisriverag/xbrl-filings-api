@@ -14,7 +14,7 @@ __all__ = ['APIError']
 
 
 class APIError(FilingsAPIError, APIObject):
-    r"""
+    """
     Error returned by the JSON:API.
 
     See Also

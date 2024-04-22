@@ -17,23 +17,23 @@ __all__ = ['ResourceCollection']
 
 class ResourceCollection:
     r"""
-    Collection of subresources of a `FilingSet` object.
+    :term:`Collection` of subresources of a `FilingSet` object.
 
     The subresources are all other `APIResource` subclasses except
     `Filing` objects.
 
-    This object is a :class:`~collections.abc.Collection` which means it
-    may be iterated over, it defines :func:`len` as well as operator
-    ``in``. It may not, however, be accessed with an indexer (e.g.
-    ``object[index]``) or :class:`reversed`.
+    This object may be iterated over, it defines :func:`len` as well as
+    operator ``in``. It may not, however, be accessed with an indexer
+    (e.g. ``object[index]``) or :class:`reversed`.
 
     This collection is a view to the non-\ ``Filing`` resources of the
     parent ``FilingSet``, backreferenced in attribute `filingset`.
 
-    `Entity` and `ValidationMessage` objects, as subclass of
+    `Entity` and `ValidationMessage` objects, as subclasses of
     `APIResource`, have a custom ``__hash__()`` method and their hash is
     based on a tuple of strings ``'APIResource'``, class attribute
-    ``TYPE``, and object ``api_id``. This means that equality checks
+    :py:attr:`~APIResource.TYPE`, and object
+    :py:attr:`~APIResource.api_id`. This means that equality checks
     (``==``) and related methods are based on this tuple. For example,
     when the actual entity object is not available, a fast way to check
     if an entity with ``api_id`` ``'123'`` is included in the filing set
@@ -55,37 +55,25 @@ class ResourceCollection:
         self._attr_name = attr_name
         self._columns: Union[list[str], None] = None
 
-    def __iter__(self) -> Iterator[APIResource]:
-        """Iterate ResourceCollection."""
+    @property
+    def columns(self) -> list[str]:
+        """List of available columns for resources of this type."""
+        if self._columns:
+            return self._columns
+        self._columns = self.item_class.get_data_attributes()
+        return self._columns
+
+    @property
+    def exist(self) -> bool:
+        """
+        True if any resources of this type exist.
+
+        This property is faster than ``len(obj) != 0``.
+        """
         filing: Filing
-        yielded_ids = set()
         # Attr `filingset` is always iterable (attr-defined)
         for filing in self.filingset: # type: ignore[attr-defined]
-            attr_val = getattr(filing, self._attr_name)
-            if attr_val:
-                if isinstance(attr_val, set):
-                    resource: APIResource
-                    for resource in attr_val:
-                        # Multiple filings cannot share validation
-                        # messages, but here for completeness
-                        if resource.api_id not in yielded_ids:
-                            yielded_ids.add(resource.api_id)
-                            yield resource
-                elif attr_val.api_id not in yielded_ids:
-                    yielded_ids.add(attr_val.api_id)
-                    yield attr_val
-
-    def __len__(self) -> int:
-        """Return length of ResourceCollection."""
-        count = 0
-        for _ in self:
-            count += 1
-        return count
-
-    def __contains__(self, elem: Any) -> bool:
-        """Return True if ResourceCollection contains ``elem``."""
-        for ent in self:
-            if ent == elem:
+            if getattr(filing, self._attr_name):
                 return True
         return False
 
@@ -152,27 +140,39 @@ class ResourceCollection:
                 data[col_name].append(val)
         return data
 
-    @property
-    def columns(self) -> list[str]:
-        """List of available columns for resources of this type."""
-        if self._columns:
-            return self._columns
-        self._columns = self.item_class.get_columns()
-        return self._columns
-
-    @property
-    def exist(self) -> bool:
-        """
-        True if any resources of this type exist.
-
-        This property is faster than ``len(obj) != 0``.
-        """
-        filing: Filing
-        # Attr `filingset` is always iterable (attr-defined)
-        for filing in self.filingset: # type: ignore[attr-defined]
-            if getattr(filing, self._attr_name):
+    def __contains__(self, elem: Any) -> bool:
+        """Return True if ResourceCollection contains ``elem``."""
+        for ent in self:
+            if ent == elem:
                 return True
         return False
+
+    def __iter__(self) -> Iterator[APIResource]:
+        """Iterate ResourceCollection."""
+        filing: Filing
+        yielded_ids = set()
+        # Attr `filingset` is always iterable (attr-defined)
+        for filing in self.filingset: # type: ignore[attr-defined]
+            attr_val = getattr(filing, self._attr_name)
+            if attr_val:
+                if isinstance(attr_val, set):
+                    resource: APIResource
+                    for resource in attr_val:
+                        # Multiple filings cannot share validation
+                        # messages, but here for completeness
+                        if resource.api_id not in yielded_ids:
+                            yielded_ids.add(resource.api_id)
+                            yield resource
+                elif attr_val.api_id not in yielded_ids:
+                    yielded_ids.add(attr_val.api_id)
+                    yield attr_val
+
+    def __len__(self) -> int:
+        """Return length of ResourceCollection."""
+        count = 0
+        for _ in self:
+            count += 1
+        return count
 
     def __repr__(self) -> str:
         """Return repr with `item_class` and ``len(self)``."""

@@ -125,7 +125,7 @@ def test_all_public_classes_have_repr():
             continue
         cname = pclass.__name__
         # Skip non-concrete classes
-        if cname in ('APIObject', 'APIResource'):
+        if cname in ('APIPage', 'APIObject', 'APIResource'):
             continue
         crepr = getattr(pclass, '__repr__', False)
         msg = f'{pclass} must have custom __repr__'
