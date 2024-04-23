@@ -38,20 +38,20 @@ required:
 
 Date fields have a special functioning in ``filters``. If you filter
 by a date that only has a year, 12 requests are made by default for the
-end dates of each month. The months will start by default from August of
-the specified year and continue until July of the year following the
-specified year. Option :data:`~options.year_filter_months` can be used
-to change this behaviour. So the following filter::
+end dates of each month. The months will start by default from January
+of the specified year and continue until December of the same year.
+Option :data:`~options.year_filter_months` can be used to change this
+behaviour. So the following filter::
 
     filters={'last_end_date': 2022}
 
 Will yield requests with the following parameter values::
 
-    last_end_date='2022-08-31'
-    last_end_date='2022-09-30'
+    last_end_date='2022-01-31'
+    last_end_date='2022-02-28'
     ...
-    last_end_date='2023-06-30'
-    last_end_date='2023-07-31'
+    last_end_date='2022-11-30'
+    last_end_date='2022-12-31'
 
 If you filter by a year and a month, the filter will assign the end date
 of that month to the filter automatically, so

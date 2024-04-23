@@ -80,14 +80,14 @@ The `SQLiteView.name` attributes of objects may not be overlapping.
 Default value is `DEFAULT_VIEWS`.
 """
 
-year_filter_months: YearFilterMonthsType = ((0, 8), (1, 8))
+year_filter_months: YearFilterMonthsType = ((0, 1), (1, 1))
 """
 Define queried months when filtering a date field by only a year.
 
 Two values of tuple are start and stop where start is inclusive and stop
 is exclusive. Inner tuples have two values where the first is year
-offset and the second is calendar-style month number (e.g. 8 is August).
+offset and the second is calendar-style month number.
 
-Default value is :pt:`((0, 8), (1, 8))` which means from August in
-specified year until July in following year.
+Default value is :pt:`((0, 1), (1, 1))` which means from January 31 in
+specified year until December 31 in the same year.
 """
