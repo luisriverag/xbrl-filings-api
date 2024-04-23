@@ -154,8 +154,8 @@ def get_filings(
     page_gen = request_processor.generate_pages(
         filters, limit, flags, res_colls, sort, add_api_params)
     for page in page_gen:
-        # Do not deep copy `filing_list` by using FilingSet.update
-        set.update(filings, page.filing_list)
+        # Do not deep copy or test filing_list by using FilingSet.update
+        filings._filings.update(page.filing_list)
     return filings
 
 

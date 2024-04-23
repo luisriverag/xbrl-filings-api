@@ -4,13 +4,18 @@
 #
 # SPDX-License-Identifier: MIT
 
-from typing import Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional, Union
 
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import Prototype
 from xbrl_filings_api.parse_type import ParseType
 from xbrl_filings_api.scope_flag import ScopeFlag
+
+if TYPE_CHECKING:
+    from xbrl_filings_api.filing import Filing
 
 __all__ = ['Entity']
 
@@ -45,11 +50,8 @@ class Entity(APIResource):
         self.name: Union[str, None] = self._json.get(self.NAME)
         """Name of the entity."""
 
-        # Set of Filing objects
-        self.filings: set[object] = set()
-        """Set of :class:`Filing` objects from the query reported by
-        this entity.
-        """
+        self.filings: set[Filing] = set()
+        """Set of filings reported by this entity."""
 
         self.api_entity_filings_url: Union[str, None] = self._json.get(
             self.API_ENTITY_FILINGS_URL, ParseType.URL)

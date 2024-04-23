@@ -523,10 +523,10 @@ class TestSymmetricDifference:
             'Entity.filings api_id values as expected')
 
 
-@pytest.mark.parametrize('method', BASIC_SET_OPERATION_METHODS)
-def test_raise_bad_iterable(
+@pytest.mark.parametrize('method', BASIC_SET_OPERATION_NORMAL_METHODS)
+def test_raise_bad_iterable_normal_method(
         method, upm21to22_filingset, upm22to23_filingset):
-    """Test raising when iterable has non-Filing items."""
+    """Test raising when iterable has non-Filing items, normal method."""
     fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
     list_22_23_str: list[xf.Filing] = list(upm22to23_filingset) # Right operand
     list_22_23_str.append('test') # Exception trigger
@@ -534,6 +534,18 @@ def test_raise_bad_iterable(
             ValueError,
             match=r'Arguments must be iterables of Filing objects.'):
         _ = _execute_operation(method, fs_21_22, list_22_23_str)
+
+
+@pytest.mark.parametrize('method', BASIC_SET_OPERATION_OPERATOR_METHODS)
+def test_raise_bad_iterable_operator(
+        method, upm21to22_filingset, upm22to23_filingset):
+    """Test raising when iterable has non-Filing items, operator."""
+    fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
+    list_22_23_str: list[xf.Filing] = list(upm22to23_filingset) # Right operand
+    list_22_23_str.append('test') # Problem trigger
+    method_callable = getattr(fs_21_22, method)
+    # Call fs_21_22.<method>(list_22_23_str)
+    assert method_callable(list_22_23_str) is NotImplemented
 
 
 @pytest.mark.parametrize('method', BASIC_SET_OPERATION_NORMAL_METHODS)

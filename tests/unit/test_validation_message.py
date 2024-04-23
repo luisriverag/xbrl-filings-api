@@ -136,7 +136,8 @@ class TestCalcMsg:
 
     def test_str(self, asml22en_calc_msg):
         """Test ValidationMessage.__str__ method for calc message."""
-        assert str(asml22en_calc_msg) == ASML22EN_CALC_TEXT
+        e_str = f'[INC xbrl.5.2.5.2:calcInconsistency] {ASML22EN_CALC_TEXT}'
+        assert str(asml22en_calc_msg) == e_str
 
     @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '66614'),
@@ -198,7 +199,8 @@ class TestPositiveMsg:
         """
         Test ValidationMessage.__str__ method for positive message.
         """
-        assert str(asml22en_positive_msg) == 'Reported value is below 0'
+        e_str = '[WAR message:positive] Reported value is below 0'
+        assert str(asml22en_positive_msg) == e_str
 
     @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '66615'),
@@ -257,7 +259,11 @@ class TestDuplicateStrMsg:
         Test ValidationMessage.__str__ method for duplicate str message.
         """
         vmsg: xf.ValidationMessage = assicurazioni21it_duplicate_str_msg
-        assert str(vmsg) == ASSICURAZIONI21IT_DUPLICATE_STR_TEXT
+        e_str = (
+            '[WAR message:tech_duplicated_facts1] '
+            + ASSICURAZIONI21IT_DUPLICATE_STR_TEXT
+            )
+        assert str(vmsg) == e_str
 
     @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '104877'),
@@ -319,7 +325,11 @@ class TestDuplicateNumMsg:
         message.
         """
         vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
-        assert str(vmsg) == TECNOTREE21FI_DUPLICATE_NUM_TEXT
+        e_str = (
+            '[WAR message:tech_duplicated_facts1] '
+            + TECNOTREE21FI_DUPLICATE_NUM_TEXT
+            )
+        assert str(vmsg) == e_str
 
     @pytest.mark.parametrize(('attr_name', 'expected'), [
         ('api_id', '41766'),
@@ -365,12 +375,46 @@ class TestDuplicateNumMsg:
         assert '://' in vmsg.request_url
 
 
-def test_str_empty_message(tecnotree21fi_duplicate_num_msg):
-    """Test ValidationMessage.__str__ method."""
+def test_str_all_attrs_missing(tecnotree21fi_duplicate_num_msg):
+    """
+    Test ValidationMessage.__str__ method when attributes severity, code
+    and text are missing.
+    """
+    vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
+    vmsg.severity = None
+    vmsg.code = None
+    vmsg.text = None
+    assert str(vmsg) == '[]'
+
+
+def test_str_code_missing(tecnotree21fi_duplicate_num_msg):
+    """
+    Test ValidationMessage.__str__ method when attr code is missing.
+    """
+    vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
+    vmsg.code = None
+    assert str(vmsg) == f'[WAR] {TECNOTREE21FI_DUPLICATE_NUM_TEXT}'
+
+
+def test_str_severity_missing(tecnotree21fi_duplicate_num_msg):
+    """
+    Test ValidationMessage.__str__ method when attr severity is missing.
+    """
+    vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
+    vmsg.severity = None
+    e_str = (
+        f'[message:tech_duplicated_facts1] {TECNOTREE21FI_DUPLICATE_NUM_TEXT}'
+        )
+    assert str(vmsg) == e_str
+
+
+def test_str_text_missing(tecnotree21fi_duplicate_num_msg):
+    """
+    Test ValidationMessage.__str__ method when attr text is missing.
+    """
     vmsg: xf.ValidationMessage = tecnotree21fi_duplicate_num_msg
     vmsg.text = None
-    assert str(vmsg) == ''
-
+    assert str(vmsg) == '[WAR message:tech_duplicated_facts1]'
 
 def test_derive_calc_short_role_bad_url(asml22en_calc_msg):
     """Test _derive_calc_short_role method with bad URL."""

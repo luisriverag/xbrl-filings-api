@@ -4,16 +4,21 @@
 #
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 import logging
 import re
 import urllib.parse
 from pathlib import PurePosixPath
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from xbrl_filings_api.api_request import APIRequest
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import Prototype
 from xbrl_filings_api.scope_flag import ScopeFlag
+
+if TYPE_CHECKING:
+    from xbrl_filings_api.filing import Filing
 
 __all__ = ['ValidationMessage']
 
@@ -189,9 +194,8 @@ class ValidationMessage(APIResource):
         self.filing_api_id: Union[str, None] = None
         """`api_id` of `filing` object."""
 
-        # Filing object
-        self.filing: Union[object, None] = None
-        """`Filing` object of this validation message."""
+        self.filing: Union[Filing, None] = None
+        """Filing of this validation message."""
 
         self._json.close()
 
@@ -209,10 +213,20 @@ class ValidationMessage(APIResource):
             )
 
     def __str__(self) -> str:
-        """Return `text` attribute value or empty string."""
-        if self.text is None:
-            return ''
-        return self.text
+        r"""
+        Return "[`severity`\ [:3] `code`] `text`".
+
+        Attribute ``severity`` shows only the first three characters.
+        Square brackets are used to encompass ``severity`` and ``code``.
+        """
+        text = '' if self.text is None else f' {self.text}'
+        plist = []
+        if self.severity:
+            plist.append(self.severity[:3])
+        if self.code:
+            plist.append(self.code)
+        prefix = ' '.join(plist)
+        return f'[{prefix}]{text}'
 
     def _derive_calc(self, re_obj: re.Pattern) -> Union[str, None]:
         mt = re_obj.search(self.text)

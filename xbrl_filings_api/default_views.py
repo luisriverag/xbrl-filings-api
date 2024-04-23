@@ -264,7 +264,7 @@ entity_name : TEXT or NULL
 reporting_date : TEXT or NULL
     Reporting date of the enclosure from column
     ``Filing.reporting_date``.
-problem : 'calc' or 'duplicate'
+problem : {'calc', 'duplicate'}
     Type of matched validation message(s), 'calc' for summation errors
     and 'duplicate' for duplicate errors.
 reportedK : REAL or NULL

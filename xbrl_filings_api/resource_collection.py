@@ -4,13 +4,18 @@
 #
 # SPDX-License-Identifier: MIT
 
+from __future__ import annotations
+
 from collections.abc import Iterable, Iterator
 from datetime import date, datetime
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from xbrl_filings_api.api_resource import APIResource
 from xbrl_filings_api.constants import DataAttributeType
 from xbrl_filings_api.filing import Filing
+
+if TYPE_CHECKING:
+    from xbrl_filings_api.filing_set import FilingSet
 
 __all__ = ['ResourceCollection']
 
@@ -43,11 +48,11 @@ class ResourceCollection:
     """
 
     def __init__(
-            self, filingset: object, attr_name: str,
+            self, filingset: FilingSet, attr_name: str,
             item_class: type[APIResource]
             ) -> None:
-        self.filingset: object = filingset
-        """Reference to the :class:`FilingSet` object."""
+        self.filingset: FilingSet = filingset
+        """Reference to the parent `FilingSet` object."""
 
         self.item_class: type[APIResource] = item_class
         """Type object of the items within."""

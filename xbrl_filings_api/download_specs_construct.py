@@ -9,12 +9,15 @@ from __future__ import annotations
 import logging
 from collections.abc import Iterable, Mapping
 from pathlib import PurePath
-from typing import Any, Union
+from typing import TYPE_CHECKING, Union
 
 from xbrl_filings_api.constants import FILE_STRING_CHOICE, FileStringType
 from xbrl_filings_api.download_info import DownloadInfo
 from xbrl_filings_api.download_item import DownloadItem
 from xbrl_filings_api.downloader import DownloadSpecs
+
+if TYPE_CHECKING:
+    from xbrl_filings_api.filing import Filing
 
 __all__ = ['construct']
 
@@ -27,7 +30,7 @@ def construct(
             Iterable[FileStringType],
             Mapping[FileStringType, DownloadItem]
             ],
-        filing: Any,
+        filing: Filing,
         to_dir: Union[str, PurePath, None],
         stem_pattern: Union[str, None],
         *,
@@ -83,7 +86,7 @@ def construct(
 def _get_filing_download_specs(
         file: FileStringType,
         download_item: Union[DownloadItem, None],
-        filing: Any,
+        filing: Filing,
         to_dir: Union[str, PurePath, None],
         stem_pattern: Union[str, None],
         *,
