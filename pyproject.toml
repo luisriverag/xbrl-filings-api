@@ -109,9 +109,10 @@ dependencies = [
 
 [tool.hatch.envs.doc.scripts]
 build = "sphinx-build docs/source docs/build {args}"
+# Windows-specific
+delgen = 'rmdir /s /q "docs\source\api" "docs\source\dev\ref" "docs\build"'
 fbuild = [
-    # Windows-specific (?)
-    'rmdir /s /q "docs\source\api" "docs\source\dev\ref" "docs\build"',
+    "delgen",
     "build",
     ]
 

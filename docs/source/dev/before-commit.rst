@@ -23,4 +23,11 @@ Before commit
 
    .. code-block:: console
 
-        hatch doc:build
+        hatch run doc:build
+
+5. Delete the generated doc files, Github workflow handles building if
+   necessary (Windows-specific script):
+
+   .. code-block:: console
+
+        hatch run doc:delgen
