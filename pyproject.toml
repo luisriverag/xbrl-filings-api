@@ -31,9 +31,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: SQL",
     "Operating System :: OS Independent",
-    "Framework :: AsyncIO",
-    "Framework :: Hatch",
-    "Framework :: Pytest",
     "Intended Audience :: Financial and Insurance Industry",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Science/Research",
@@ -49,7 +46,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/lsalmela/xbrl-filings-api"
-Documentation = "https://github.com/lsalmela/xbrl-filings-api#readme"
+Documentation = "https://lsalmela.github.io/xbrl-filings-api"
 Source = "https://github.com/lsalmela/xbrl-filings-api"
 Issues = "https://github.com/lsalmela/xbrl-filings-api/issues"
 
@@ -75,6 +72,7 @@ dependencies = [
     "responses~=0.23.3", # Using beta features (recorder)
     "pandas>=2.1.4",
 ]
+
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
@@ -94,17 +92,28 @@ python = ["3.9", "3.10", "3.11", "3.12"]
 detached = true
 dependencies = [
     "mypy>=1.5.1",
-    "ruff>=0.0.285",
 ]
+
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --install-types --non-interactive {args:xbrl_filings_api}"
-style = [
-    "ruff {args:.}",
-]
 all = [
-    "style",
+    "hatch fmt -l",
     "typing",
 ]
+
+[tool.hatch.envs.doc]
+dependencies = [
+    "sphinx>=7.2.6",
+    "furo>=2024.1.29",
+]
+
+[tool.hatch.envs.doc.scripts]
+build = "sphinx-build docs/source docs/build {args}"
+fbuild = [
+    # Windows-specific (?)
+    'rmdir /s /q "docs\source\api" "docs\source\dev\ref" "docs\build"',
+    "build",
+    ]
 
 [tool.coverage.run]
 source_pkgs = ["xbrl_filings_api", "tests"]
