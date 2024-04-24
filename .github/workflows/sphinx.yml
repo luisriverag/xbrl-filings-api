@@ -20,7 +20,6 @@ jobs:
         pip install hatch
     - name: Sphinx build
       run: |
-        cd xbrl_filings_api
         hatch run doc:build
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v4
