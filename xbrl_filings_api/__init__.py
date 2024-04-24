@@ -41,7 +41,7 @@ Entity
 ValidationMessage
     Message for a filing in the database from a validator software.
 FilingSet
-    Subclassed :class:`set` for `Filing` objects.
+    Mutable set for `Filing` objects.
 ResourceCollection
     Collection of subresources of a `FilingSet` object.
 FilingsPage

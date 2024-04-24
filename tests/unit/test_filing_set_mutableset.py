@@ -75,6 +75,17 @@ BASIC_SET_OPERATION_NORMAL_METHODS = [
     v for v in BASIC_SET_OPERATION_METHODS if not v.startswith('__')]
 SIMPLE_METHODS = ('copy', 'add', 'remove', 'discard', 'pop')
 
+# In this context, binary means 'operating on two sets'. Consequently,
+# for example 'in' operator is excluded. 'NOT_EQ' in the name means no
+# '__eq__' or '__ne__'
+BINARY_NORMAL_METHODS = [
+    *BASIC_SET_OPERATION_NORMAL_METHODS,
+    'isdisjoint', 'issubset', 'issuperset'
+    ]
+BINARY_NOT_EQ_OPERATOR_METHODS = [
+    *BASIC_SET_OPERATION_OPERATOR_METHODS,
+    '__lt__', '__le__', '__ge__', '__gt__'
+    ]
 
 @pytest.fixture
 def upm21to22_filingset(urlmock):
@@ -114,7 +125,9 @@ def upm22to23_filingset(urlmock):
 
 @pytest.fixture
 def upm22from21to22_filingset(upm21to22_filingset):
-    """Return set of both UPM22 from 'upm21to22', bad cross-references."""
+    """
+    Return set of both UPM22 from 'upm21to22', bad cross-references.
+    """
     fs: xf.FilingSet = upm21to22_filingset
     fs_upm22 = xf.FilingSet(
         f for f in fs if f.api_id in (ID_UPM22_EN, ID_UPM22_FI))
@@ -123,7 +136,9 @@ def upm22from21to22_filingset(upm21to22_filingset):
 
 @pytest.fixture
 def upm22from22to23_filingset(upm22to23_filingset):
-    """Return set of both UPM22 from 'upm22to23', bad cross-references."""
+    """
+    Return set of both UPM22 from 'upm22to23', bad cross-references.
+    """
     fs: xf.FilingSet = upm22to23_filingset
     fs_upm22 = xf.FilingSet(
         f for f in fs if f.api_id in (ID_UPM22_EN, ID_UPM22_FI))
@@ -211,6 +226,26 @@ def _execute_operation(
     elif method == '__ixor__':
         fs_result = fs_left
         fs_result ^= fs_right
+
+    elif method == '__lt__':
+        fs_result = fs_left < fs_right
+    elif method == '__le__':
+        fs_result = fs_left <= fs_right
+    elif method == 'issubset':
+        fs_result = fs_left.issubset(fs_right)
+    elif method == '__eq__':
+        fs_result = fs_left == fs_right
+    elif method == '__ge__':
+        fs_result = fs_left >= fs_right
+    elif method == 'issuperset':
+        fs_result = fs_left.issuperset(fs_right)
+    elif method == '__gt__':
+        fs_result = fs_left > fs_right
+    elif method == '__ne__':
+        fs_result = fs_left != fs_right
+    elif method == 'isdisjoint':
+        fs_result = fs_left.isdisjoint(fs_right)
+
     elif method == 'copy':
         fs_result = fs_left.copy()
     elif method == 'add':
@@ -557,10 +592,12 @@ class TestSymmetricDifference:
             'Entity.filings api_id values as expected')
 
 
-@pytest.mark.parametrize('method', BASIC_SET_OPERATION_NORMAL_METHODS)
+@pytest.mark.parametrize('method', BINARY_NORMAL_METHODS)
 def test_raise_bad_iterable_normal_method(
         method, upm21to22_filingset, upm22to23_filingset):
-    """Test raising when iterable has non-Filing items, normal method."""
+    """
+    Test raising when iterable has non-Filing items, normal method.
+    """
     fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
     list_22_23_str: list[xf.Filing] = list(upm22to23_filingset) # Right operand
     list_22_23_str.append('test') # Exception trigger
@@ -570,10 +607,13 @@ def test_raise_bad_iterable_normal_method(
         _ = _execute_operation(method, fs_21_22, list_22_23_str)
 
 
-@pytest.mark.parametrize('method', BASIC_SET_OPERATION_OPERATOR_METHODS)
+@pytest.mark.parametrize('method', BINARY_NOT_EQ_OPERATOR_METHODS)
 def test_raise_bad_iterable_operator(
         method, upm21to22_filingset, upm22to23_filingset):
-    """Test raising when iterable has non-Filing items, operator."""
+    """
+    Test raising when iterable has non-Filing items, non-equality
+    operator.
+    """
     fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
     list_22_23_str: list[xf.Filing] = list(upm22to23_filingset) # Right operand
     list_22_23_str.append('test') # Problem trigger
@@ -582,7 +622,21 @@ def test_raise_bad_iterable_operator(
     assert method_callable(list_22_23_str) is NotImplemented
 
 
-@pytest.mark.parametrize('method', BASIC_SET_OPERATION_NORMAL_METHODS)
+@pytest.mark.parametrize('method', ['__eq__', '__ne__'])
+def test_bad_iterable_eq_ne_operator(
+        method, upm21to22_filingset, upm22to23_filingset):
+    """
+    Test raising when iterable has non-Filing items, equality operator.
+    """
+    fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
+    list_22_23_str: list[xf.Filing] = list(upm22to23_filingset) # Right operand
+    list_22_23_str.append('test') # Problem trigger
+    method_callable = getattr(fs_21_22, method)
+    # Call fs_21_22.<method>(list_22_23_str)
+    assert method_callable(list_22_23_str) is (method == '__ne__')
+
+
+@pytest.mark.parametrize('method', BINARY_NORMAL_METHODS)
 def test_raise_not_iterable_normal_method(
         method, upm21to22_filingset, upm23en_filing):
     """Test raising when argument is not iterable, normal method."""
@@ -592,15 +646,30 @@ def test_raise_not_iterable_normal_method(
         _ = _execute_operation(method, fs_21_22, filing_22en)
 
 
-@pytest.mark.parametrize('method', BASIC_SET_OPERATION_OPERATOR_METHODS)
+@pytest.mark.parametrize('method', BINARY_NOT_EQ_OPERATOR_METHODS)
 def test_raise_not_iterable_operator(
         method, upm21to22_filingset, upm23en_filing):
-    """Test raising when argument is not iterable, operator."""
+    """
+    Test raising when argument is not iterable, non-equality operator.
+    """
     fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
     filing_22en: xf.Filing = upm23en_filing # Right operand
     method_callable = getattr(fs_21_22, method)
     # Call fs_21_22.<method>(filing_22en)
     assert method_callable(filing_22en) is NotImplemented
+
+
+@pytest.mark.parametrize('method', ['__eq__', '__ne__'])
+def test_not_iterable_eq_ne_operator(
+        method, upm21to22_filingset, upm23en_filing):
+    """
+    Test raising when argument is not iterable, equality operator.
+    """
+    fs_21_22: xf.FilingSet = upm21to22_filingset # Left operand
+    filing_22en: xf.Filing = upm23en_filing # Right operand
+    method_callable = getattr(fs_21_22, method)
+    # Call fs_21_22.<method>(filing_22en)
+    assert method_callable(filing_22en) is (method == '__ne__')
 
 
 ##### Test simple methods #####

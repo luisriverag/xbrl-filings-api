@@ -56,14 +56,15 @@ class FilingSet:
     `Filing` objects. This class provides a similar but broader
     interface as builtin :class:`set` class. All set-like operators and
     methods accept iterables instead of strict sets. This class
-    implements a :term:`mutable set`.
+    implements a :term:`mutable set` and :pt:`isinstance(filingset,
+    collections.abc.MutableSet)` is :pt:`True` (virtual subclass).
 
     In addition to set functionality it provides certain filing-related
     attributes and methods.
 
     If working with large sets, in-place operations (e.g. `update`
     method and ``|=`` operator) are recommended over new set operations
-    (`union` method and ``|`` operator).
+    (`union` method and ``|`` operator). See section *Notes*.
 
     Defines operators ``|``, ``|=``, ``&``, ``&=``, ``-``, ``-=``,
     ``^``, ``^=``, ``<``, ``<=``, ``==``, ``>``, ``>=``, and ``!=``.
@@ -75,10 +76,10 @@ class FilingSet:
     on a tuple of strings 'APIResource',
     `Filing.TYPE <APIResource.TYPE>`, and
     `Filing.api_id <APIResource.api_id>`. This means that equality
-    checks (``==`` operator) and related methods are based on this
-    tuple. For example, when the actual filing object is not available,
-    the fastest way to check if a filing with ``api_id`` '123' is
-    included in the filing set ``fs`` is::
+    checks (``==`` and ``!=`` operators) and set content uniqueness are
+    based on this tuple. For example, when the actual filing object is
+    not available, the fastest way to check if a filing with ``api_id``
+    '123' is included in the filing set ``fs`` is::
 
         ('APIResource', Filing.TYPE, '123') in fs
 
@@ -94,6 +95,12 @@ class FilingSet:
     copy all objects to the results set. The in-place operations retain
     the objects from the left set but deep copy everything from the
     right set.
+
+    As the operators work on an iterable basis, for example the ``>=``
+    operator or `issuperset()` method returns True for a FilingSet and
+    any iterable with the same Filings but is undefined if the iterable
+    contains any item other than a filing. However, operators ``==`` and
+    ``!=`` are never undefined.
     """
 
     def __init__(self, filings: Optional[Iterable[Filing]] = None) -> None:
@@ -677,23 +684,63 @@ class FilingSet:
     def __len__(self) -> int: # noqa: D105 # No docstring
         return len(self._filings)
 
-    def __lt__(self, other: Any) -> bool: # noqa: D105 # No docstring
-        return self._filings < other
+    def __lt__( # noqa: D105 # No docstring
+            self, other: Iterable[Filing]) -> Union[bool, NotImplementedType]:
+        val: Union[bool, NotImplementedType] = NotImplemented
+        try:
+            arg_lists = self._check_arg_iters([other])
+        except (TypeError, ValueError):
+            pass
+        else:
+            val = self._filings < set(arg_lists[0])
+        return val
 
-    def __le__(self, other: Any) -> bool: # noqa: D105 # No docstring
-        return self._filings <= other
+    def __le__( # noqa: D105 # No docstring
+            self, other: Iterable[Filing]) -> Union[bool, NotImplementedType]:
+        val: Union[bool, NotImplementedType] = NotImplemented
+        try:
+            arg_lists = self._check_arg_iters([other])
+        except (TypeError, ValueError):
+            pass
+        else:
+            val = self._filings <= set(arg_lists[0])
+        return val
 
-    def __eq__(self, other: Any) -> bool: # noqa: D105 # No docstring
-        return self._filings == other
+    def __ge__( # noqa: D105 # No docstring
+            self, other: Iterable[Filing]) -> Union[bool, NotImplementedType]:
+        val: Union[bool, NotImplementedType] = NotImplemented
+        try:
+            arg_lists = self._check_arg_iters([other])
+        except (TypeError, ValueError):
+            pass
+        else:
+            val = self._filings >= set(arg_lists[0])
+        return val
 
-    def __ge__(self, other: Any) -> bool: # noqa: D105 # No docstring
-        return self._filings >= other
+    def __gt__( # noqa: D105 # No docstring
+            self, other: Iterable[Filing]) -> Union[bool, NotImplementedType]:
+        val: Union[bool, NotImplementedType] = NotImplemented
+        try:
+            arg_lists = self._check_arg_iters([other])
+        except (TypeError, ValueError):
+            pass
+        else:
+            val = self._filings > set(arg_lists[0])
+        return val
 
-    def __gt__(self, other: Any) -> bool: # noqa: D105 # No docstring
-        return self._filings > other
+    def __eq__( # noqa: D105 # No docstring
+            self, other: object) -> bool:
+        val: bool = False
+        try:
+            arg_lists = self._check_arg_iters([other])
+        except (TypeError, ValueError):
+            pass
+        else:
+            val = self._filings == set(arg_lists[0])
+        return val
 
-    def __ne__(self, other: Any) -> bool: # noqa: D105 # No docstring
-        return self._filings != other
+    def __ne__(self, other: object) -> bool: # noqa: D105 # No docstring
+        return not self.__eq__(other)
 
     def _hash(self) -> int:
         """Return hash() of frozenset of contained filings."""
@@ -704,7 +751,7 @@ class FilingSet:
         self._filings.clear()
 
     def _union(
-            self, fs: FilingSet, others: Sequence[Iterable[Filing]],
+            self, fs: FilingSet, others: list[list[Filing]],
             *, isedit: bool) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
@@ -732,23 +779,22 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters(others)
+        arg_lists = self._check_arg_iters(others)
         fs = FilingSet(self)
-        self._union(fs, others, isedit=False)
+        self._union(fs, arg_lists, isedit=False)
         return fs
 
-    def __or__(
+    def __or__( # noqa: D105 # No docstring
             self, other: Iterable[Filing]
             ) -> Union[FilingSet, NotImplementedType]:
-        """Return method `union` result for iterables."""
         new: Union[FilingSet, NotImplementedType] = NotImplemented
         try:
-            self._check_arg_iters([other])
+            arg_lists = self._check_arg_iters([other])
         except (TypeError, ValueError):
             pass
         else:
             new = FilingSet(self)
-            self._union(new, [other], isedit=False)
+            self._union(new, arg_lists, isedit=False)
         return new
 
     def update(self, *others: Iterable[Filing]) -> None:
@@ -765,25 +811,24 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters(others)
-        self._union(self, others, isedit=True)
+        arg_lists = self._check_arg_iters(others)
+        self._union(self, arg_lists, isedit=True)
 
-    def __ior__(
+    def __ior__( # noqa: D105 # No docstring
             self, other: Iterable[Filing]
             ) -> Union[FilingSet, NotImplementedType]:
-        """Apply method `update` for iterables."""
         val: Union[FilingSet, NotImplementedType] = NotImplemented
         try:
-            self._check_arg_iters([other])
+            arg_lists = self._check_arg_iters([other])
         except (TypeError, ValueError):
             pass
         else:
-            self._union(self, [other], isedit=True)
+            self._union(self, arg_lists, isedit=True)
             val = self
         return val
 
     def _intersection(
-            self, fs: FilingSet, others: Sequence[Iterable[Filing]], *,
+            self, fs: FilingSet, others: list[list[Filing]], *,
             isedit: bool) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
@@ -817,23 +862,22 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters(others)
+        arg_lists = self._check_arg_iters(others)
         fs = FilingSet(self)
-        self._intersection(fs, others, isedit=False)
+        self._intersection(fs, arg_lists, isedit=False)
         return fs
 
-    def __and__(
+    def __and__( # noqa: D105 # No docstring
             self, other: Iterable[Filing]
             ) -> Union[FilingSet, NotImplementedType]:
-        """Return method `intersection` result for iterables."""
         new: Union[FilingSet, NotImplementedType] = NotImplemented
         try:
-            self._check_arg_iters([other])
+            arg_lists = self._check_arg_iters([other])
         except (TypeError, ValueError):
             pass
         else:
             new = FilingSet(self)
-            self._intersection(new, [other], isedit=False)
+            self._intersection(new, arg_lists, isedit=False)
         return new
 
     def intersection_update(self, *others: Iterable[Filing]) -> None:
@@ -850,25 +894,24 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters(others)
-        self._intersection(self, others, isedit=True)
+        arg_lists = self._check_arg_iters(others)
+        self._intersection(self, arg_lists, isedit=True)
 
-    def __iand__(
+    def __iand__( # noqa: D105 # No docstring
             self, other: Iterable[Filing]
             ) -> Union[FilingSet, NotImplementedType]:
-        """Apply method `intersection_update` for iterables."""
         val: Union[FilingSet, NotImplementedType] = NotImplemented
         try:
-            self._check_arg_iters([other])
+            arg_lists = self._check_arg_iters([other])
         except (TypeError, ValueError):
             pass
         else:
-            self._intersection(self, [other], isedit=True)
+            self._intersection(self, arg_lists, isedit=True)
             val = self
         return val
 
     def _difference(
-            self, fs: FilingSet, others: Sequence[Iterable[Filing]], *,
+            self, fs: FilingSet, others: list[list[Filing]], *,
             isedit: bool) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
@@ -897,23 +940,22 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters(others)
+        arg_lists = self._check_arg_iters(others)
         fs = FilingSet(self)
-        self._difference(fs, others, isedit=False)
+        self._difference(fs, arg_lists, isedit=False)
         return fs
 
-    def __sub__(
+    def __sub__( # noqa: D105 # No docstring
             self, other: Iterable[Filing]
             ) -> Union[FilingSet, NotImplementedType]:
-        """Return method `difference` result for iterables."""
         new: Union[FilingSet, NotImplementedType] = NotImplemented
         try:
-            self._check_arg_iters([other])
+            arg_lists = self._check_arg_iters([other])
         except (TypeError, ValueError):
             pass
         else:
             new = FilingSet(self)
-            self._difference(new, [other], isedit=False)
+            self._difference(new, arg_lists, isedit=False)
         return new
 
     def difference_update(self, *others: Iterable[Filing]) -> None:
@@ -930,25 +972,24 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters(others)
-        self._difference(self, others, isedit=True)
+        arg_lists = self._check_arg_iters(others)
+        self._difference(self, arg_lists, isedit=True)
 
-    def __isub__(
+    def __isub__( # noqa: D105 # No docstring
             self, other: Iterable[Filing]
             ) -> Union[FilingSet, NotImplementedType]:
-        """Apply method `difference_update` for iterables."""
         val: Union[FilingSet, NotImplementedType] = NotImplemented
         try:
-            self._check_arg_iters([other])
+            arg_lists = self._check_arg_iters([other])
         except (TypeError, ValueError):
             pass
         else:
-            self._difference(self, [other], isedit=True)
+            self._difference(self, arg_lists, isedit=True)
             val = self
         return val
 
     def _symmetric_difference(
-            self, fs: FilingSet, other: Iterable[Filing], *, isedit: bool
+            self, fs: FilingSet, other: list[Filing], *, isedit: bool
             ) -> None:
         if not isedit:
             self._deepcopy_filingset_contents(fs)
@@ -982,23 +1023,22 @@ class FilingSet:
         ValueError
             When any item in parameter ``other`` is not ``Filing``.
         """
-        self._check_arg_iters([other])
+        arg_lists = self._check_arg_iters([other])
         fs = FilingSet(self)
-        self._symmetric_difference(fs, other, isedit=False)
+        self._symmetric_difference(fs, arg_lists[0], isedit=False)
         return fs
 
-    def __xor__(
+    def __xor__( # noqa: D105 # No docstring
             self, other: Iterable[Filing]
             ) -> Union[FilingSet, NotImplementedType]:
-        """Return method `symmetric_difference` result for iterables."""
         new: Union[FilingSet, NotImplementedType] = NotImplemented
         try:
-            self._check_arg_iters([other])
+            arg_lists = self._check_arg_iters([other])
         except (TypeError, ValueError):
             pass
         else:
             new = FilingSet(self)
-            self._symmetric_difference(new, other, isedit=False)
+            self._symmetric_difference(new, arg_lists[0], isedit=False)
         return new
 
     def symmetric_difference_update(self, other: Iterable[Filing]) -> None:
@@ -1015,20 +1055,19 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters([other])
-        self._symmetric_difference(self, other, isedit=True)
+        arg_lists = self._check_arg_iters([other])
+        self._symmetric_difference(self, arg_lists[0], isedit=True)
 
-    def __ixor__(
+    def __ixor__( # noqa: D105 # No docstring
             self, other: Iterable[Filing]
             ) -> Union[FilingSet, NotImplementedType]:
-        """Apply method `symmetric_difference_update` for iterables."""
         val: Union[FilingSet, NotImplementedType] = NotImplemented
         try:
-            self._check_arg_iters([other])
+            arg_lists = self._check_arg_iters([other])
         except (TypeError, ValueError):
             pass
         else:
-            self._symmetric_difference(self, other, isedit=True)
+            self._symmetric_difference(self, arg_lists[0], isedit=True)
             val = self
         return val
 
@@ -1103,8 +1142,8 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters([other])
-        return self._filings.isdisjoint(other)
+        arg_lists = self._check_arg_iters([other])
+        return self._filings.isdisjoint(arg_lists[0])
 
     def issubset(self, other: Iterable[Filing]) -> bool:
         """
@@ -1125,8 +1164,8 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters([other])
-        return self._filings.issubset(other)
+        arg_lists = self._check_arg_iters([other])
+        return self._filings.issubset(arg_lists[0])
 
     def issuperset(self, other: Iterable[Filing]) -> bool:
         """
@@ -1147,21 +1186,27 @@ class FilingSet:
         ValueError
             When any item in an iterable is not ``Filing``.
         """
-        self._check_arg_iters([other])
-        return self._filings.issuperset(other)
+        arg_lists = self._check_arg_iters([other])
+        return self._filings.issuperset(arg_lists[0])
 
-    def _check_arg_iters(self, args: Sequence[Any]) -> None:
+    def _check_arg_iters(self, args: Sequence[Any]) -> list[list[Any]]:
+        arg_lists: list[list[Any]] = []
         for arg in args:
             if isinstance(arg, FilingSet):
+                arg_lists.append(list(arg))
                 continue
 
             # Raise TypeError if not iterable
             argiter = iter(arg)
 
+            arg_list = list(argiter)
+
             # Raise ValueError if any item type other than Filing
-            if any(not isinstance(item, Filing) for item in argiter):
+            if any(not isinstance(item, Filing) for item in arg_list):
                 msg = 'Arguments must be iterables of Filing objects.'
                 raise ValueError(msg)
+            arg_lists.append(arg_list)
+        return arg_lists
 
     def _deepcopy_entity(self, source: Entity) -> Entity:
         """Deep copy Entity and shallow copy its `filings`."""
