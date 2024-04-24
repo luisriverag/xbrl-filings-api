@@ -1,0 +1,3 @@
+-e ./../../xbrl_filings_api
+sphinx >= 7.2.6
+furo >= 2024.1.29
