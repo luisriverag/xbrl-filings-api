@@ -66,8 +66,9 @@ class FilingSet:
     (`union` method and ``|`` operator).
 
     Defines operators ``|``, ``|=``, ``&``, ``&=``, ``-``, ``-=``,
-    ``^``, and ``^=``. Instead of just set-like objects, the operators
-    accept any iterables of Filing objects.
+    ``^``, ``^=``, ``<``, ``<=``, ``==``, ``>``, ``>=``, and ``!=``.
+    Instead of just set-like objects, the operators accept any iterables
+    of Filing objects.
 
     `Filing` objects, as subclass of `APIResource`, have a custom
     `__hash__() <APIResource.__hash__>` method and their hash is based
@@ -106,12 +107,14 @@ class FilingSet:
         """
         self._filings: set[Filing] = set()
         if filings is not None:
-            if not isinstance(filings, FilingSet):
+            if isinstance(filings, FilingSet):
+                self._filings.update(filings)
+            else:
                 for filing in filings:
                     if not isinstance(filing, Filing):
                         msg = 'All iterable items must be Filing objects.'
                         raise ValueError(msg)
-            self._filings.update(filings)
+                    self._filings.add(filing)
 
         self.entities = ResourceCollection(self, 'entity', Entity)
         """
@@ -693,7 +696,8 @@ class FilingSet:
         return self._filings != other
 
     def _hash(self) -> int:
-        return hash(self._filings)
+        """Return hash() of frozenset of contained filings."""
+        return hash(frozenset(self._filings))
 
     def clear(self) -> None:
         """Clear the filing set of filings."""

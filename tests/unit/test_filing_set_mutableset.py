@@ -113,6 +113,40 @@ def upm22to23_filingset(urlmock):
 
 
 @pytest.fixture
+def upm22from21to22_filingset(upm21to22_filingset):
+    """Return set of both UPM22 from 'upm21to22', bad cross-references."""
+    fs: xf.FilingSet = upm21to22_filingset
+    fs_upm22 = xf.FilingSet(
+        f for f in fs if f.api_id in (ID_UPM22_EN, ID_UPM22_FI))
+    return fs_upm22
+
+
+@pytest.fixture
+def upm22from22to23_filingset(upm22to23_filingset):
+    """Return set of both UPM22 from 'upm22to23', bad cross-references."""
+    fs: xf.FilingSet = upm22to23_filingset
+    fs_upm22 = xf.FilingSet(
+        f for f in fs if f.api_id in (ID_UPM22_EN, ID_UPM22_FI))
+    return fs_upm22
+
+
+@pytest.fixture
+def upm22en_filingset(upm22to23_filingset):
+    """Return set of UPM22en from 'upm22to23', bad cross-references."""
+    fs: xf.FilingSet = upm22to23_filingset
+    fs_one_less = xf.FilingSet(f for f in fs if f.api_id == ID_UPM22_EN)
+    return fs_one_less
+
+
+@pytest.fixture
+def upm22and23en_filingset(upm22to23_filingset):
+    """Return set 'upm22to23' without UPM23fi, bad cross-references."""
+    fs: xf.FilingSet = upm22to23_filingset
+    fs_one_more = xf.FilingSet(f for f in fs if f.api_id != ID_UPM23_FI)
+    return fs_one_more
+
+
+@pytest.fixture
 def upm22en_filing(upm22to23_filingset):
     """
     Filing for UPM-Kymmene 2022 English from `upm22to23` filing with
@@ -787,6 +821,173 @@ class TestRemoveDiscard:
         fs_result.discard(filing_23)
         assert isinstance(fs_result, xf.FilingSet)
         assert len(fs_result) == 4
+
+
+class TestStraightforwardMethods:
+    """Test methods which have a simple implementation."""
+
+    def test_iter(self, upm21to22_filingset):
+        """Test iteration i.e. method __iter__."""
+        e_ids = {ID_UPM21_EN, ID_UPM21_FI, ID_UPM22_EN, ID_UPM22_FI}
+        fs: xf.FilingSet = upm21to22_filingset
+        fs_iter = iter(fs)
+        assert next(fs_iter).api_id in e_ids
+        assert next(fs_iter).api_id in e_ids
+        assert next(fs_iter).api_id in e_ids
+        assert next(fs_iter).api_id in e_ids
+        with pytest.raises(StopIteration):
+            next(fs_iter)
+        ids = {f.api_id for f in fs}
+        assert ids == e_ids
+
+    def test_len(self, upm21to22_filingset):
+        """Test function 'len' i.e. method __len__."""
+        fs: xf.FilingSet = upm21to22_filingset
+        assert len(fs) == 4
+
+    def test_contains(self, upm21to22_filingset, upm22to23_filingset):
+        """Test operator 'in' i.e. method __contains__."""
+        fs: xf.FilingSet = upm21to22_filingset
+        fs_22_23: xf.FilingSet = upm22to23_filingset
+        filing22en = next(f for f in fs_22_23 if f.api_id == ID_UPM22_EN)
+        filing23en = next(f for f in fs_22_23 if f.api_id == ID_UPM23_EN)
+        assert (filing22en in fs) is True
+        assert (filing23en in fs) is False
+        assert ('test' in fs) is False
+        assert (('APIResource', xf.Filing.TYPE, ID_UPM22_EN) in fs) is True
+        assert (('APIResource', xf.Filing.TYPE, ID_UPM23_EN) in fs) is False
+
+    def test_lt(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset):
+        """Test operator '<' i.e. method __lt__ (proper subset)."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert (fs < fs_one_less) is False
+        assert (fs < fs_one_more) is True
+        assert (fs < fs_same) is False
+
+    def test_le(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset):
+        """Test operator '<=' i.e. method __le__ (issubset)."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert (fs <= fs_one_less) is False
+        assert (fs <= fs_one_more) is True
+        assert (fs <= fs_same) is True
+
+    def test_eq(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset):
+        """Test operator '==' i.e. method __eq__."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert (fs == fs_one_less) is False
+        assert (fs == fs_one_more) is False
+        assert (fs == fs_same) is True
+
+    def test_ge(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset):
+        """Test operator '>=' i.e. method __ge__ (issuperset)."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert (fs >= fs_one_less) is True
+        assert (fs >= fs_one_more) is False
+        assert (fs >= fs_same) is True
+
+    def test_gt(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset):
+        """Test operator '>' i.e. method __gt__ (proper superset)."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert (fs > fs_one_less) is True
+        assert (fs > fs_one_more) is False
+        assert (fs > fs_same) is False
+
+    def test_ne(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset):
+        """Test operator '!=' i.e. method __ne__."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert (fs != fs_one_less) is True
+        assert (fs != fs_one_more) is True
+        assert (fs != fs_same) is False
+
+    def test_hash(
+            self, upm22from21to22_filingset, upm22from22to23_filingset):
+        """Test method _hash()."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert fs._hash() == fs_same._hash()
+
+    def test_clear(
+            self, upm22from21to22_filingset):
+        """Test method clear()."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        assert len(fs) == 2
+        fs.clear()
+        assert len(fs) == 0
+
+    def test_isdisjoint(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset, upm21to22_filingset,
+            upm22to23_filingset):
+        """Test method isdisjoint()."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        fs_21to22: xf.FilingSet = upm21to22_filingset
+        fs_21 = xf.FilingSet(
+            f for f in fs_21to22 if f.api_id in (ID_UPM21_EN, ID_UPM21_FI))
+        fs_22to23: xf.FilingSet = upm22to23_filingset
+        fs_23 = xf.FilingSet(
+            f for f in fs_22to23 if f.api_id in (ID_UPM23_EN, ID_UPM23_FI))
+        assert fs.isdisjoint(fs_one_less) is False
+        assert fs.isdisjoint(fs_one_more) is False
+        assert fs.isdisjoint(fs_same) is False
+        assert fs.isdisjoint(fs_21) is True
+        assert fs.isdisjoint(fs_23) is True
+
+    def test_issubset(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset):
+        """Test method issubset()."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert fs.issubset(fs_one_less) is False
+        assert fs.issubset(fs_one_more) is True
+        assert fs.issubset(fs_same) is True
+
+    def test_issuperset(
+            self, upm22from21to22_filingset, upm22from22to23_filingset,
+            upm22en_filingset, upm22and23en_filingset):
+        """Test method issuperset()."""
+        fs: xf.FilingSet = upm22from21to22_filingset
+        fs_one_less: xf.FilingSet = upm22en_filingset
+        fs_one_more: xf.FilingSet = upm22and23en_filingset
+        fs_same: xf.FilingSet = upm22from22to23_filingset
+        assert fs.issuperset(fs_one_less) is True
+        assert fs.issuperset(fs_one_more) is False
+        assert fs.issuperset(fs_same) is True
 
 
 def test_pop(upm21to22_filingset):
