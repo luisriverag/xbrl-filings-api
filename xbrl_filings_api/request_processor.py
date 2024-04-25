@@ -120,7 +120,7 @@ def generate_pages(
     # Multifilters and short dates cause multiple simple queries
     received_size = 0
     for qparam_i, query_params in enumerate(params_list):
-        next_url: Union[str, None] = options.entry_point_url
+        next_url: Union[str, None] = f'{options.entry_point_url}/filings'
         req_params: Union[_ParamsType, None] = query_params
         aq_num = aq_1st_num + qparam_i
         stats.api_query_counter = aq_num

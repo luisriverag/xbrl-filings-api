@@ -38,7 +38,7 @@ called. Valid value can be created with :func:`webbrowser.get` function.
 Default value is :pt:`None`.
 """
 
-entry_point_url: str = 'https://filings.xbrl.org/api/filings'
+entry_point_url: str = 'https://filings.xbrl.org/api'
 """
 API entry point URL for requests.
 

@@ -38,6 +38,7 @@ class APIObject:
         self._json = JSONTree(
             class_name=type(self).__qualname__,
             json_frag=json_frag,
+            request_url=api_request.url,
             do_not_track=do_not_track
             )
         """Object for traversing and parsing API response."""

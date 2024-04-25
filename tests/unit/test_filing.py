@@ -180,7 +180,7 @@ class TestFilingAsml22enNoEntity:
             self, get_asml22en_filing, attr_name, expected, monkeypatch):
         """Test URL data attributes for `asml22en`."""
         monkeypatch.setattr(
-            options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+            options, 'entry_point_url', 'https://filings.xbrl.org/api')
         filing: xf.Filing = get_asml22en_filing()
         assert getattr(filing, attr_name) == expected
 
@@ -322,7 +322,7 @@ class TestFilingCreditsuisse21enWithEntity:
         Test URL data attributes for `creditsuisse21en_entity`.
         """
         monkeypatch.setattr(
-            options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+            options, 'entry_point_url', 'https://filings.xbrl.org/api')
         filing: xf.Filing = get_creditsuisse21en_entity_filing()
         assert getattr(filing, attr_name) == expected
 

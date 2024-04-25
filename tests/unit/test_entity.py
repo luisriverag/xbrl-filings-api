@@ -80,7 +80,7 @@ class TestEntityAsml:
     def test_url_data_attributes(self, asml22en_entity, monkeypatch):
         """Test attribute `api_entity_filings_url` for Entity."""
         monkeypatch.setattr(
-            options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+            options, 'entry_point_url', 'https://filings.xbrl.org/api')
         e_url = (
             'https://filings.xbrl.org/api/entities/724500Y6DUVHQD6OXN27/filings'
             )

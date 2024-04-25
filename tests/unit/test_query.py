@@ -166,7 +166,7 @@ def test_get_filings_limit_minus():
 def test_get_filings_bad_json(monkeypatch):
     """Test raising when API returns bad JSON."""
     monkeypatch.setattr(
-        xf.options, 'entry_point_url', 'https://filings.xbrl.org/api/filings')
+        xf.options, 'entry_point_url', 'https://filings.xbrl.org/api')
     with responses.RequestsMock() as rsps:
         rsps.get(
             url='https://filings.xbrl.org/api/filings',
@@ -184,7 +184,7 @@ def test_get_filings_bad_json(monkeypatch):
 def test_different_options_entry_point_url(monkeypatch):
     """Test different options.entry_point_url."""
     monkeypatch.setattr(
-        xf.options, 'entry_point_url', 'https://www.example.com/api/filings')
+        xf.options, 'entry_point_url', 'https://www.example.com/api')
     with responses.RequestsMock() as rsps:
         rsps.get(
             url='https://www.example.com/api/filings',

@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any, ClassVar, Optional, Union
 
-from xbrl_filings_api import options
 from xbrl_filings_api.parse_type import ParseType
 
 __all__ = [
@@ -123,6 +122,7 @@ class JSONTree:
             *,
             class_name: str,
             json_frag: Union[dict, None],
+            request_url: str,
             do_not_track: bool = False
             ) -> None:
         """
@@ -146,6 +146,8 @@ class JSONTree:
 
         An `APIPage` subclass contains the whole JSON document.
         """
+        self.request_url: str = request_url
+        """Base URL for ParseType.URL."""
         self.do_not_track: bool = do_not_track
         """
         When :pt:`True`, does not track successful and total `get()`
@@ -187,7 +189,7 @@ class JSONTree:
         specify timezone, it will be on UTC.
 
         Value `ParseType.DATE` parses naive dates and `ParseType.URL`
-        resolves relative URLs based on `options.entry_point_url`.
+        resolves relative URLs based on `request_url`.
 
         Parameters
         ----------
@@ -304,7 +306,7 @@ class JSONTree:
             parsed_url = None
             try:
                 parsed_url = urllib.parse.urljoin(
-                    options.entry_point_url, key_value)
+                    self.request_url, key_value)
             except ValueError:
                 msg = (
                     f'Could not determine absolute URL string from '

@@ -179,9 +179,7 @@ class TestFilingSet_get_pandas_data:
     def test_include_urls_true(self, get_oldest3_fi_filingset, monkeypatch):
         """Test include_urls=True, unit testing."""
         monkeypatch.setattr(
-            xf.options, 'entry_point_url',
-            'https://filings.xbrl.org/api/filings'
-            )
+            xf.options, 'entry_point_url', 'https://filings.xbrl.org/api')
         fs: xf.FilingSet = get_oldest3_fi_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -217,9 +215,7 @@ class TestFilingSet_get_pandas_data:
             self, get_oldest3_fi_entities_filingset, monkeypatch):
         """Test with_entity=True and include_urls=True, unit testing."""
         monkeypatch.setattr(
-            xf.options, 'entry_point_url',
-            'https://filings.xbrl.org/api/filings'
-            )
+            xf.options, 'entry_point_url', 'https://filings.xbrl.org/api')
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.get_pandas_data(
             attr_names=None,
@@ -395,9 +391,7 @@ class TestResourceCollection_entities_get_pandas_data:
             self, get_oldest3_fi_entities_filingset, monkeypatch):
         """Test include_urls=True, unit testing, entities."""
         monkeypatch.setattr(
-            xf.options, 'entry_point_url',
-            'https://filings.xbrl.org/api/filings'
-            )
+            xf.options, 'entry_point_url', 'https://filings.xbrl.org/api')
         fs: xf.FilingSet = get_oldest3_fi_entities_filingset()
         pd_data = fs.entities.get_pandas_data(
             attr_names=None,
