@@ -1,9 +1,10 @@
 __pycache__/
+.coverage*
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
 .vscode/
+*.egg-info
 author-notes/
 dist/
-.coverage*
-*.egg-info
+htmlcov

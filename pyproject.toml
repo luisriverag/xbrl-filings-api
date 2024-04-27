@@ -56,6 +56,7 @@ path = "xbrl_filings_api/__about__.py"
 [tool.hatch.build.targets.sdist]
 exclude = [
     "/.github",
+    "/tests/mock_responses/*",
     "/docs",
 ]
 
