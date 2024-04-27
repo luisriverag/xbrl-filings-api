@@ -30,7 +30,7 @@ defined in the `Entity.identifier` attribute::
                 '743700OD4QRWKZ4ODC98']}
 
 For validation messages, plural prefix ``"validation_messages."`` is
-required:
+required::
 
     filters={
         'validation_messages.code': 'message:tech_duplicated_facts1'
@@ -70,9 +70,10 @@ the most recently added filings, specify the following parameter::
     sort='-added_time'
 
 .. note::
-    The query functions return sets. Parameter ``sort`` can be used to
-    filter either ends of the value spectrum but it does not mean that
-    the returned sets would have any kind of order.
+    Apart from `filing_page_iter`, the query functions return custom set
+    objects. Parameter ``sort`` can be used to filter either ends of the
+    value spectrum but it does not mean that the returned sets would
+    have any kind of order.
 
 """
 
@@ -142,7 +143,7 @@ def get_filings(
 
     Notes
     -----
-    Parameter ``add_api_params`` is handled by :func:`requests.Request`
+    Parameter ``add_api_params`` is handled by :class:`requests.Request`
     parameter ``params``.
     """
     filings = FilingSet()
@@ -254,7 +255,7 @@ def to_sqlite(
 
     Notes
     -----
-    Parameter ``add_api_params`` is handled by :func:`requests.Request`
+    Parameter ``add_api_params`` is handled by :class:`requests.Request`
     parameter ``params``.
     """
     filings = FilingSet()
@@ -327,7 +328,7 @@ def filing_page_iter(
 
     Notes
     -----
-    Parameter ``add_api_params`` is handled by :func:`requests.Request`
+    Parameter ``add_api_params`` is handled by :class:`requests.Request`
     parameter ``params``.
     """
     filings = FilingSet()

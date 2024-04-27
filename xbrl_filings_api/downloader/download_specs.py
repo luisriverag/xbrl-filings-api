@@ -32,7 +32,7 @@ class DownloadSpecs:
     """
     Pattern to add to the filename stems.
 
-    Placeholder "/name/" is always required.
+    Placeholder ``"/name/"`` is always required.
     """
 
     filename: Optional[str] = None

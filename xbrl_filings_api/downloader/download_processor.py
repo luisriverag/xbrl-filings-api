@@ -68,10 +68,10 @@ async def download_async(
     file,
     :exc:`xbrl_filings_api.downloader.exceptions.CorruptDownloadError`
     will be raised and the name of the downloaded file will be appended
-    with ".corrupt".
+    with ``".corrupt"``.
 
     If download is interrupted, the file will be left with a suffix
-    ".unfinished".
+    ``".unfinished"``.
 
     If no name could be derived from ``url``, the file will be named
     ``file0001``, ``file0002``, etc. In this case a new file is always
@@ -84,7 +84,7 @@ async def download_async(
     to_dir : path-like
         Directory to save the file.
     stem_pattern : str, optional
-        Pattern to add to the filename stems. Placeholder "/name/"
+        Pattern to add to the filename stems. Placeholder ``"/name/"``
         is always required.
     filename : str, optional
         Name to be used for the saved file.
@@ -223,7 +223,7 @@ async def download_parallel_aiter(
     Yielded `DownloadResult` objects will not have the
     :attr:`~DownloadResult.path` attribute value when the ``sha256``
     check fails even though the file is in fact saved with filename
-    suffix ".corrupt".
+    suffix ``".corrupt"``.
 
     Calls function `download_async` via parameter ``items``.
 

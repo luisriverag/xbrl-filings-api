@@ -12,7 +12,7 @@ import re
 # -- Project information -----------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'xbrl-filings-api'
+project = 'XBRL Filings API Documentation'
 copyright = '2024, Lauri Salmela' # noqa: A001 # Ignore builtin shadow
 author = 'Lauri Salmela'
 release = '1.0a1'
@@ -26,6 +26,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
+    'sphinxext.opengraph',
+    'sphinx_copybutton',
     ]
 
 templates_path = ['_templates']
@@ -42,10 +44,6 @@ html_static_path = ['_static']
 trim_footnote_reference_space = True
 
 rst_prolog = '''
-.. meta::
-   :description: Documentation for Python library xbrl-filings-api
-   :keywords: XBRL, ESEF, IFRS
-
 .. role:: pt(code)
    :language: python
 '''
@@ -164,6 +162,9 @@ intersphinx_mapping = {
     'pandas': ('https://pandas.pydata.org/docs', None),
     }
 
+ogp_site_url = 'https://lsalmela.github.io/xbrl-filings-api/'
+
+copybutton_exclude = '.linenos, .gp, .go'
 
 # -- Function setup() --------------------------------------------------
 

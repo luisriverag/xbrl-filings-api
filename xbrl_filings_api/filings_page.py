@@ -87,9 +87,9 @@ class FilingsPage(APIPage):
         """
         Return repr with request_url, query_time, and len(filing_list).
 
-        Attribute `request_url` is shown as repr, `query_time` as
-        unprefixed datetime() constructor, and len(`filing_list`) as
-        integer.
+        Attribute :attr:`~APIObject.request_url` is shown as repr,
+        `query_time` as unprefixed datetime() constructor, and
+        len(`filing_list`) as integer.
         """
         time_str = self.query_time.strftime('%Y, %m, %d, %H, %M, %S')
         query_time = f'datetime({time_str})'

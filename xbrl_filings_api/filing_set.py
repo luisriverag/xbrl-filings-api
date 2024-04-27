@@ -167,12 +167,12 @@ class FilingSet:
 
         The ``files`` parameter accepts three formats::
 
-            fs.download('json')
-            fs.download(['json', 'package'])
+            fs.download('json', to_dir='dir/path')
+            fs.download(['json', 'package'], to_dir='dir/path')
             fs.download({
                     'json': DownloadItem(),
                     'package': DownloadItem(to_dir=other_dir)
-                }, to_dir)
+                }, to_dir='dir/path')
 
         The filesystem path of the downloaded file will be saved in the
         `Filing` object attributes ``<file>_download_path`` such as
@@ -186,7 +186,7 @@ class FilingSet:
         :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` of the
         first corrupt file is raised after all downloads have finished.
         The downloaded files will not be deleted but the filenames will
-        be appended with ending ".corrupt". However, attributes
+        be appended with ending ``".corrupt"``. However, attributes
         `Filing.package_download_path` will not store these corrupt
         paths.
 
@@ -196,13 +196,13 @@ class FilingSet:
         overwritten.
 
         If download is interrupted, the files will be left with ending
-        ".unfinished".
+        ``".unfinished"``.
 
         If no name could be derived from the url attribute, the file
         will be named ``file0001``, ``file0002``, etc. In this case a
         new file is always created.
 
-        Parameter ``stem_pattern`` requires a placeholder "/name/".
+        Parameter ``stem_pattern`` requires a placeholder ``"/name/"``.
         For example pattern ``/name/_second_try`` will change original
         filename ``743700XJC24THUPK0S03-2022-12-31-fi.xhtml`` into
         ``743700XJC24THUPK0S03-2022-12-31-fi_second_try.xhtml``. Not
@@ -219,8 +219,8 @@ class FilingSet:
         to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
-            Pattern to add to the filename stems. Placeholder "/name/"
-            is always required.
+            Pattern to add to the filename stems. Placeholder
+            ``"/name/"`` is always required.
         check_corruption : bool, default True
             Raise
             :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` for
@@ -311,8 +311,8 @@ class FilingSet:
         to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
-            Pattern to add to the filename stems. Placeholder "/name/"
-            is always required.
+            Pattern to add to the filename stems. Placeholder
+            ``"/name/"`` is always required.
         check_corruption : bool, default True
             Raise
             :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` for

@@ -15,7 +15,11 @@ __all__ = [
 
 
 DEFAULT_VIEWS: list[SQLiteView] = []
-"""List of the default views added to exported SQLite databases."""
+"""
+List of the default views added to exported SQLite databases.
+
+Accessible through the package root namespace.
+"""
 
 ViewEnclosure = SQLiteView(
     name='ViewEnclosure',
@@ -49,8 +53,7 @@ ORDER BY name, reporting_date, country
 Examine multi-language enclosures in an easy to read listing.
 
 Filings in a single enclosure are defined to have the same
-``Filing.entity_api_id``, ``Filing.reporting_date`` and
-``Filing.country``.
+``entity_api_id``, ``reporting_date``, and ``country``.
 
 Ordered ascending on ``entity_name``, ``reporting_date``.
 
@@ -279,7 +282,7 @@ reportedErrorK : REAL or NULL
     Deviation from properly calculated value or the value of the other
     duplicate in thousands.
 errorPercent : REAL or NULL
-    Percentage of error `reportedErrorK` based on reported value or
+    Percentage of error ``reportedErrorK`` based on reported value or
     lesser duplicate.
 calc_line_item : TEXT or NULL
     Line item element name from ``ValidationMessage.calc_line_item`` for

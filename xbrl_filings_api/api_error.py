@@ -15,7 +15,7 @@ __all__ = ['APIError']
 
 class APIError(FilingsAPIError, APIObject):
     """
-    Error returned by the JSON:API.
+    Error returned by the underlying API.
 
     See Also
     --------

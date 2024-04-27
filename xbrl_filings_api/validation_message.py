@@ -29,9 +29,6 @@ class ValidationMessage(APIResource):
     """
     Message for a filing in the database from a validator software.
 
-    The source of validation has not been published by the API provider.
-    However, it seems likely that they originate from Arelle software.
-
     Validation messages are issues in XBRL standard conformance, and the
     formula rules defined in the XBRL taxonomy.
 
@@ -42,6 +39,19 @@ class ValidationMessage(APIResource):
 
     Calculation inconsistency is the term used for issues in accounting
     coherence.
+
+    Derived attributes beginning ``calc_`` are only available when
+    `code` is ``'xbrl.5.2.5.2:calcInconsistency'``. The ones beginning
+    ``duplicate_`` are available for `code`
+    ``'message:tech_duplicated_facts1'`` if the values are numeric. They
+    are parsed out from the `text` of the message.
+
+    Notes
+    -----
+    The source of validation has not been published by the API provider.
+    However, it seems likely that they originate from Arelle software as
+    they seem similar and JSON and iXBRL viewer files are also generated
+    with it.
     """
 
     TYPE = 'validation_message'
@@ -78,7 +88,7 @@ class ValidationMessage(APIResource):
         """
         The code describing the source of the broken rule.
 
-        For example, code ``xbrl.5.2.5.2:calcInconsistency`` refers to
+        For example, code ``'xbrl.5.2.5.2:calcInconsistency'`` refers to
         XBRL 2.1 base specification heading 5.2.5.2 with title "The
         <calculationArc> element".
         """
@@ -106,7 +116,7 @@ class ValidationMessage(APIResource):
         Derived computed sum of the calculation inconsistency.
 
         Based on attribute `text` for validation messages whose `code`
-        is ``xbrl.5.2.5.2:calcInconsistency``.
+        is ``'xbrl.5.2.5.2:calcInconsistency'``.
         """
 
         self.calc_reported_sum: Union[float, None] = None
@@ -114,7 +124,7 @@ class ValidationMessage(APIResource):
         Derived reported sum of the calculation inconsistency.
 
         Based on attribute `text` for validation messages whose `code`
-        is ``xbrl.5.2.5.2:calcInconsistency``.
+        is ``'xbrl.5.2.5.2:calcInconsistency'``.
         """
 
         self.calc_context_id: Union[str, None] = None
@@ -122,7 +132,7 @@ class ValidationMessage(APIResource):
         Derived XBRL context ID of the calculation inconsistency.
 
         Based on attribute `text` for validation messages whose `code`
-        is ``xbrl.5.2.5.2:calcInconsistency``.
+        is ``'xbrl.5.2.5.2:calcInconsistency'``.
         """
 
         self.calc_line_item: Union[str, None] = None
@@ -134,7 +144,7 @@ class ValidationMessage(APIResource):
         could be for example ``ifrs-full:Assets``.
 
         Based on attribute `text` for validation messages whose `code`
-        is ``xbrl.5.2.5.2:calcInconsistency``.
+        is ``'xbrl.5.2.5.2:calcInconsistency'``.
         """
 
         self.calc_short_role: Union[str, None] = None
@@ -147,7 +157,7 @@ class ValidationMessage(APIResource):
         is truncated to "FinancialPositionConsolidated".
 
         Based on attribute `text` for validation messages whose `code`
-        is ``xbrl.5.2.5.2:calcInconsistency``.
+        is ``'xbrl.5.2.5.2:calcInconsistency'``.
         """
 
         self.calc_unreported_items: Union[list[str], None] = None
@@ -161,10 +171,10 @@ class ValidationMessage(APIResource):
         the same XBRL context with this fact.
 
         When the data is output to a database, this field is a string
-        with parts joined by a newline character ('\\n').
+        with parts joined by a newline character.
 
         Based on attribute `text` for validation messages whose `code`
-        is ``xbrl.5.2.5.2:calcInconsistency``.
+        is ``'xbrl.5.2.5.2:calcInconsistency'``.
         """
 
         self.duplicate_greater: Union[float, None] = None
@@ -172,9 +182,9 @@ class ValidationMessage(APIResource):
         Derived greater item of the duplicate pair.
 
         Based on attribute `text` for validation messages whose `code`
-        is ``message:tech_duplicated_facts1``.
+        is ``'message:tech_duplicated_facts1'``.
 
-        Does not include code ``formula:assertionUnsatisfied`` with
+        Does not include code ``'formula:assertionUnsatisfied'`` with
         ``tech_duplicated_facts1`` in the beginning of the message (more
         than 2 duplicated facts).
         """
@@ -184,9 +194,9 @@ class ValidationMessage(APIResource):
         Derived lesser item of the duplicate pair.
 
         Based on attribute `text` for validation messages whose `code`
-        is ``message:tech_duplicated_facts1``.
+        is ``'message:tech_duplicated_facts1'``.
 
-        Does not include code ``formula:assertionUnsatisfied`` with
+        Does not include code ``'formula:assertionUnsatisfied'`` with
         ``tech_duplicated_facts1`` in the beginning of the message (more
         than 2 duplicated facts).
         """

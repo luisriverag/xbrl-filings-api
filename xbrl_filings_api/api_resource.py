@@ -29,6 +29,12 @@ class APIResource(APIObject):
 
     Subclasses of this class may be read into a database. An instance
     resembles a database record.
+
+    This library assumes the API returning datetimes in UTC, if no
+    timezone is specified (situation as of April 2024). Original
+    datetime string is retained in attribute with ``"_time_str"`` ending
+    paired with the ``"_time"`` ended attributes (e.g.
+    `added_time_str`).
     """
 
     TYPE: str = ''

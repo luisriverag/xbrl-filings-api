@@ -83,6 +83,7 @@ ASML22EN_ENT_VMSG_FILING_FRAG = {
 
 @pytest.fixture(scope='module')
 def asml22en_ent_vmsg_request_url():
+    """Mock response 'asml22en_ent_vmsg' request_url."""
     return (
         'https://filings.xbrl.org/api/filings?page%5Bsize%5D=1&'
         'filter%5Bfxo_id%5D=724500Y6DUVHQD6OXN27-2022-12-31-ESEF-NL-0&'
@@ -319,7 +320,8 @@ def test_get_url_value(asml22en_ent_vmsg_request_url, monkeypatch):
 
 
 @pytest.mark.usefixtures('_reset_jsontree_state')
-def test_get_url_value_bad_url(asml22en_ent_vmsg_request_url, monkeypatch, caplog):
+def test_get_url_value_bad_url(
+        asml22en_ent_vmsg_request_url, monkeypatch, caplog):
     """Test reading a bad URL value from the tree."""
     monkeypatch.setattr(
         options, 'entry_point_url', 'https://filings.xbrl.org/api')

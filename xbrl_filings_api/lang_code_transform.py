@@ -6,7 +6,8 @@ offial European Union languages from ISO 639-2 (alpha-3 codes) to ISO
 639-1 (alpha-2 codes).
 
 The transformations are needed for year 2020 ESEF reports when
-requirements to report the language in the file name were obscure.
+requirements to report the language in the file name were obscure. They
+affect the resolution of derived attribute `Filing.language`.
 
 """
 

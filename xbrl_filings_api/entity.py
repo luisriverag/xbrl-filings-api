@@ -21,7 +21,11 @@ __all__ = ['Entity']
 
 
 class Entity(APIResource):
-    """Entity (e.g. a group) in the database which has filed filings."""
+    """
+    Entity in the database which has filed filings.
+
+    In most cases, the entity is the parent company of the group.
+    """
 
     TYPE = 'entity'
     NAME = 'attributes.name'

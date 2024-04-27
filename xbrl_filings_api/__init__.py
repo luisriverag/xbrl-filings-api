@@ -14,6 +14,8 @@ api_attribute_map
     Mapping from library attribute names to names used in the API.
 DEFAULT_VIEWS
     List of the default views added to exported SQLite databases.
+GET_ALL
+    Retrieve all available objects.
 GET_ENTITY
     Retrieve entities of filings.
 GET_ONLY_FILINGS
@@ -37,7 +39,7 @@ Classes
 Filing
     XBRL filing in the database based on a report package file.
 Entity
-    Entity (e.g. a group) in the database which has filed filings.
+    Entity in the database which has filed filings.
 ValidationMessage
     Message for a filing in the database from a validator software.
 FilingSet
@@ -66,7 +68,7 @@ ScopeFlag
 Exceptions
 ----------
 APIError
-    First error returned by the JSON:API.
+    First error returned by the underlying API.
 CorruptDownloadError
     SHA-256 checksum does not match expected value from API.
 DatabaseSchemaUnmatchError
@@ -120,6 +122,7 @@ from xbrl_filings_api.validation_message import ValidationMessage
 GET_ENTITY = ScopeFlag.GET_ENTITY
 GET_ONLY_FILINGS = ScopeFlag.GET_ONLY_FILINGS
 GET_VALIDATION_MESSAGES = ScopeFlag.GET_VALIDATION_MESSAGES
+GET_ALL = GET_ENTITY | GET_VALIDATION_MESSAGES
 
 # Do not log error and warning to standard error by default
 logging.getLogger(__name__).addHandler(logging.NullHandler())

@@ -22,7 +22,7 @@ authors = [
     { name = "Lauri Salmela", email = "lauri.m.salmela@gmail.com" },
 ]
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -105,15 +105,21 @@ all = [
 dependencies = [
     "sphinx>=7.2.6",
     "furo>=2024.1.29",
+    "sphinxext-opengraph>=0.9.1",
+    "sphinx-copybutton>=0.5.2",
 ]
 
 [tool.hatch.envs.doc.scripts]
-build = "sphinx-build docs/source docs/build {args}"
+build = "sphinx-build {args} docs/source docs/build"
 # Windows-specific
 delgen = 'rmdir /s /q "docs\source\api" "docs\source\dev\ref" "docs\build"'
 fbuild = [
     "delgen",
     "build",
+    ]
+linkcheck = [
+    "sphinx-build -b linkcheck {args} docs/source docs/build/linkcheck",
+    "docs/build/linkcheck/output.txt",
     ]
 
 [tool.coverage.run]

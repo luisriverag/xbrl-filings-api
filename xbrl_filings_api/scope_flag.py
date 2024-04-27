@@ -14,7 +14,9 @@ class ScopeFlag(Flag):
     Flags for API resource retrieval scope.
 
     Use ``GET_ONLY_FILINGS`` alone, the rest alone or the rest combined
-    (binary OR operator ``|``).
+    (``|`` operator). A shorthand ``GET_ALL`` (``GET_ENTITY |
+    GET_VALIDATION_MESSAGES``) is available in the library root
+    namespace.
     """
 
     GET_ONLY_FILINGS = auto()

@@ -43,7 +43,7 @@ class Filing(APIResource):
     `reporting_date`).
 
     All :class:`~datetime.datetime` attributes whose name ends
-    ``'_time'`` have an additional attribute ending ``'_time_str'`` for
+    ``"_time"`` have an additional attribute ending ``"_time_str"`` for
     the original string received from the API.
 
     Every data attribute has a similarly named upper-case class constant
@@ -362,10 +362,11 @@ class Filing(APIResource):
 
         The ``files`` parameter accepts three formats::
 
-            filing.download('json')
-            filing.download(['json', 'package'])
+            filing.download('json', to_dir='dir/path')
+            filing.download(['json', 'package'], to_dir='dir/path')
             filing.download(
-                {'json': DownloadItem(filename='save.json')})
+                {'json': DownloadItem(filename='save.json')},
+                to_dir='dir/path')
 
         The filesystem path of the downloaded file will be saved in the
         `Filing` object attributes ``<file>_download_path`` such as
@@ -379,8 +380,8 @@ class Filing(APIResource):
         :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` is
         raised after all downloads have finished. The downloaded files
         will not be deleted but the filename will be appended with
-        ending ".corrupt". However, attribute `package_download_path`
-        will not store this corrupt paths.
+        ending ``".corrupt"``. However, attribute
+        `package_download_path` will not store this corrupt paths.
 
         The directories in the path of parameter ``to_dir`` will be
         created if they do not exist. By default, filename is derived
@@ -388,13 +389,13 @@ class Filing(APIResource):
         overwritten.
 
         If download is interrupted, the files will be left with ending
-        ".unfinished".
+        ``".unfinished"``.
 
         If no name could be derived from the url attribute, the file
         will be named ``file0001``, ``file0002``, etc. In this case a
         new file is always created.
 
-        Parameter ``stem_pattern`` requires a placeholder "/name/".
+        Parameter ``stem_pattern`` requires a placeholder ``"/name/"``.
         For example pattern ``/name/_second_try`` will change original
         filename ``743700XJC24THUPK0S03-2022-12-31-fi.xhtml`` into
         ``743700XJC24THUPK0S03-2022-12-31-fi_second_try.xhtml``. Not
@@ -411,8 +412,8 @@ class Filing(APIResource):
         to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
-            Pattern to add to the filename stems. Placeholder "/name/"
-            is always required.
+            Pattern to add to the filename stems. Placeholder
+            ``"/name/"`` is always required.
         check_corruption : bool, default True
             Raise
             :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` for
@@ -498,8 +499,8 @@ class Filing(APIResource):
         to_dir : path-like, optional
             Directory to save the files. Defaults to working directory.
         stem_pattern : str, optional
-            Pattern to add to the filename stems. Placeholder "/name/"
-            is always required.
+            Pattern to add to the filename stems. Placeholder
+            ``"/name/"`` is always required.
         check_corruption : bool, default True
             Raise
             :exc:`~xbrl_filings_api.exceptions.CorruptDownloadError` for
