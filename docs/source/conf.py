@@ -15,7 +15,7 @@ import re
 project = 'XBRL Filings API Documentation'
 copyright = '2024, Lauri Salmela' # noqa: A001 # Ignore builtin shadow
 author = 'Lauri Salmela'
-release = '1.0a1'
+release = '1.0'
 
 
 # -- General configuration ---------------------------------------------
