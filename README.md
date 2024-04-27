@@ -14,7 +14,7 @@ This library provides:
 1. Python-friendly access to the public API in [filings.xbrl.org][api]
 2. Parallel downloading of associated files (ZIP, XHTML and JSON)
 3. Integration to [pandas][pd]
-4. Integration to [SQLite][sqlite] database, incl. SQLite views,
+4. Integration to [SQLite][sqlite] database, incl. SQLite views
    (accounting reliability)
 5. A few useful derived attributes
 6. Possibility to strip redundant language versions/corrected filings
